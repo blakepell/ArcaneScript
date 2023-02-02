@@ -16,7 +16,7 @@ int main()
     printf(HEADER);
 
     char code[4096];
-    snprintf(code, 4096, "var name = \"Rhien\"\nprintln(`Hello ${name}`)\ndebug(\"Word\")");
+    snprintf(code, 4096, "var name = \"Rhien\"\nprintln(`Hello ${name}`)\ndebug(\"Word\")\nname = \"Blake Pell\"\nprint(`${left(name,5)} ${right(name,4)}`)");
     printf("%s\r\n", code);
 
     ape_t *ape = ape_make();
