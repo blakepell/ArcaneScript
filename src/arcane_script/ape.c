@@ -33,6 +33,7 @@ THE SOFTWARE.
 #endif /* _MSC_VER */
 
 #include "ape.h"
+#include "arcane.h"
 
 //-----------------------------------------------------------------------------
 // Headers

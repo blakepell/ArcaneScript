@@ -26,5 +26,8 @@
     <ClInclude Include="..\arcane_script\ape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\arcane_script\arcane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

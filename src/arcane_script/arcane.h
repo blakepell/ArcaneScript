@@ -1,3 +1,7 @@
+#define ARCANE_VERSION_STRING "0.0.1"
+
+#define HEADER "--------------------------------------------------------------------------------\r\n"
+
 #define IS_NULLSTR(str)      ((str) == NULL || (str)[0] == '\0')
 #define IS_SET(flag, bit)    ((flag) & (bit))
 #define SET_BIT(var, bit)    ((var) |= (bit))
