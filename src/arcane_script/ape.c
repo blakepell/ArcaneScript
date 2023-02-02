@@ -12205,6 +12205,7 @@ static object_t left_fn(vm_t *vm, void *data, int argc, object_t *args);
 static object_t right_fn(vm_t *vm, void *data, int argc, object_t *args);
 static object_t replace_fn(vm_t *vm, void *data, int argc, object_t *args);
 static object_t replace_first_fn(vm_t *vm, void *data, int argc, object_t *args);
+static object_t trim_fn(vm_t *vm, void *data, int argc, object_t *args);
 
 // Type checks
 static object_t is_string_fn(vm_t *vm, void *data, int argc, object_t *args);
@@ -12273,11 +12274,12 @@ static struct {
     {"slice",       slice_fn},
 
     // Custom
-    {"indexof",      indexof_fn},
-    {"left",         left_fn},
-    {"right",        right_fn},
-    {"replace",      replace_fn},
-    {"replace_first",replace_first_fn},
+    {"indexof",       indexof_fn},
+    {"left",          left_fn},
+    {"right",         right_fn},
+    {"replace",       replace_fn},
+    {"replace_first", replace_first_fn},
+    {"trim",          trim_fn},
 
     // Type checks
     {"is_string",   is_string_fn},
@@ -12536,6 +12538,65 @@ static object_t replace_first_fn(vm_t *vm, void *data, int argc, object_t *args)
 
         object_t obj = object_make_string(vm->mem, result);
         free(result);
+        return obj;
+    }
+
+    return object_make_null();
+}
+
+/**
+ * \brief Trims whitespace off the start and end of a string.
+ * \param vm Virtual Machine
+ * \param data No clue what this is yet
+ * \param argc The number of arguments
+ * \param args The actual arguments
+ * \return Returns a string that has whitespace trimmed from the start and finish.
+ */
+static object_t trim_fn(vm_t *vm, void *data, int argc, object_t *args)
+{
+    if (argc == 1 && object_get_type(args[0]) == OBJECT_STRING)
+    {
+        char *str = object_get_string(args[0]);
+
+        if IS_NULLSTR(str)
+        {
+            return object_make_null();
+        }
+
+        int length = strlen(str);
+        char *result = malloc(length + 1);
+
+        if (result == NULL)
+        {
+            return object_make_null();
+        }
+
+        strncpy(result, str, length);
+        result[length] = '\0';
+
+        int i = 0, j = length - 1;
+
+        // Trim whitespace from the front of the string
+        while ((isspace(result[i]) || result[i] == '\t') && result[i] != '\0') {
+            i++;
+        }
+
+        // Trim whitespace from the end of the string
+        while ((isspace(result[j]) || result[j] == '\t') && j >= i) {
+            j--;
+        }
+
+        // Shift the trimmed string to the beginning of the buffer
+        int k = 0;
+        while (i <= j) {
+            result[k++] = result[i++];
+        }
+
+        result[k] = '\0';
+
+        object_t obj = object_make_string(vm->mem, result);
+        free(result);
+
         return obj;
     }
 
