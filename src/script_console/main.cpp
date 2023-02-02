@@ -21,19 +21,29 @@ int main()
 
     char *code = read_file("C:\\Git\\ArcaneScript\\src\\examples\\test.arc");
 
-    //printf("[C:\\Git\\ArcaneScript\\src\\examples\\test.arc]\n");
-    //printf(HEADER);
-
-    //printf("%s\r\n", code);
-    //printf(HEADER);
-
+    // Create the scripting environment
     ape_t *ape = ape_make();
 
+    // Add the native functions we're adding on before the program is compiled
     ape_set_native_function(ape, "debug", debug_fn, NULL);
 
-    ape_execute(ape, code);
+    // Compile the given program
+    ape_program_t *program = ape_compile(ape, code);
 
+    for (int i = 0; i < 10000; i++)
+    {
+        printf("%d :: ", i);
+        // Execute the program against it's scripting environment.
+        ape_execute_program(ape, program);
+        Sleep(1);
+    }
+
+    // Free the resources for the program and the scripting environment.
+    ape_program_destroy(program);
     ape_destroy(ape);
+
+    free(code);
+    code = NULL;
 
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     _CrtDumpMemoryLeaks();
@@ -66,7 +76,7 @@ char *read_file(const char *filename) {
     rewind(file);
 
     // Allocate memory for the file contents
-    char *file_contents = (char *) calloc(file_size, sizeof(char));
+    char *file_contents = (char *) calloc(file_size, sizeof(char) + 1);
     //char *file_contents = (char *) malloc(file_size * sizeof(char));
     if (file_contents == NULL) {
         perror("Error allocating memory");
