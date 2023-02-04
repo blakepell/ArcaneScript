@@ -20,10 +20,50 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ape.c" />
+    <ClCompile Include="ast.c" />
+    <ClCompile Include="builtins.c" />
+    <ClCompile Include="code.c" />
+    <ClCompile Include="collections.c" />
+    <ClCompile Include="common.c" />
+    <ClCompile Include="compilation_scope.c" />
+    <ClCompile Include="compiled_file.c" />
+    <ClCompile Include="compiler.c" />
+    <ClCompile Include="errors.c" />
+    <ClCompile Include="frame.c" />
+    <ClCompile Include="gc.c" />
+    <ClCompile Include="global_store.c" />
+    <ClCompile Include="lexer.c" />
+    <ClCompile Include="object.c" />
+    <ClCompile Include="optimisation.c" />
+    <ClCompile Include="parser.c" />
+    <ClCompile Include="symbol_table.c" />
+    <ClCompile Include="token.c" />
+    <ClCompile Include="traceback.c" />
+    <ClCompile Include="vm.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ape.h" />
     <ClInclude Include="arcane.h" />
+    <ClInclude Include="ast.h" />
+    <ClInclude Include="builtins.h" />
+    <ClInclude Include="code.h" />
+    <ClInclude Include="collections.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="compilation_scope.h" />
+    <ClInclude Include="compiled_file.h" />
+    <ClInclude Include="compiler.h" />
+    <ClInclude Include="errors.h" />
+    <ClInclude Include="frame.h" />
+    <ClInclude Include="gc.h" />
+    <ClInclude Include="global_store.h" />
+    <ClInclude Include="lexer.h" />
+    <ClInclude Include="object.h" />
+    <ClInclude Include="optimisation.h" />
+    <ClInclude Include="parser.h" />
+    <ClInclude Include="symbol_table.h" />
+    <ClInclude Include="token.h" />
+    <ClInclude Include="traceback.h" />
+    <ClInclude Include="vm.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

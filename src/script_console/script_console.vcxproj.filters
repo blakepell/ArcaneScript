@@ -18,15 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\arcane_script\ape.c">
+    <ClCompile Include="..\arcane_script\compiled\ape.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\arcane_script\ape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\arcane_script\arcane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
