@@ -1,7 +1,15 @@
-var name = "Rhien"
+var name = "  Blake Pell    "
+name = trim(name)
 println(`Hello ${name}`)
 
-debug("Word")
+name = trim("Blake Pell")
+println(name)
 
-name = "Blake Pell"
-print(`${left(name,5)} ${right(name,4)}`)
+name = trim("   Blake Pell")
+println(name)
+
+name = trim("")
+println(name)
+
+name = trim("     ")
+println(name)
