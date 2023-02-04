@@ -12410,7 +12410,7 @@ static object_t left_fn(vm_t *vm, void *data, int argc, object_t *args) {
         && object_get_type(args[1]) == OBJECT_NUMBER)
     {
         const char *search_str = object_get_string(args[0]);
-        int length = object_get_number(args[1]);
+        const int length = object_get_number(args[1]);
 
         // If the requested length is longer than the string then return a new string
         // of the full length.
@@ -12429,7 +12429,7 @@ static object_t left_fn(vm_t *vm, void *data, int argc, object_t *args) {
         strncpy(result, search_str, length);
         result[length] = '\0';
 
-        object_t obj = object_make_string(vm->mem, result);
+        const object_t obj = object_make_string(vm->mem, result);
         free(result);
 
         return obj;
@@ -12452,7 +12452,7 @@ static object_t right_fn(vm_t *vm, void *data, int argc, object_t *args) {
         && object_get_type(args[1]) == OBJECT_NUMBER)
     {
         const char *search_str = object_get_string(args[0]);
-        int length = object_get_number(args[1]);
+        const int length = object_get_number(args[1]);
 
         // If the requested length is longer than the string then return a new string
         // of the full length.
@@ -12468,11 +12468,11 @@ static object_t right_fn(vm_t *vm, void *data, int argc, object_t *args) {
             return object_make_null();
         }
 
-        int str_length = strlen(search_str);
+        const int str_length = strlen(search_str);
         strncpy(result, search_str + str_length - length, length);
         result[length] = '\0';
 
-        object_t obj = object_make_string(vm->mem, result);
+        const object_t obj = object_make_string(vm->mem, result);
         free(result);
 
         return obj;
@@ -12499,8 +12499,8 @@ static object_t replace_fn(vm_t *vm, void *data, int argc, object_t *args) {
         const char *search_str = object_get_string(args[1]);
         const char *replace_str = object_get_string(args[2]);
 
-        size_t search_len = strlen(search_str);
-        size_t replace_len = strlen(replace_str);
+        const size_t search_len = strlen(search_str);
+        const size_t replace_len = strlen(replace_str);
 
         size_t count = 0;
         const char *temp = str;
@@ -12513,7 +12513,7 @@ static object_t replace_fn(vm_t *vm, void *data, int argc, object_t *args) {
         }
 
         // Allocate new string to store result
-        size_t new_len = strlen(str) + count * (replace_len - search_len) + 1;
+        const size_t new_len = strlen(str) + count * (replace_len - search_len) + 1;
         char *result = malloc(new_len);
 
         if (result == NULL)
@@ -12525,7 +12525,7 @@ static object_t replace_fn(vm_t *vm, void *data, int argc, object_t *args) {
         char *ptr = result;
         while ((temp = strstr(str, search_str)))
         {
-            size_t len = temp - str;
+            const size_t len = temp - str;
             memcpy(ptr, str, len);
             ptr += len;
             memcpy(ptr, replace_str, replace_len);
@@ -12536,7 +12536,7 @@ static object_t replace_fn(vm_t *vm, void *data, int argc, object_t *args) {
         // Copy remaining part of str
         strcpy(ptr, str);
 
-        object_t obj = object_make_string(vm->mem, result);
+        const object_t obj = object_make_string(vm->mem, result);
         free(result);
         return obj;
     }
@@ -12563,8 +12563,8 @@ static object_t replace_first_fn(vm_t *vm, void *data, int argc, object_t *args)
         const char *search_str = object_get_string(args[1]);
         const char *replace_str = object_get_string(args[2]);
 
-        size_t search_len = strlen(search_str);
-        size_t replace_len = strlen(replace_str);
+        const size_t search_len = strlen(search_str);
+        const size_t replace_len = strlen(replace_str);
 
         const char *temp = strstr(str, search_str);
         if (temp == NULL) {
@@ -12572,19 +12572,19 @@ static object_t replace_first_fn(vm_t *vm, void *data, int argc, object_t *args)
         }
 
         // Allocate new string to store result
-        size_t new_len = strlen(str) + (replace_len - search_len) + 1;
+        const size_t new_len = strlen(str) + (replace_len - search_len) + 1;
         char *result = malloc(new_len);
         if (result == NULL) {
             return object_make_null();
         }
 
         // Replace the first instance of search_str with replace_str
-        size_t len = temp - str;
+        const size_t len = temp - str;
         memcpy(result, str, len);
         memcpy(result + len, replace_str, replace_len);
         strcpy(result + len + replace_len, temp + search_len);
 
-        object_t obj = object_make_string(vm->mem, result);
+        const object_t obj = object_make_string(vm->mem, result);
         free(result);
         return obj;
     }
