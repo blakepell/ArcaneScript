@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ape.c">
+    <ClCompile Include="arcane.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ast.c">
@@ -83,9 +83,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="arcane.h">
       <Filter>Header Files</Filter>
     </ClInclude>

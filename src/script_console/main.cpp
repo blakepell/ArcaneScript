@@ -30,7 +30,7 @@ int main()
     // Compile the given program
     ape_program_t *program = ape_compile(ape, code);
 
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 1000; i++)
     {
         printf("%d :: ", i);
         // Execute the program against it's scripting environment.

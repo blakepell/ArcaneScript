@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "builtins.h"
 #include "arcane.h"
 #include "common.h"
@@ -152,7 +152,7 @@ static struct {
 };
 
 int builtins_count() {
-    return APE_ARRAY_LEN(g_native_functions);
+    return ARCANE_ARRAY_LEN(g_native_functions);
 }
 
 native_fn builtins_get_fn(int ix) {
@@ -617,7 +617,7 @@ static object_t append_fn(vm_t *vm, void *data, int argc, object_t *args) {
 static object_t println_fn(vm_t *vm, void *data, int argc, object_t *args) {
     (void) data;
 
-    const ape_config_t *config = vm->config;
+    const arcane_config_t *config = vm->config;
 
     if (!config->stdio.write.write) {
         return object_make_null(); // todo: runtime error?
@@ -643,7 +643,7 @@ static object_t println_fn(vm_t *vm, void *data, int argc, object_t *args) {
 
 static object_t print_fn(vm_t *vm, void *data, int argc, object_t *args) {
     (void) data;
-    const ape_config_t *config = vm->config;
+    const arcane_config_t *config = vm->config;
 
     if (!config->stdio.write.write) {
         return object_make_null(); // todo: runtime error?
@@ -672,7 +672,7 @@ static object_t write_file_fn(vm_t *vm, void *data, int argc, object_t *args) {
         return object_make_null();
     }
 
-    const ape_config_t *config = vm->config;
+    const arcane_config_t *config = vm->config;
 
     if (!config->fileio.write_file.write_file) {
         return object_make_null();
@@ -693,7 +693,7 @@ static object_t read_file_fn(vm_t *vm, void *data, int argc, object_t *args) {
         return object_make_null();
     }
 
-    const ape_config_t *config = vm->config;
+    const arcane_config_t *config = vm->config;
 
     if (!config->fileio.read_file.read_file) {
         return object_make_null();

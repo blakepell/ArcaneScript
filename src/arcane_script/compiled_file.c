@@ -1,4 +1,4 @@
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "compiled_file.h"
 #endif
 
@@ -12,15 +12,15 @@ compiled_file_t *compiled_file_make(allocator_t *alloc, const char *path) {
     const char *last_slash_pos = strrchr(path, '/');
     if (last_slash_pos) {
         size_t len = last_slash_pos - path + 1;
-        file->dir_path = ape_strndup(alloc, path, len);
+        file->dir_path = arcane_strndup(alloc, path, len);
     }
     else {
-        file->dir_path = ape_strdup(alloc, "");
+        file->dir_path = arcane_strdup(alloc, "");
     }
     if (!file->dir_path) {
         goto error;
     }
-    file->path = ape_strdup(alloc, path);
+    file->path = arcane_strdup(alloc, path);
     if (!file->path) {
         goto error;
     }

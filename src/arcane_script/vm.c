@@ -3,7 +3,7 @@
 #include <float.h>
 #include <math.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "vm.h"
 
 #include "code.h"
@@ -30,7 +30,7 @@ static object_t call_native_function(vm_t *vm, object_t callee, src_pos_t src_po
 static bool check_assign(vm_t *vm, object_t old_value, object_t new_value);
 static bool try_overload_operator(vm_t *vm, object_t left, object_t right, opcode_t op, bool *out_overload_found);
 
-vm_t *vm_make(allocator_t *alloc, const ape_config_t *config, gcmem_t *mem, errors_t *errors, global_store_t *global_store) {
+vm_t *vm_make(allocator_t *alloc, const arcane_config_t *config, gcmem_t *mem, errors_t *errors, global_store_t *global_store) {
     vm_t *vm = allocator_malloc(alloc, sizeof(vm_t));
     if (!vm) {
         return NULL;
@@ -95,7 +95,7 @@ void vm_reset(vm_t *vm) {
 }
 
 bool vm_run(vm_t *vm, compilation_result_t *comp_res, array(object_t) *constants) {
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     int old_sp = vm->sp;
 #endif
     int old_this_sp = vm->this_sp;
@@ -109,7 +109,7 @@ bool vm_run(vm_t *vm, compilation_result_t *comp_res, array(object_t) *constants
     while (vm->frames_count > old_frames_count) {
         pop_frame(vm);
     }
-    APE_ASSERT(vm->sp == old_sp);
+    ARCANE_ASSERT(vm->sp == old_sp);
     vm->this_sp = old_this_sp;
     return res;
 }
@@ -117,7 +117,7 @@ bool vm_run(vm_t *vm, compilation_result_t *comp_res, array(object_t) *constants
 object_t vm_call(vm_t *vm, array(object_t) *constants, object_t callee, int argc, object_t *args) {
     object_type_t type = object_get_type(callee);
     if (type == OBJECT_FUNCTION) {
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
         int old_sp = vm->sp;
 #endif
         int old_this_sp = vm->this_sp;
@@ -133,7 +133,7 @@ object_t vm_call(vm_t *vm, array(object_t) *constants, object_t callee, int argc
         while (vm->frames_count > old_frames_count) {
             pop_frame(vm);
         }
-        APE_ASSERT(vm->sp == old_sp);
+        ARCANE_ASSERT(vm->sp == old_sp);
         vm->this_sp = old_this_sp;
         return vm_get_last_popped(vm);
     }
@@ -176,10 +176,10 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
     }
     unsigned time_check_interval = 1000;
     unsigned time_check_counter = 0;
-    ape_timer_t timer;
-    memset(&timer, 0, sizeof(ape_timer_t));
+    arcane_timer_t timer;
+    memset(&timer, 0, sizeof(arcane_timer_t));
     if (check_time) {
-        timer = ape_timer_start();
+        timer = arcane_timer_start();
     }
 
     while (vm->current_frame->ip < vm->current_frame->bytecode_size) {
@@ -231,7 +231,7 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
                         case OPCODE_AND:    res = (double) (left_val_int & right_val_int); break;
                         case OPCODE_LSHIFT: res = (double) (left_val_int << right_val_int); break;
                         case OPCODE_RSHIFT: res = (double) (left_val_int >> right_val_int); break;
-                        default: APE_ASSERT(false); break;
+                        default: ARCANE_ASSERT(false); break;
                     }
                     stack_push(vm, object_make_number(res));
                 }
@@ -335,15 +335,15 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
                 double comparison_res = object_get_number(value);
                 bool res_val = false;
                 switch (opcode) {
-                    case OPCODE_EQUAL: res_val = APE_DBLEQ(comparison_res, 0); break;
-                    case OPCODE_NOT_EQUAL: res_val = !APE_DBLEQ(comparison_res, 0); break;
+                    case OPCODE_EQUAL: res_val = ARCANE_DBLEQ(comparison_res, 0); break;
+                    case OPCODE_NOT_EQUAL: res_val = !ARCANE_DBLEQ(comparison_res, 0); break;
                     case OPCODE_GREATER_THAN: res_val = comparison_res > 0; break;
                     case OPCODE_GREATER_THAN_EQUAL:
                     {
-                        res_val = comparison_res > 0 || APE_DBLEQ(comparison_res, 0);
+                        res_val = comparison_res > 0 || ARCANE_DBLEQ(comparison_res, 0);
                         break;
                     }
-                    default: APE_ASSERT(false); break;
+                    default: ARCANE_ASSERT(false); break;
                 }
                 object_t res = object_make_bool(res_val);
                 stack_push(vm, res);
@@ -654,7 +654,7 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
                 stack_push(vm, val);
                 break;
             }
-            case OPCODE_GET_APE_GLOBAL:
+            case OPCODE_GET_ARCANE_GLOBAL:
             {
                 uint16_t ix = frame_read_uint16(vm->current_frame);
                 bool ok = false;
@@ -790,7 +790,7 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
             case OPCODE_NUMBER:
             {
                 uint64_t val = frame_read_uint64(vm->current_frame);
-                double val_double = ape_uint64_to_double(val);
+                double val_double = arcane_uint64_to_double(val);
                 object_t obj = object_make_number(val_double);
                 stack_push(vm, obj);
                 break;
@@ -803,7 +803,7 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
             }
             default:
             {
-                APE_ASSERT(false);
+                ARCANE_ASSERT(false);
                 errors_add_errorf(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "Unknown opcode: 0x%x", opcode);
                 goto err;
             }
@@ -812,7 +812,7 @@ bool vm_execute_function(vm_t *vm, object_t function, array(object_t) *constants
         if (check_time) {
             time_check_counter++;
             if (time_check_counter > time_check_interval) {
-                int elapsed_ms = (int) ape_timer_get_elapsed_ms(&timer);
+                int elapsed_ms = (int) arcane_timer_get_elapsed_ms(&timer);
                 if (elapsed_ms > max_exec_time_ms) {
                     errors_add_errorf(vm->errors, ERROR_TIME_OUT, frame_src_position(vm->current_frame), "Execution took more than %1.17g ms", max_exec_time_ms);
                     goto err;
@@ -892,7 +892,7 @@ bool vm_has_errors(vm_t *vm) {
 
 bool vm_set_global(vm_t *vm, int ix, object_t val) {
     if (ix >= VM_MAX_GLOBALS) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         errors_add_error(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "Global write out of range");
         return false;
     }
@@ -905,7 +905,7 @@ bool vm_set_global(vm_t *vm, int ix, object_t val) {
 
 object_t vm_get_global(vm_t *vm, int ix) {
     if (ix >= VM_MAX_GLOBALS) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         errors_add_error(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "Global read out of range");
         return object_make_null();
     }
@@ -923,9 +923,9 @@ static void set_sp(vm_t *vm, int new_sp) {
 }
 
 static void stack_push(vm_t *vm, object_t obj) {
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     if (vm->sp >= VM_STACK_SIZE) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         errors_add_error(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "Stack overflow");
         return;
     }
@@ -933,7 +933,7 @@ static void stack_push(vm_t *vm, object_t obj) {
         frame_t *frame = vm->current_frame;
         function_t *current_function = object_get_function(frame->function);
         int num_locals = current_function->num_locals;
-        APE_ASSERT(vm->sp >= (frame->base_pointer + num_locals));
+        ARCANE_ASSERT(vm->sp >= (frame->base_pointer + num_locals));
     }
 #endif
     vm->stack[vm->sp] = obj;
@@ -941,17 +941,17 @@ static void stack_push(vm_t *vm, object_t obj) {
 }
 
 static object_t stack_pop(vm_t *vm) {
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     if (vm->sp == 0) {
         errors_add_error(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "Stack underflow");
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return object_make_null();
     }
     if (vm->current_frame) {
         frame_t *frame = vm->current_frame;
         function_t *current_function = object_get_function(frame->function);
         int num_locals = current_function->num_locals;
-        APE_ASSERT((vm->sp - 1) >= (frame->base_pointer + num_locals));
+        ARCANE_ASSERT((vm->sp - 1) >= (frame->base_pointer + num_locals));
     }
 #endif
     vm->sp--;
@@ -962,11 +962,11 @@ static object_t stack_pop(vm_t *vm) {
 
 static object_t stack_get(vm_t *vm, int nth_item) {
     int ix = vm->sp - 1 - nth_item;
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     if (ix < 0 || ix >= VM_STACK_SIZE) {
         errors_add_errorf(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame),
             "Invalid stack index: %d", nth_item);
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return object_make_null();
     }
 #endif
@@ -974,9 +974,9 @@ static object_t stack_get(vm_t *vm, int nth_item) {
 }
 
 static void this_stack_push(vm_t *vm, object_t obj) {
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     if (vm->this_sp >= VM_THIS_STACK_SIZE) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         errors_add_error(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "this stack overflow");
         return;
     }
@@ -986,10 +986,10 @@ static void this_stack_push(vm_t *vm, object_t obj) {
 }
 
 static object_t this_stack_pop(vm_t *vm) {
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     if (vm->this_sp == 0) {
         errors_add_error(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame), "this stack underflow");
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return object_make_null();
     }
 #endif
@@ -999,11 +999,11 @@ static object_t this_stack_pop(vm_t *vm) {
 
 static object_t this_stack_get(vm_t *vm, int nth_item) {
     int ix = vm->this_sp - 1 - nth_item;
-#ifdef APE_DEBUG
+#ifdef ARCANE_DEBUG
     if (ix < 0 || ix >= VM_THIS_STACK_SIZE) {
         errors_add_errorf(vm->errors, ERROR_RUNTIME, frame_src_position(vm->current_frame),
             "Invalid this stack index: %d", nth_item);
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return object_make_null();
     }
 #endif
@@ -1012,7 +1012,7 @@ static object_t this_stack_get(vm_t *vm, int nth_item) {
 
 static bool push_frame(vm_t *vm, frame_t frame) {
     if (vm->frames_count >= VM_MAX_FRAMES) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return false;
     }
     vm->frames[vm->frames_count] = frame;
@@ -1026,7 +1026,7 @@ static bool push_frame(vm_t *vm, frame_t frame) {
 static bool pop_frame(vm_t *vm) {
     set_sp(vm, vm->current_frame->base_pointer - 1);
     if (vm->frames_count <= 0) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         vm->current_frame = NULL;
         return false;
     }
@@ -1098,7 +1098,7 @@ static bool call_object(vm_t *vm, object_t callee, int num_args) {
 static object_t call_native_function(vm_t *vm, object_t callee, src_pos_t src_pos, int argc, object_t *args) {
     native_function_t *native_fun = object_get_native_function(callee);
     object_t res = native_fun->fn(vm, native_fun->data, argc, args);
-    if (errors_has_errors(vm->errors) && !APE_STREQ(native_fun->name, "crash")) {
+    if (errors_has_errors(vm->errors) && !ARCANE_STREQ(native_fun->name, "crash")) {
         error_t *err = errors_get_last_error(vm->errors);
         err->pos = src_pos;
         err->traceback = traceback_make(vm->alloc);
@@ -1112,7 +1112,7 @@ static object_t call_native_function(vm_t *vm, object_t callee, src_pos_t src_po
         traceback_t *traceback = traceback_make(vm->alloc);
         if (traceback) {
             // error builtin is treated in a special way
-            if (!APE_STREQ(native_fun->name, "error")) {
+            if (!ARCANE_STREQ(native_fun->name, "error")) {
                 traceback_append(traceback, native_fun->name, src_pos_invalid);
             }
             traceback_append_from_vm(traceback, vm);

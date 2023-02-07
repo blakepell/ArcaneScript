@@ -1,7 +1,7 @@
 #ifndef compiled_file_h
 #define compiled_file_h
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "common.h"
 #include "collections.h"
 #endif
@@ -15,7 +15,7 @@ typedef struct compiled_file {
     ptrarray(char *) *lines;
 } compiled_file_t;
 
-APE_INTERNAL compiled_file_t *compiled_file_make(allocator_t *alloc, const char *path);
-APE_INTERNAL void compiled_file_destroy(compiled_file_t *file);
+ARCANE_INTERNAL compiled_file_t *compiled_file_make(allocator_t *alloc, const char *path);
+ARCANE_INTERNAL void compiled_file_destroy(compiled_file_t *file);
 
 #endif /* compiled_file_h */

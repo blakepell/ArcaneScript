@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "ast.h"
 #include "common.h"
 #endif
@@ -165,7 +165,7 @@ void expression_destroy(expression_t *expr) {
     switch (expr->type) {
         case EXPRESSION_NONE:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             break;
         }
         case EXPRESSION_IDENT:
@@ -261,7 +261,7 @@ expression_t *expression_copy(expression_t *expr) {
     switch (expr->type) {
         case EXPRESSION_NONE:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             break;
         }
         case EXPRESSION_IDENT:
@@ -289,7 +289,7 @@ expression_t *expression_copy(expression_t *expr) {
         }
         case EXPRESSION_STRING_LITERAL:
         {
-            char *string_copy = ape_strdup(expr->alloc, expr->string_literal);
+            char *string_copy = arcane_strdup(expr->alloc, expr->string_literal);
             if (!string_copy) {
                 return NULL;
             }
@@ -369,7 +369,7 @@ expression_t *expression_copy(expression_t *expr) {
         {
             ptrarray(ident_t) *params_copy = ptrarray_copy_with_items(expr->fn_literal.params, ident_copy, ident_destroy);
             code_block_t *body_copy = code_block_copy(expr->fn_literal.body);
-            char *name_copy = ape_strdup(expr->alloc, expr->fn_literal.name);
+            char *name_copy = arcane_strdup(expr->alloc, expr->fn_literal.name);
             if (!params_copy || !body_copy) {
                 ptrarray_destroy_with_items(params_copy, ident_destroy);
                 code_block_destroy(body_copy);
@@ -605,7 +605,7 @@ void statement_destroy(statement_t *stmt) {
     switch (stmt->type) {
         case STATEMENT_NONE:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             break;
         }
         case STATEMENT_DEFINE:
@@ -687,7 +687,7 @@ statement_t *statement_copy(const statement_t *stmt) {
     switch (stmt->type) {
         case STATEMENT_NONE:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             break;
         }
         case STATEMENT_DEFINE:
@@ -828,7 +828,7 @@ statement_t *statement_copy(const statement_t *stmt) {
         }
         case STATEMENT_IMPORT:
         {
-            char *path_copy = ape_strdup(stmt->alloc, stmt->import.path);
+            char *path_copy = arcane_strdup(stmt->alloc, stmt->import.path);
             if (!path_copy) {
                 return NULL;
             }
@@ -1281,7 +1281,7 @@ ident_t *ident_copy(ident_t *ident) {
         return NULL;
     }
     res->alloc = ident->alloc;
-    res->value = ape_strdup(ident->alloc, ident->value);
+    res->value = arcane_strdup(ident->alloc, ident->value);
     if (!res->value) {
         allocator_free(ident->alloc, res);
         return NULL;

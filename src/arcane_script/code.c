@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "code.h"
 
 #include "common.h"
@@ -46,7 +46,7 @@ static opcode_definition_t g_definitions[OPCODE_MAX + 1] = {
     {"GET_LOCAL", 1, {1}},
     {"DEFINE_LOCAL", 1, {1}},
     {"SET_LOCAL", 1, {1}},
-    {"GET_APE_GLOBAL", 1, {2}},
+    {"GET_ARCANE_GLOBAL", 1, {2}},
     {"FUNCTION", 2, {2, 1}},
     {"GET_FREE", 1, {1}},
     {"SET_FREE", 1, {1}},
@@ -140,7 +140,7 @@ int code_make(opcode_t op, int operands_count, uint64_t *operands, array(uint8_t
             }
             default:
             {
-                APE_ASSERT(false);
+                ARCANE_ASSERT(false);
                 break;
             }
         }
@@ -154,7 +154,7 @@ void code_to_string(uint8_t *code, src_pos_t *source_positions, size_t code_size
     while (pos < code_size) {
         uint8_t op = code[pos];
         opcode_definition_t *def = opcode_lookup(op);
-        APE_ASSERT(def);
+        ARCANE_ASSERT(def);
         if (source_positions) {
             src_pos_t src_pos = source_positions[pos];
             strbuf_appendf(res, "%d:%-4d\t%04d\t%s", src_pos.line, src_pos.column, pos, def->name);
@@ -171,7 +171,7 @@ void code_to_string(uint8_t *code, src_pos_t *source_positions, size_t code_size
         }
         for (int i = 0; i < def->num_operands; i++) {
             if (op == OPCODE_NUMBER) {
-                double val_double = ape_uint64_to_double(operands[i]);
+                double val_double = arcane_uint64_to_double(operands[i]);
                 strbuf_appendf(res, " %1.17g", val_double);
             }
             else {
@@ -229,7 +229,7 @@ bool code_read_operands(opcode_definition_t *def, uint8_t *instr, uint64_t out_o
             }
             default:
             {
-                APE_ASSERT(false);
+                ARCANE_ASSERT(false);
                 return false;
             }
         }

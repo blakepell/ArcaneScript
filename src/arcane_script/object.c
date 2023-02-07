@@ -11,7 +11,7 @@
 #include <float.h>
 #include <math.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "object.h"
 #include "code.h"
 #include "compiler.h"
@@ -116,7 +116,7 @@ object_t object_make_stringf(gcmem_t *mem, const char *fmt, ...) {
     char *res_buf = object_get_mutable_string(res);
     int written = vsprintf(res_buf, fmt, args);
     (void) written;
-    APE_ASSERT(written == to_write);
+    ARCANE_ASSERT(written == to_write);
     va_end(args);
     object_set_string_length(res, to_write);
     return res;
@@ -130,7 +130,7 @@ object_t object_make_native_function(gcmem_t *mem, const char *name, native_fn f
     if (!obj) {
         return object_make_null();
     }
-    obj->native_function.name = ape_strdup(mem->alloc, name);
+    obj->native_function.name = arcane_strdup(mem->alloc, name);
     if (!obj->native_function.name) {
         return object_make_null();
     }
@@ -187,7 +187,7 @@ object_t object_make_map_with_capacity(gcmem_t *mem, unsigned capacity) {
 }
 
 object_t object_make_error(gcmem_t *mem, const char *error) {
-    char *error_str = ape_strdup(mem->alloc, error);
+    char *error_str = arcane_strdup(mem->alloc, error);
     if (!error_str) {
         return object_make_null();
     }
@@ -221,7 +221,7 @@ object_t object_make_errorf(gcmem_t *mem, const char *fmt, ...) {
     }
     int written = vsprintf(res, fmt, args);
     (void) written;
-    APE_ASSERT(written == to_write);
+    ARCANE_ASSERT(written == to_write);
     va_end(args);
     object_t res_obj = object_make_error_no_copy(mem, res);
     if (object_is_null(res_obj)) {
@@ -240,7 +240,7 @@ object_t object_make_function(gcmem_t *mem, const char *name, compilation_result
         return object_make_null();
     }
     if (owns_data) {
-        data->function.name = name ? ape_strdup(mem->alloc, name) : ape_strdup(mem->alloc, "anonymous");
+        data->function.name = name ? arcane_strdup(mem->alloc, name) : arcane_strdup(mem->alloc, "anonymous");
         if (!data->function.name) {
             return object_make_null();
         }
@@ -252,7 +252,7 @@ object_t object_make_function(gcmem_t *mem, const char *name, compilation_result
     data->function.owns_data = owns_data;
     data->function.num_locals = num_locals;
     data->function.num_args = num_args;
-    if (free_vals_count >= APE_ARRAY_LEN(data->function.free_vals_buf)) {
+    if (free_vals_count >= ARCANE_ARRAY_LEN(data->function.free_vals_buf)) {
         data->function.free_vals_allocated = allocator_malloc(mem->alloc, sizeof(object_t) * free_vals_count);
         if (!data->function.free_vals_allocated) {
             return object_make_null();
@@ -284,7 +284,7 @@ void object_data_deinit(object_data_t *data) {
     switch (data->type) {
         case OBJECT_FREED:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             return;
         }
         case OBJECT_STRING:
@@ -450,7 +450,7 @@ void object_to_string(object_t obj, strbuf_t *buf, bool quote_str) {
         {
             strbuf_appendf(buf, "ERROR: %s\n", object_get_error_message(obj));
             traceback_t *traceback = object_get_error_traceback(obj);
-            APE_ASSERT(traceback);
+            ARCANE_ASSERT(traceback);
             if (traceback) {
                 strbuf_append(buf, "Traceback:\n");
                 traceback_to_string(traceback, buf);
@@ -459,7 +459,7 @@ void object_to_string(object_t obj, strbuf_t *buf, bool quote_str) {
         }
         case OBJECT_ANY:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
         }
     }
 }
@@ -485,7 +485,7 @@ const char *object_get_type_name(const object_type_t type) {
 
 char *object_get_type_union_name(allocator_t *alloc, const object_type_t type) {
     if (type == OBJECT_ANY || type == OBJECT_NONE || type == OBJECT_FREED) {
-        return ape_strdup(alloc, object_get_type_name(type));
+        return arcane_strdup(alloc, object_get_type_name(type));
     }
     strbuf_t *res = strbuf_make(alloc);
     if (!res) {
@@ -545,7 +545,7 @@ object_t object_copy(gcmem_t *mem, object_t obj) {
         case OBJECT_FREED:
         case OBJECT_NONE:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             copy = object_make_null();
             break;
         }
@@ -669,17 +669,17 @@ bool object_equals(object_t a, object_t b) {
     }
     bool ok = false;
     double res = object_compare(a, b, &ok);
-    return APE_DBLEQ(res, 0);
+    return ARCANE_DBLEQ(res, 0);
 }
 
 external_data_t *object_get_external_data(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
     object_data_t *data = object_get_allocated_data(object);
     return &data->external;
 }
 
 bool object_set_external_destroy_function(object_t object, external_data_destroy_fn destroy_fn) {
-    APE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
     external_data_t *data = object_get_external_data(object);
     if (!data) {
         return false;
@@ -689,7 +689,7 @@ bool object_set_external_destroy_function(object_t object, external_data_destroy
 }
 
 object_data_t *object_get_allocated_data(object_t object) {
-    APE_ASSERT(object_is_allocated(object) || object_get_type(object) == OBJECT_NULL);
+    ARCANE_ASSERT(object_is_allocated(object) || object_get_type(object) == OBJECT_NULL);
     return (object_data_t *) (object.handle & ~OBJECT_HEADER_MASK);
 }
 
@@ -708,45 +708,45 @@ double object_get_number(object_t obj) {
 }
 
 const char *object_get_string(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(object);
     return object_data_get_string(data);
 }
 
 int object_get_string_length(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(object);
     return data->string.length;
 }
 
 void object_set_string_length(object_t object, int len) {
-    APE_ASSERT(object_get_type(object) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(object);
     data->string.length = len;
 }
 
 
 int object_get_string_capacity(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(object);
     return data->string.capacity;
 }
 
 char *object_get_mutable_string(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(object);
     return object_data_get_string(data);
 }
 
 bool object_string_append(object_t obj, const char *src, int len) {
-    APE_ASSERT(object_get_type(obj) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(obj) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(obj);
     object_string_t *string = &data->string;
     char *str_buf = object_get_mutable_string(obj);
     int current_len = string->length;
     int capacity = string->capacity;
     if ((len + current_len) > capacity) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return false;
     }
     memcpy(str_buf + current_len, src, len);
@@ -756,7 +756,7 @@ bool object_string_append(object_t obj, const char *src, int len) {
 }
 
 unsigned long object_get_string_hash(object_t obj) {
-    APE_ASSERT(object_get_type(obj) == OBJECT_STRING);
+    ARCANE_ASSERT(object_get_type(obj) == OBJECT_STRING);
     object_data_t *data = object_get_allocated_data(obj);
     if (data->string.hash == 0) {
         data->string.hash = object_hash_string(object_get_string(obj));
@@ -768,7 +768,7 @@ unsigned long object_get_string_hash(object_t obj) {
 }
 
 function_t *object_get_function(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_FUNCTION);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_FUNCTION);
     object_data_t *data = object_get_allocated_data(object);
     return &data->function;
 }
@@ -811,9 +811,9 @@ bool object_is_callable(object_t obj) {
 }
 
 const char *object_get_function_name(object_t obj) {
-    APE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
+    ARCANE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
     object_data_t *data = object_get_allocated_data(obj);
-    APE_ASSERT(data);
+    ARCANE_ASSERT(data);
     if (!data) {
         return NULL;
     }
@@ -827,14 +827,14 @@ const char *object_get_function_name(object_t obj) {
 }
 
 object_t object_get_function_free_val(object_t obj, int ix) {
-    APE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
+    ARCANE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
     object_data_t *data = object_get_allocated_data(obj);
-    APE_ASSERT(data);
+    ARCANE_ASSERT(data);
     if (!data) {
         return object_make_null();
     }
     function_t *fun = &data->function;
-    APE_ASSERT(ix >= 0 && ix < fun->free_vals_count);
+    ARCANE_ASSERT(ix >= 0 && ix < fun->free_vals_count);
     if (ix < 0 || ix >= fun->free_vals_count) {
         return object_make_null();
     }
@@ -847,14 +847,14 @@ object_t object_get_function_free_val(object_t obj, int ix) {
 }
 
 void object_set_function_free_val(object_t obj, int ix, object_t val) {
-    APE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
+    ARCANE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
     object_data_t *data = object_get_allocated_data(obj);
-    APE_ASSERT(data);
+    ARCANE_ASSERT(data);
     if (!data) {
         return;
     }
     function_t *fun = &data->function;
-    APE_ASSERT(ix >= 0 && ix < fun->free_vals_count);
+    ARCANE_ASSERT(ix >= 0 && ix < fun->free_vals_count);
     if (ix < 0 || ix >= fun->free_vals_count) {
         return;
     }
@@ -867,9 +867,9 @@ void object_set_function_free_val(object_t obj, int ix, object_t val) {
 }
 
 object_t *object_get_function_free_vals(object_t obj) {
-    APE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
+    ARCANE_ASSERT(object_get_type(obj) == OBJECT_FUNCTION);
     object_data_t *data = object_get_allocated_data(obj);
-    APE_ASSERT(data);
+    ARCANE_ASSERT(data);
     if (!data) {
         return NULL;
     }
@@ -883,29 +883,29 @@ object_t *object_get_function_free_vals(object_t obj) {
 }
 
 const char *object_get_error_message(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ERROR);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ERROR);
     object_data_t *data = object_get_allocated_data(object);
     return data->error.message;
 }
 
 void object_set_error_traceback(object_t object, traceback_t *traceback) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ERROR);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ERROR);
     if (object_get_type(object) != OBJECT_ERROR) {
         return;
     }
     object_data_t *data = object_get_allocated_data(object);
-    APE_ASSERT(data->error.traceback == NULL);
+    ARCANE_ASSERT(data->error.traceback == NULL);
     data->error.traceback = traceback;
 }
 
 traceback_t *object_get_error_traceback(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ERROR);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ERROR);
     object_data_t *data = object_get_allocated_data(object);
     return data->error.traceback;
 }
 
 bool object_set_external_data(object_t object, void *ext_data) {
-    APE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
     external_data_t *data = object_get_external_data(object);
     if (!data) {
         return false;
@@ -915,7 +915,7 @@ bool object_set_external_data(object_t object, void *ext_data) {
 }
 
 bool object_set_external_copy_function(object_t object, external_data_copy_fn copy_fn) {
-    APE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_EXTERNAL);
     external_data_t *data = object_get_external_data(object);
     if (!data) {
         return false;
@@ -925,7 +925,7 @@ bool object_set_external_copy_function(object_t object, external_data_copy_fn co
 }
 
 object_t object_get_array_value_at(object_t object, int ix) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
     array(object_t) *array = object_get_allocated_array(object);
     if (ix < 0 || ix >= array_count(array)) {
         return object_make_null();
@@ -938,7 +938,7 @@ object_t object_get_array_value_at(object_t object, int ix) {
 }
 
 bool object_set_array_value_at(object_t object, int ix, object_t val) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
     array(object_t) *array = object_get_allocated_array(object);
     if (ix < 0 || ix >= array_count(array)) {
         return false;
@@ -947,30 +947,30 @@ bool object_set_array_value_at(object_t object, int ix, object_t val) {
 }
 
 bool object_add_array_value(object_t object, object_t val) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
     array(object_t) *array = object_get_allocated_array(object);
     return array_add(array, &val);
 }
 
 int object_get_array_length(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
     array(object_t) *array = object_get_allocated_array(object);
     return array_count(array);
 }
 
-APE_INTERNAL bool object_remove_array_value_at(object_t object, int ix) {
+ARCANE_INTERNAL bool object_remove_array_value_at(object_t object, int ix) {
     array(object_t) *array = object_get_allocated_array(object);
     return array_remove_at(array, ix);
 }
 
 int object_get_map_length(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     return valdict_count(data->map);
 }
 
 object_t object_get_map_key_at(object_t object, int ix) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     object_t *res = valdict_get_key_at(data->map, ix);
     if (!res) {
@@ -980,7 +980,7 @@ object_t object_get_map_key_at(object_t object, int ix) {
 }
 
 object_t object_get_map_value_at(object_t object, int ix) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     object_t *res = valdict_get_value_at(data->map, ix);
     if (!res) {
@@ -990,7 +990,7 @@ object_t object_get_map_value_at(object_t object, int ix) {
 }
 
 bool object_set_map_value_at(object_t object, int ix, object_t val) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     if (ix >= object_get_map_length(object)) {
         return false;
     }
@@ -999,7 +999,7 @@ bool object_set_map_value_at(object_t object, int ix, object_t val) {
 }
 
 object_t object_get_kv_pair_at(gcmem_t *mem, object_t object, int ix) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     if (ix >= valdict_count(data->map)) {
         return object_make_null();
@@ -1027,13 +1027,13 @@ object_t object_get_kv_pair_at(gcmem_t *mem, object_t object, int ix) {
 }
 
 bool object_set_map_value(object_t object, object_t key, object_t val) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     return valdict_set(data->map, &key, &val);
 }
 
 object_t object_get_map_value(object_t object, object_t key) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     object_t *res = valdict_get(data->map, &key);
     if (!res) {
@@ -1043,7 +1043,7 @@ object_t object_get_map_value(object_t object, object_t key) {
 }
 
 bool object_map_has_key(object_t object, object_t key) {
-    APE_ASSERT(object_get_type(object) == OBJECT_MAP);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_MAP);
     object_data_t *data = object_get_allocated_data(object);
     object_t *res = valdict_get(data->map, &key);
     return res != NULL;
@@ -1064,7 +1064,7 @@ static object_t object_deep_copy_internal(gcmem_t *mem, object_t obj, valdict(ob
         case OBJECT_ANY:
         case OBJECT_NONE:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             copy = object_make_null();
             break;
         }
@@ -1260,7 +1260,7 @@ static unsigned long object_hash_double(double val) { /* djb2 */
 }
 
 array(object_t) *object_get_allocated_array(object_t object) {
-    APE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
+    ARCANE_ASSERT(object_get_type(object) == OBJECT_ARRAY);
     object_data_t *data = object_get_allocated_data(object);
     return data->array;
 }
@@ -1279,11 +1279,11 @@ static uint64_t get_type_tag(object_type_t type) {
 }
 
 static bool freevals_are_allocated(function_t *fun) {
-    return fun->free_vals_count >= APE_ARRAY_LEN(fun->free_vals_buf);
+    return fun->free_vals_count >= ARCANE_ARRAY_LEN(fun->free_vals_buf);
 }
 
 static char *object_data_get_string(object_data_t *data) {
-    APE_ASSERT(data->type == OBJECT_STRING);
+    ARCANE_ASSERT(data->type == OBJECT_STRING);
     if (data->string.is_allocated) {
         return data->string.value_allocated;
     }
@@ -1293,7 +1293,7 @@ static char *object_data_get_string(object_data_t *data) {
 }
 
 static bool object_data_string_reserve_capacity(object_data_t *data, int capacity) {
-    APE_ASSERT(capacity >= 0);
+    ARCANE_ASSERT(capacity >= 0);
 
     object_string_t *string = &data->string;
 
@@ -1306,7 +1306,7 @@ static bool object_data_string_reserve_capacity(object_data_t *data, int capacit
 
     if (capacity <= (OBJECT_STRING_BUF_SIZE - 1)) {
         if (string->is_allocated) {
-            APE_ASSERT(false); // should never happen
+            ARCANE_ASSERT(false); // should never happen
             allocator_free(data->mem->alloc, string->value_allocated); // just in case
         }
         string->capacity = OBJECT_STRING_BUF_SIZE - 1;

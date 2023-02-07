@@ -1,7 +1,7 @@
 #ifndef ast_h
 #define ast_h
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "common.h"
 #include "collections.h"
 #include "token.h"
@@ -214,63 +214,63 @@ typedef struct statement {
     src_pos_t pos;
 } statement_t;
 
-APE_INTERNAL char *statements_to_string(allocator_t *alloc, ptrarray(statement_t) *statements);
+ARCANE_INTERNAL char *statements_to_string(allocator_t *alloc, ptrarray(statement_t) *statements);
 
-APE_INTERNAL statement_t *statement_make_define(allocator_t *alloc, ident_t *name, expression_t *value, bool assignable);
-APE_INTERNAL statement_t *statement_make_if(allocator_t *alloc, ptrarray(if_case_t) *cases, code_block_t *alternative);
-APE_INTERNAL statement_t *statement_make_return(allocator_t *alloc, expression_t *value);
-APE_INTERNAL statement_t *statement_make_expression(allocator_t *alloc, expression_t *value);
-APE_INTERNAL statement_t *statement_make_while_loop(allocator_t *alloc, expression_t *test, code_block_t *body);
-APE_INTERNAL statement_t *statement_make_break(allocator_t *alloc);
-APE_INTERNAL statement_t *statement_make_foreach(allocator_t *alloc, ident_t *iterator, expression_t *source, code_block_t *body);
-APE_INTERNAL statement_t *statement_make_for_loop(allocator_t *alloc, statement_t *init, expression_t *test, expression_t *update, code_block_t *body);
-APE_INTERNAL statement_t *statement_make_continue(allocator_t *alloc);
-APE_INTERNAL statement_t *statement_make_block(allocator_t *alloc, code_block_t *block);
-APE_INTERNAL statement_t *statement_make_import(allocator_t *alloc, char *path);
-APE_INTERNAL statement_t *statement_make_recover(allocator_t *alloc, ident_t *error_ident, code_block_t *body);
+ARCANE_INTERNAL statement_t *statement_make_define(allocator_t *alloc, ident_t *name, expression_t *value, bool assignable);
+ARCANE_INTERNAL statement_t *statement_make_if(allocator_t *alloc, ptrarray(if_case_t) *cases, code_block_t *alternative);
+ARCANE_INTERNAL statement_t *statement_make_return(allocator_t *alloc, expression_t *value);
+ARCANE_INTERNAL statement_t *statement_make_expression(allocator_t *alloc, expression_t *value);
+ARCANE_INTERNAL statement_t *statement_make_while_loop(allocator_t *alloc, expression_t *test, code_block_t *body);
+ARCANE_INTERNAL statement_t *statement_make_break(allocator_t *alloc);
+ARCANE_INTERNAL statement_t *statement_make_foreach(allocator_t *alloc, ident_t *iterator, expression_t *source, code_block_t *body);
+ARCANE_INTERNAL statement_t *statement_make_for_loop(allocator_t *alloc, statement_t *init, expression_t *test, expression_t *update, code_block_t *body);
+ARCANE_INTERNAL statement_t *statement_make_continue(allocator_t *alloc);
+ARCANE_INTERNAL statement_t *statement_make_block(allocator_t *alloc, code_block_t *block);
+ARCANE_INTERNAL statement_t *statement_make_import(allocator_t *alloc, char *path);
+ARCANE_INTERNAL statement_t *statement_make_recover(allocator_t *alloc, ident_t *error_ident, code_block_t *body);
 
-APE_INTERNAL void statement_destroy(statement_t *stmt);
+ARCANE_INTERNAL void statement_destroy(statement_t *stmt);
 
-APE_INTERNAL statement_t *statement_copy(const statement_t *stmt);
+ARCANE_INTERNAL statement_t *statement_copy(const statement_t *stmt);
 
-APE_INTERNAL code_block_t *code_block_make(allocator_t *alloc, ptrarray(statement_t) *statements);
-APE_INTERNAL void code_block_destroy(code_block_t *stmt);
-APE_INTERNAL code_block_t *code_block_copy(code_block_t *block);
+ARCANE_INTERNAL code_block_t *code_block_make(allocator_t *alloc, ptrarray(statement_t) *statements);
+ARCANE_INTERNAL void code_block_destroy(code_block_t *stmt);
+ARCANE_INTERNAL code_block_t *code_block_copy(code_block_t *block);
 
-APE_INTERNAL expression_t *expression_make_ident(allocator_t *alloc, ident_t *ident);
-APE_INTERNAL expression_t *expression_make_number_literal(allocator_t *alloc, double val);
-APE_INTERNAL expression_t *expression_make_bool_literal(allocator_t *alloc, bool val);
-APE_INTERNAL expression_t *expression_make_string_literal(allocator_t *alloc, char *value);
-APE_INTERNAL expression_t *expression_make_null_literal(allocator_t *alloc);
-APE_INTERNAL expression_t *expression_make_array_literal(allocator_t *alloc, ptrarray(expression_t) *values);
-APE_INTERNAL expression_t *expression_make_map_literal(allocator_t *alloc, ptrarray(expression_t) *keys, ptrarray(expression_t) *values);
-APE_INTERNAL expression_t *expression_make_prefix(allocator_t *alloc, operator_t op, expression_t *right);
-APE_INTERNAL expression_t *expression_make_infix(allocator_t *alloc, operator_t op, expression_t *left, expression_t *right);
-APE_INTERNAL expression_t *expression_make_fn_literal(allocator_t *alloc, ptrarray(ident_t) *params, code_block_t *body);
-APE_INTERNAL expression_t *expression_make_call(allocator_t *alloc, expression_t *function, ptrarray(expression_t) *args);
-APE_INTERNAL expression_t *expression_make_index(allocator_t *alloc, expression_t *left, expression_t *index);
-APE_INTERNAL expression_t *expression_make_assign(allocator_t *alloc, expression_t *dest, expression_t *source, bool is_postfix);
-APE_INTERNAL expression_t *expression_make_logical(allocator_t *alloc, operator_t op, expression_t *left, expression_t *right);
-APE_INTERNAL expression_t *expression_make_ternary(allocator_t *alloc, expression_t *test, expression_t *if_true, expression_t *if_false);
+ARCANE_INTERNAL expression_t *expression_make_ident(allocator_t *alloc, ident_t *ident);
+ARCANE_INTERNAL expression_t *expression_make_number_literal(allocator_t *alloc, double val);
+ARCANE_INTERNAL expression_t *expression_make_bool_literal(allocator_t *alloc, bool val);
+ARCANE_INTERNAL expression_t *expression_make_string_literal(allocator_t *alloc, char *value);
+ARCANE_INTERNAL expression_t *expression_make_null_literal(allocator_t *alloc);
+ARCANE_INTERNAL expression_t *expression_make_array_literal(allocator_t *alloc, ptrarray(expression_t) *values);
+ARCANE_INTERNAL expression_t *expression_make_map_literal(allocator_t *alloc, ptrarray(expression_t) *keys, ptrarray(expression_t) *values);
+ARCANE_INTERNAL expression_t *expression_make_prefix(allocator_t *alloc, operator_t op, expression_t *right);
+ARCANE_INTERNAL expression_t *expression_make_infix(allocator_t *alloc, operator_t op, expression_t *left, expression_t *right);
+ARCANE_INTERNAL expression_t *expression_make_fn_literal(allocator_t *alloc, ptrarray(ident_t) *params, code_block_t *body);
+ARCANE_INTERNAL expression_t *expression_make_call(allocator_t *alloc, expression_t *function, ptrarray(expression_t) *args);
+ARCANE_INTERNAL expression_t *expression_make_index(allocator_t *alloc, expression_t *left, expression_t *index);
+ARCANE_INTERNAL expression_t *expression_make_assign(allocator_t *alloc, expression_t *dest, expression_t *source, bool is_postfix);
+ARCANE_INTERNAL expression_t *expression_make_logical(allocator_t *alloc, operator_t op, expression_t *left, expression_t *right);
+ARCANE_INTERNAL expression_t *expression_make_ternary(allocator_t *alloc, expression_t *test, expression_t *if_true, expression_t *if_false);
 
-APE_INTERNAL void expression_destroy(expression_t *expr);
+ARCANE_INTERNAL void expression_destroy(expression_t *expr);
 
-APE_INTERNAL expression_t *expression_copy(expression_t *expr);
+ARCANE_INTERNAL expression_t *expression_copy(expression_t *expr);
 
-APE_INTERNAL void statement_to_string(const statement_t *stmt, strbuf_t *buf);
-APE_INTERNAL void expression_to_string(expression_t *expr, strbuf_t *buf);
+ARCANE_INTERNAL void statement_to_string(const statement_t *stmt, strbuf_t *buf);
+ARCANE_INTERNAL void expression_to_string(expression_t *expr, strbuf_t *buf);
 
-APE_INTERNAL void code_block_to_string(const code_block_t *stmt, strbuf_t *buf);
-APE_INTERNAL const char *operator_to_string(operator_t op);
+ARCANE_INTERNAL void code_block_to_string(const code_block_t *stmt, strbuf_t *buf);
+ARCANE_INTERNAL const char *operator_to_string(operator_t op);
 
-APE_INTERNAL const char *expression_type_to_string(expression_type_t type);
+ARCANE_INTERNAL const char *expression_type_to_string(expression_type_t type);
 
-APE_INTERNAL ident_t *ident_make(allocator_t *alloc, token_t tok);
-APE_INTERNAL ident_t *ident_copy(ident_t *ident);
-APE_INTERNAL void ident_destroy(ident_t *ident);
+ARCANE_INTERNAL ident_t *ident_make(allocator_t *alloc, token_t tok);
+ARCANE_INTERNAL ident_t *ident_copy(ident_t *ident);
+ARCANE_INTERNAL void ident_destroy(ident_t *ident);
 
-APE_INTERNAL if_case_t *if_case_make(allocator_t *alloc, expression_t *test, code_block_t *consequence);
-APE_INTERNAL void if_case_destroy(if_case_t *cond);
-APE_INTERNAL if_case_t *if_case_copy(if_case_t *cond);
+ARCANE_INTERNAL if_case_t *if_case_make(allocator_t *alloc, expression_t *test, code_block_t *consequence);
+ARCANE_INTERNAL void if_case_destroy(if_case_t *cond);
+ARCANE_INTERNAL if_case_t *if_case_copy(if_case_t *cond);
 
 #endif /* ast_h */

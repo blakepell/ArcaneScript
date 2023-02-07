@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "symbol_table.h"
 #include "global_store.h"
 #endif
@@ -21,7 +21,7 @@ symbol_t *symbol_make(allocator_t *alloc, const char *name, symbol_type_t type, 
     }
     memset(symbol, 0, sizeof(symbol_t));
     symbol->alloc = alloc;
-    symbol->name = ape_strdup(alloc, name);
+    symbol->name = arcane_strdup(alloc, name);
     if (!symbol->name) {
         allocator_free(alloc, symbol);
         return NULL;
@@ -129,7 +129,7 @@ err:
 
 bool symbol_table_add_module_symbol(symbol_table_t *st, symbol_t *symbol) {
     if (symbol->type != SYMBOL_MODULE_GLOBAL) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return false;
     }
     if (symbol_table_symbol_is_defined(st, symbol->name)) {
@@ -156,7 +156,7 @@ const symbol_t *symbol_table_define(symbol_table_t *table, const char *name, boo
     if (strchr(name, ':')) {
         return NULL; // module symbol
     }
-    if (APE_STREQ(name, "this")) {
+    if (ARCANE_STREQ(name, "this")) {
         return NULL; // "this" is reserved
     }
     symbol_type_t symbol_type = table->outer == NULL ? SYMBOL_MODULE_GLOBAL : SYMBOL_LOCAL;
@@ -288,7 +288,7 @@ const symbol_t *symbol_table_resolve(symbol_table_t *table, const char *name) {
         if (!symbol) {
             return NULL;
         }
-        if (symbol->type == SYMBOL_MODULE_GLOBAL || symbol->type == SYMBOL_APE_GLOBAL) {
+        if (symbol->type == SYMBOL_MODULE_GLOBAL || symbol->type == SYMBOL_ARCANE_GLOBAL) {
             return symbol;
         }
         symbol = symbol_table_define_free(table, symbol);

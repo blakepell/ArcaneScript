@@ -1,7 +1,7 @@
 #ifndef token_h
 #define token_h
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "common.h"
 #endif
 
@@ -97,8 +97,8 @@ typedef struct token {
     src_pos_t pos;
 } token_t;
 
-APE_INTERNAL void token_init(token_t *tok, token_type_t type, const char *literal, int len); // no need to destroy
-APE_INTERNAL char *token_duplicate_literal(allocator_t *alloc, const token_t *tok);
-APE_INTERNAL const char *token_type_to_string(token_type_t type);
+ARCANE_INTERNAL void token_init(token_t *tok, token_type_t type, const char *literal, int len); // no need to destroy
+ARCANE_INTERNAL char *token_duplicate_literal(allocator_t *alloc, const token_t *tok);
+ARCANE_INTERNAL const char *token_type_to_string(token_type_t type);
 
 #endif /* token_h */

@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "parser.h"
 #include "errors.h"
 #endif
@@ -74,11 +74,11 @@ static expression_t *parse_incdec_postfix_expression(parser_t *p, expression_t *
 static precedence_t get_precedence(token_type_t tk);
 static operator_t token_to_operator(token_type_t tk);
 
-static char escape_char(const char c);
+static char escarcane_char(const char c);
 static char *process_and_copy_string(allocator_t *alloc, const char *input, size_t len);
 static expression_t *wrap_expression_in_function_call(allocator_t *alloc, expression_t *expr, const char *function_name);
 
-parser_t *parser_make(allocator_t *alloc, const ape_config_t *config, errors_t *errors) {
+parser_t *parser_make(allocator_t *alloc, const arcane_config_t *config, errors_t *errors) {
     parser_t *parser = allocator_malloc(alloc, sizeof(parser_t));
     if (!parser) {
         return NULL;
@@ -310,7 +310,7 @@ static statement_t *parse_define_statement(parser_t *p) {
     }
 
     if (value->type == EXPRESSION_FUNCTION_LITERAL) {
-        value->fn_literal.name = ape_strdup(p->alloc, name_ident->value);
+        value->fn_literal.name = arcane_strdup(p->alloc, name_ident->value);
         if (!value->fn_literal.name) {
             goto err;
         }
@@ -754,7 +754,7 @@ static statement_t *parse_function_statement(parser_t *p) {
     }
 
     value->pos = pos;
-    value->fn_literal.name = ape_strdup(p->alloc, name_ident->value);
+    value->fn_literal.name = arcane_strdup(p->alloc, name_ident->value);
 
     if (!value->fn_literal.name) {
         goto err;
@@ -1376,7 +1376,7 @@ static expression_t *parse_assign_expression(parser_t *p, expression_t *left) {
             break;
         }
         case TOKEN_ASSIGN: break;
-        default: APE_ASSERT(false); break;
+        default: ARCANE_ASSERT(false); break;
     }
 
     expression_t *res = expression_make_assign(p->alloc, left, source, false);
@@ -1627,13 +1627,13 @@ static operator_t token_to_operator(token_type_t tk) {
         case TOKEN_MINUS_MINUS:     return OPERATOR_MINUS;
         default:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             return OPERATOR_NONE;
         }
     }
 }
 
-static char escape_char(const char c) {
+static char escarcane_char(const char c) {
     switch (c) {
         case '\"': return '\"';
         case '\\': return '\\';
@@ -1660,7 +1660,7 @@ static char *process_and_copy_string(allocator_t *alloc, const char *input, size
     while (input[in_i] != '\0' && in_i < len) {
         if (input[in_i] == '\\') {
             in_i++;
-            output[out_i] = escape_char(input[in_i]);
+            output[out_i] = escarcane_char(input[in_i]);
             if (output[out_i] < 0) {
                 goto error;
             }

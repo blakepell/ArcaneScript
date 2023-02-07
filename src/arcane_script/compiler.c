@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "compiler.h"
 
-#include "ape.h"
+#include "arcane.h"
 #include "ast.h"
 #include "object.h"
 #include "gc.h"
@@ -30,7 +30,7 @@ typedef struct file_scope {
 
 typedef struct compiler {
     allocator_t *alloc;
-    const ape_config_t *config;
+    const arcane_config_t *config;
     gcmem_t *mem;
     errors_t *errors;
     ptrarray(compiled_file_t) *files;
@@ -45,7 +45,7 @@ typedef struct compiler {
 
 static bool compiler_init(compiler_t *comp,
     allocator_t *alloc,
-    const ape_config_t *config,
+    const arcane_config_t *config,
     gcmem_t *mem, errors_t *errors,
     ptrarray(compiled_file_t) *files,
     global_store_t *global_store);
@@ -100,7 +100,7 @@ static bool module_add_symbol(module_t *module, const symbol_t *symbol);
 static const char *get_module_name(const char *path);
 static const symbol_t *define_symbol(compiler_t *comp, src_pos_t pos, const char *name, bool assignable, bool can_shadow);
 
-compiler_t *compiler_make(allocator_t *alloc, const ape_config_t *config, gcmem_t *mem, errors_t *errors, ptrarray(compiled_file_t) *files, global_store_t *global_store) {
+compiler_t *compiler_make(allocator_t *alloc, const arcane_config_t *config, gcmem_t *mem, errors_t *errors, ptrarray(compiled_file_t) *files, global_store_t *global_store) {
     compiler_t *comp = allocator_malloc(alloc, sizeof(compiler_t));
     if (!comp) {
         return NULL;
@@ -125,10 +125,10 @@ void compiler_destroy(compiler_t *comp) {
 compilation_result_t *compiler_compile(compiler_t *comp, const char *code) {
     compilation_scope_t *compilation_scope = get_compilation_scope(comp);
 
-    APE_ASSERT(array_count(comp->src_positions_stack) == 0);
-    APE_ASSERT(array_count(compilation_scope->bytecode) == 0);
-    APE_ASSERT(array_count(compilation_scope->break_ip_stack) == 0);
-    APE_ASSERT(array_count(compilation_scope->continue_ip_stack) == 0);
+    ARCANE_ASSERT(array_count(comp->src_positions_stack) == 0);
+    ARCANE_ASSERT(array_count(compilation_scope->bytecode) == 0);
+    ARCANE_ASSERT(array_count(compilation_scope->break_ip_stack) == 0);
+    ARCANE_ASSERT(array_count(compilation_scope->continue_ip_stack) == 0);
 
     array_clear(comp->src_positions_stack);
     array_clear(compilation_scope->bytecode);
@@ -148,7 +148,7 @@ compilation_result_t *compiler_compile(compiler_t *comp, const char *code) {
     }
 
     compilation_scope = get_compilation_scope(comp); // might've changed
-    APE_ASSERT(compilation_scope->outer == NULL);
+    ARCANE_ASSERT(compilation_scope->outer == NULL);
 
     compilation_scope = get_compilation_scope(comp);
     compilation_result_t *res = compilation_scope_orphan_result(compilation_scope);
@@ -190,7 +190,7 @@ compilation_result_t *compiler_compile_file(compiler_t *comp, const char *path) 
         goto err;
     }
 
-    APE_ASSERT(ptrarray_count(comp->file_scopes) == 1);
+    ARCANE_ASSERT(ptrarray_count(comp->file_scopes) == 1);
     file_scope_t *file_scope = ptrarray_top(comp->file_scopes);
     if (!file_scope) {
         goto err;
@@ -216,7 +216,7 @@ err:
 symbol_table_t *compiler_get_symbol_table(compiler_t *comp) {
     file_scope_t *file_scope = ptrarray_top(comp->file_scopes);
     if (!file_scope) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return NULL;
     }
     return file_scope->symbol_table;
@@ -225,7 +225,7 @@ symbol_table_t *compiler_get_symbol_table(compiler_t *comp) {
 void compiler_set_symbol_table(compiler_t *comp, symbol_table_t *table) {
     file_scope_t *file_scope = ptrarray_top(comp->file_scopes);
     if (!file_scope) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     file_scope->symbol_table = table;
@@ -238,7 +238,7 @@ array(object_t) *compiler_get_constants(const compiler_t *comp) {
 // INTERNAL
 static bool compiler_init(compiler_t *comp,
     allocator_t *alloc,
-    const ape_config_t *config,
+    const arcane_config_t *config,
     gcmem_t *mem, errors_t *errors,
     ptrarray(compiled_file_t) *files,
     global_store_t *global_store) {
@@ -317,8 +317,8 @@ static bool compiler_init_shallow_copy(compiler_t *copy, compiler_t *src) {
     }
 
     symbol_table_t *src_st = compiler_get_symbol_table(src);
-    APE_ASSERT(ptrarray_count(src->file_scopes) == 1);
-    APE_ASSERT(src_st->outer == NULL);
+    ARCANE_ASSERT(ptrarray_count(src->file_scopes) == 1);
+    ARCANE_ASSERT(src_st->outer == NULL);
     symbol_table_t *src_st_copy = symbol_table_copy(src_st);
     if (!src_st_copy) {
         goto err;
@@ -365,7 +365,7 @@ static bool compiler_init_shallow_copy(compiler_t *copy, compiler_t *src) {
 
     for (int i = 0; i < ptrarray_count(src_loaded_module_names); i++) {
         const char *loaded_name = ptrarray_get(src_loaded_module_names, i);
-        char *loaded_name_copy = ape_strdup(copy->alloc, loaded_name);
+        char *loaded_name_copy = arcane_strdup(copy->alloc, loaded_name);
         if (!loaded_name_copy) {
             goto err;
         }
@@ -390,8 +390,8 @@ static int emit(compiler_t *comp, opcode_t op, int operands_count, uint64_t *ope
     }
     for (int i = 0; i < len; i++) {
         src_pos_t *src_pos = array_top(comp->src_positions_stack);
-        APE_ASSERT(src_pos->line >= 0);
-        APE_ASSERT(src_pos->column >= 0);
+        ARCANE_ASSERT(src_pos->line >= 0);
+        ARCANE_ASSERT(src_pos->column >= 0);
         bool ok = array_add(get_src_positions(comp), src_pos);
         if (!ok) {
             return -1;
@@ -418,7 +418,7 @@ static bool push_compilation_scope(compiler_t *comp) {
 
 static void pop_compilation_scope(compiler_t *comp) {
     compilation_scope_t *current_scope = get_compilation_scope(comp);
-    APE_ASSERT(current_scope);
+    ARCANE_ASSERT(current_scope);
     set_compilation_scope(comp, current_scope->outer);
     compilation_scope_destroy(current_scope);
 }
@@ -426,7 +426,7 @@ static void pop_compilation_scope(compiler_t *comp) {
 static bool push_symbol_table(compiler_t *comp, int global_offset) {
     file_scope_t *file_scope = ptrarray_top(comp->file_scopes);
     if (!file_scope) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return false;
     }
     symbol_table_t *current_table = file_scope->symbol_table;
@@ -441,12 +441,12 @@ static bool push_symbol_table(compiler_t *comp, int global_offset) {
 static void pop_symbol_table(compiler_t *comp) {
     file_scope_t *file_scope = ptrarray_top(comp->file_scopes);
     if (!file_scope) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     symbol_table_t *current_table = file_scope->symbol_table;
     if (!current_table) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     file_scope->symbol_table = current_table->outer;
@@ -460,7 +460,7 @@ static opcode_t get_last_opcode(compiler_t *comp) {
 
 static bool compile_code(compiler_t *comp, const char *code) {
     file_scope_t *file_scope = ptrarray_top(comp->file_scopes);
-    APE_ASSERT(file_scope);
+    ARCANE_ASSERT(file_scope);
 
     ptrarray(statement_t) *statements = parser_parse_all(file_scope->parser, code, file_scope->file);
     if (!statements) {
@@ -522,10 +522,10 @@ static bool import_module(compiler_t *comp, const statement_t *import_stmt) { //
         goto end;
     }
     if (kg_is_path_absolute(module_path)) {
-        strbuf_appendf(filepath_buf, "%s.ape", module_path);
+        strbuf_appendf(filepath_buf, "%s.arcane", module_path);
     }
     else {
-        strbuf_appendf(filepath_buf, "%s%s.ape", file_scope->file->dir_path, module_path);
+        strbuf_appendf(filepath_buf, "%s%s.arcane", file_scope->file->dir_path, module_path);
     }
 
     if (strbuf_failed(filepath_buf)) {
@@ -551,7 +551,7 @@ static bool import_module(compiler_t *comp, const statement_t *import_stmt) { //
 
     for (int i = 0; i < ptrarray_count(comp->file_scopes); i++) {
         file_scope_t *fs = ptrarray_get(comp->file_scopes, i);
-        if (APE_STREQ(fs->file->path, filepath)) {
+        if (ARCANE_STREQ(fs->file->path, filepath)) {
             errors_add_errorf(comp->errors, ERROR_COMPILATION, import_stmt->pos, "Cyclic reference of file \"%s\"", filepath);
             result = false;
             goto end;
@@ -618,7 +618,7 @@ static bool import_module(compiler_t *comp, const statement_t *import_stmt) { //
         }
     }
 
-    char *name_copy = ape_strdup(comp->alloc, module_name);
+    char *name_copy = arcane_strdup(comp->alloc, module_name);
     if (!name_copy) {
         result = false;
         goto end;
@@ -917,7 +917,7 @@ static bool compile_statement(compiler_t *comp, const statement_t *stmt) {
             }
 
             ip = emit(comp, OPCODE_NUMBER, 1, (uint64_t[]) {
-                ape_double_to_uint64(1)
+                arcane_double_to_uint64(1)
             });
             if (ip < 0) {
                 return false;
@@ -1227,7 +1227,7 @@ static bool compile_statement(compiler_t *comp, const statement_t *stmt) {
         }
         default:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             return false;
         }
     }
@@ -1332,7 +1332,7 @@ static bool compile_expression(compiler_t *comp, expression_t *expr) {
         {
             double number = expr->number_literal;
             ip = emit(comp, OPCODE_NUMBER, 1, (uint64_t[]) {
-                ape_double_to_uint64(number)
+                arcane_double_to_uint64(number)
             });
             if (ip < 0) {
                 goto error;
@@ -1789,7 +1789,7 @@ static bool compile_expression(compiler_t *comp, expression_t *expr) {
         }
         default:
         {
-            APE_ASSERT(false);
+            ARCANE_ASSERT(false);
             break;
         }
     }
@@ -1848,7 +1848,7 @@ static int add_constant(compiler_t *comp, object_t obj) {
 static void change_uint16_operand(compiler_t *comp, int ip, uint16_t operand) {
     array(uint8_t) *bytecode = get_bytecode(comp);
     if ((ip + 1) >= array_count(bytecode)) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     uint8_t hi = (uint8_t) (operand >> 8);
@@ -1869,8 +1869,8 @@ static bool read_symbol(compiler_t *comp, const symbol_t *symbol) {
             symbol->index
         });
     }
-    else if (symbol->type == SYMBOL_APE_GLOBAL) {
-        ip = emit(comp, OPCODE_GET_APE_GLOBAL, 1, (uint64_t[]) {
+    else if (symbol->type == SYMBOL_ARCANE_GLOBAL) {
+        ip = emit(comp, OPCODE_GET_ARCANE_GLOBAL, 1, (uint64_t[]) {
             symbol->index
         });
     }
@@ -1935,7 +1935,7 @@ static bool push_break_ip(compiler_t *comp, int ip) {
 static void pop_break_ip(compiler_t *comp) {
     compilation_scope_t *comp_scope = get_compilation_scope(comp);
     if (array_count(comp_scope->break_ip_stack) == 0) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     array_pop(comp_scope->break_ip_stack, NULL);
@@ -1958,7 +1958,7 @@ static bool push_continue_ip(compiler_t *comp, int ip) {
 static void pop_continue_ip(compiler_t *comp) {
     compilation_scope_t *comp_scope = get_compilation_scope(comp);
     if (array_count(comp_scope->continue_ip_stack) == 0) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     array_pop(comp_scope->continue_ip_stack, NULL);
@@ -1967,7 +1967,7 @@ static void pop_continue_ip(compiler_t *comp) {
 static int get_continue_ip(compiler_t *comp) {
     compilation_scope_t *comp_scope = get_compilation_scope(comp);
     if (array_count(comp_scope->continue_ip_stack) == 0) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return -1;
     }
     int *res = array_top(comp_scope->continue_ip_stack);
@@ -2076,7 +2076,7 @@ static void pop_file_scope(compiler_t *comp) {
     }
     file_scope_t *scope = ptrarray_top(comp->file_scopes);
     if (!scope) {
-        APE_ASSERT(false);
+        ARCANE_ASSERT(false);
         return;
     }
     file_scope_destroy(scope);
@@ -2101,7 +2101,7 @@ static module_t *module_make(allocator_t *alloc, const char *name) {
     }
     memset(module, 0, sizeof(module_t));
     module->alloc = alloc;
-    module->name = ape_strdup(alloc, name);
+    module->name = arcane_strdup(alloc, name);
     if (!module->name) {
         module_destroy(module);
         return NULL;
@@ -2130,7 +2130,7 @@ static module_t *module_copy(module_t *src) {
     }
     memset(copy, 0, sizeof(module_t));
     copy->alloc = src->alloc;
-    copy->name = ape_strdup(copy->alloc, src->name);
+    copy->name = arcane_strdup(copy->alloc, src->name);
     if (!copy->name) {
         module_destroy(copy);
         return NULL;

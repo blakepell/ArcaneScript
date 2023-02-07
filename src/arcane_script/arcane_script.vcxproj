@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ape.c" />
+    <ClCompile Include="arcane.c" />
     <ClCompile Include="ast.c" />
     <ClCompile Include="builtins.c" />
     <ClCompile Include="code.c" />
@@ -43,7 +43,6 @@
     <ClCompile Include="vm.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ape.h" />
     <ClInclude Include="arcane.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="builtins.h" />

@@ -7,43 +7,43 @@
 #include <crtdbg.h>
 #include<stdio.h>
 #include "arcane.h"
-#include "ape.h"
+#include "arcane.h"
 
 char *read_file(const char *file_name);
 
-static ape_object_t debug_fn(ape_t *ape, void *data, int argc, ape_object_t *args);
+static arcane_object_t debug_fn(arcane_t *arcane, void *data, int argc, arcane_object_t *args);
 
 int main()
 {
-    //printf(HEADER);
-    //printf("Arcane Script Console: %s\r\n", ARCANE_VERSION_STRING);
-    //printf(HEADER);
+    printf(HEADER);
+    printf("Arcane Script Console: %s\r\n", ARCANE_VERSION_STRING);
+    printf(HEADER);
 
-    //char *code = read_file("C:\\Git\\ArcaneScript\\src\\examples\\test.arc");
+    char *code = read_file("C:\\Git\\ArcaneScript\\src\\examples\\test.arc");
 
-    //// Create the scripting environment
-    //ape_t *ape = ape_make();
+    // Create the scripting environment
+    arcane_t *arcane = arcane_make();
 
-    //// Add the native functions we're adding on before the program is compiled
-    //ape_set_native_function(ape, "debug", debug_fn, NULL);
+    // Add the native functions we're adding on before the program is compiled
+    arcane_set_native_function(arcane, "debug", debug_fn, NULL);
 
-    //// Compile the given program
-    //ape_program_t *program = ape_compile(ape, code);
+    // Compile the given program
+    arcane_program_t *program = arcane_compile(arcane, code);
 
-    //for (int i = 0; i < 10000; i++)
-    //{
-    //    printf("%d :: ", i);
-    //    // Execute the program against it's scripting environment.
-    //    ape_execute_program(ape, program);
-    //    Sleep(1);
-    //}
+    for (int i = 0; i < 10000; i++)
+    {
+        printf("%d :: ", i);
+        // Execute the program against it's scripting environment.
+        arcane_execute_program(arcane, program);
+        Sleep(1);
+    }
 
-    //// Free the resources for the program and the scripting environment.
-    //ape_program_destroy(program);
-    //ape_destroy(ape);
+    // Free the resources for the program and the scripting environment.
+    arcane_program_destroy(program);
+    arcane_destroy(arcane);
 
-    //free(code);
-    //code = NULL;
+    free(code);
+    code = NULL;
 
     //_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     //_CrtDumpMemoryLeaks();
@@ -51,16 +51,16 @@ int main()
     //Sleep(500);
 }
 
-static ape_object_t debug_fn(ape_t *ape, void *data, int argc, ape_object_t *args)
+static arcane_object_t debug_fn(arcane_t *arcane, void *data, int argc, arcane_object_t *args)
 {
-    if (argc == 1 && ape_object_get_type(args[0]) == APE_OBJECT_STRING)
+    if (argc == 1 && arcane_object_get_type(args[0]) == ARCANE_OBJECT_STRING)
     {
-        const char *msg = ape_object_get_string(args[0]);
+        const char *msg = arcane_object_get_string(args[0]);
         printf("Debug :: %s\r\n", msg);
-        return ape_object_make_string(ape, msg);
+        return arcane_object_make_string(arcane, msg);
     }
 
-    return ape_object_make_string(ape, "");
+    return arcane_object_make_string(arcane, "");
 }
 
 char *read_file(const char *filename) {

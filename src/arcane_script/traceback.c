@@ -1,4 +1,4 @@
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "traceback.h"
 #include "vm.h"
 #include "compiler.h"
@@ -34,7 +34,7 @@ void traceback_destroy(traceback_t *traceback) {
 
 bool traceback_append(traceback_t *traceback, const char *function_name, src_pos_t pos) {
     traceback_item_t item;
-    item.function_name = ape_strdup(traceback->alloc, function_name);
+    item.function_name = arcane_strdup(traceback->alloc, function_name);
     if (!item.function_name) {
         return false;
     }

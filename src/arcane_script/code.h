@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "common.h"
 #include "collections.h"
 #endif
@@ -49,7 +49,7 @@ typedef enum opcode_val {
     OPCODE_GET_LOCAL,
     OPCODE_DEFINE_LOCAL,
     OPCODE_SET_LOCAL,
-    OPCODE_GET_APE_GLOBAL,
+    OPCODE_GET_ARCANE_GLOBAL,
     OPCODE_FUNCTION,
     OPCODE_GET_FREE,
     OPCODE_SET_FREE,
@@ -72,10 +72,10 @@ typedef struct opcode_definition {
     int operand_widths[2];
 } opcode_definition_t;
 
-APE_INTERNAL opcode_definition_t *opcode_lookup(opcode_t op);
-APE_INTERNAL const char *opcode_get_name(opcode_t op);
-APE_INTERNAL int code_make(opcode_t op, int operands_count, uint64_t *operands, array(uint8_t) *res);
-APE_INTERNAL void code_to_string(uint8_t *code, src_pos_t *source_positions, size_t code_size, strbuf_t *res);
-APE_INTERNAL bool code_read_operands(opcode_definition_t *def, uint8_t *instr, uint64_t out_operands[2]);
+ARCANE_INTERNAL opcode_definition_t *opcode_lookup(opcode_t op);
+ARCANE_INTERNAL const char *opcode_get_name(opcode_t op);
+ARCANE_INTERNAL int code_make(opcode_t op, int operands_count, uint64_t *operands, array(uint8_t) *res);
+ARCANE_INTERNAL void code_to_string(uint8_t *code, src_pos_t *source_positions, size_t code_size, strbuf_t *res);
+ARCANE_INTERNAL bool code_read_operands(opcode_definition_t *def, uint8_t *instr, uint64_t out_operands[2]);
 
 #endif /* code_h */

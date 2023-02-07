@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "token.h"
 #endif
 
@@ -80,7 +80,7 @@ void token_init(token_t *tok, token_type_t type, const char *literal, int len) {
 }
 
 char *token_duplicate_literal(allocator_t *alloc, const token_t *tok) {
-    return ape_strndup(alloc, tok->literal, tok->len);
+    return arcane_strndup(alloc, tok->literal, tok->len);
 }
 
 const char *token_type_to_string(token_type_t type) {

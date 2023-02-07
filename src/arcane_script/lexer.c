@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "lexer.h"
 #include "collections.h"
 #include "compiler.h"
@@ -467,7 +467,7 @@ end:
 static const char *read_number(lexer_t *lex, int *out_len) {
     char allowed[] = ".xXaAbBcCdDeEfF";
     int position = lex->position;
-    while (is_digit(lex->ch) || is_one_of(lex->ch, allowed, APE_ARRAY_LEN(allowed) - 1)) {
+    while (is_digit(lex->ch) || is_one_of(lex->ch, allowed, ARCANE_ARRAY_LEN(allowed) - 1)) {
         read_char(lex);
     }
     int len = lex->position - position;
@@ -478,23 +478,23 @@ static const char *read_number(lexer_t *lex, int *out_len) {
 static const char *read_string(lexer_t *lex, char delimiter, bool is_template, bool *out_template_found, int *out_len) {
     *out_len = 0;
 
-    bool escaped = false;
+    bool escarcaned = false;
     int position = lex->position;
 
     while (true) {
         if (lex->ch == '\0') {
             return NULL;
         }
-        if (lex->ch == delimiter && !escaped) {
+        if (lex->ch == delimiter && !escarcaned) {
             break;
         }
-        if (is_template && !escaped && lex->ch == '$' && peek_char(lex) == '{') {
+        if (is_template && !escarcaned && lex->ch == '$' && peek_char(lex) == '{') {
             *out_template_found = true;
             break;
         }
-        escaped = false;
+        escarcaned = false;
         if (lex->ch == '\\') {
-            escaped = true;
+            escarcaned = true;
         }
         read_char(lex);
     }
@@ -527,8 +527,8 @@ static token_type_t lookup_identifier(const char *ident, int len) {
         {"recover", 7, TOKEN_RECOVER},
     };
 
-    for (int i = 0; i < APE_ARRAY_LEN(keywords); i++) {
-        if (keywords[i].len == len && APE_STRNEQ(ident, keywords[i].value, len)) {
+    for (int i = 0; i < ARCANE_ARRAY_LEN(keywords); i++) {
+        if (keywords[i].len == len && ARCANE_STRNEQ(ident, keywords[i].value, len)) {
             return keywords[i].type;
         }
     }
@@ -557,11 +557,11 @@ static bool add_line(lexer_t *lex, int offset) {
     const char *new_line_ptr = strchr(line_start, '\n');
     char *line = NULL;
     if (!new_line_ptr) {
-        line = ape_strdup(lex->alloc, line_start);
+        line = arcane_strdup(lex->alloc, line_start);
     }
     else {
         size_t line_len = new_line_ptr - line_start;
-        line = ape_strndup(lex->alloc, line_start, line_len);
+        line = arcane_strndup(lex->alloc, line_start, line_len);
     }
     if (!line) {
         lex->failed = true;

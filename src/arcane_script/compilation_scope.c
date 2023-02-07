@@ -1,4 +1,4 @@
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "compilation_scope.h"
 #endif
 

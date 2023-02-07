@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "errors.h"
 #include "traceback.h"
 #endif
@@ -46,7 +46,7 @@ void errors_add_errorf(errors_t *errors, error_type_t type, src_pos_t pos, const
     char res[ERROR_MESSAGE_MAX_LENGTH];
     int written = vsnprintf(res, ERROR_MESSAGE_MAX_LENGTH, format, args);
     (void) written;
-    APE_ASSERT(to_write == written);
+    ARCANE_ASSERT(to_write == written);
     va_end(args);
     errors_add_error(errors, type, pos, res);
 }

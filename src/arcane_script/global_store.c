@@ -1,4 +1,4 @@
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "global_store.h"
 
 #include "symbol_table.h"
@@ -65,7 +65,7 @@ object_t global_store_get_object(global_store_t *store, const char *name) {
     if (!symbol) {
         return object_make_null();
     }
-    APE_ASSERT(symbol->type == SYMBOL_APE_GLOBAL);
+    ARCANE_ASSERT(symbol->type == SYMBOL_ARCANE_GLOBAL);
     object_t *res = array_get(store->objects, symbol->index);
     return *res;
 }
@@ -81,7 +81,7 @@ bool global_store_set(global_store_t *store, const char *name, object_t object) 
     if (!ok) {
         return false;
     }
-    symbol_t *symbol = symbol_make(store->alloc, name, SYMBOL_APE_GLOBAL, ix, false);
+    symbol_t *symbol = symbol_make(store->alloc, name, SYMBOL_ARCANE_GLOBAL, ix, false);
     if (!symbol) {
         goto err;
     }

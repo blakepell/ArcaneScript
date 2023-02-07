@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "frame.h"
 #include "compiler.h"
 #endif

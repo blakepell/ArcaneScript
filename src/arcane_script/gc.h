@@ -1,7 +1,7 @@
 #ifndef gc_h
 #define gc_h
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "common.h"
 #include "collections.h"
 #include "object.h"
@@ -32,20 +32,20 @@ typedef struct gcmem {
     object_data_pool_t pools[GCMEM_POOLS_NUM];
 } gcmem_t;
 
-APE_INTERNAL gcmem_t *gcmem_make(allocator_t *alloc);
-APE_INTERNAL void gcmem_destroy(gcmem_t *mem);
+ARCANE_INTERNAL gcmem_t *gcmem_make(allocator_t *alloc);
+ARCANE_INTERNAL void gcmem_destroy(gcmem_t *mem);
 
-APE_INTERNAL object_data_t *gcmem_alloc_object_data(gcmem_t *mem, object_type_t type);
-APE_INTERNAL object_data_t *gcmem_get_object_data_from_pool(gcmem_t *mem, object_type_t type);
+ARCANE_INTERNAL object_data_t *gcmem_alloc_object_data(gcmem_t *mem, object_type_t type);
+ARCANE_INTERNAL object_data_t *gcmem_get_object_data_from_pool(gcmem_t *mem, object_type_t type);
 
-APE_INTERNAL void gc_unmark_all(gcmem_t *mem);
-APE_INTERNAL void gc_mark_objects(object_t *objects, int count);
-APE_INTERNAL void gc_mark_object(object_t object);
-APE_INTERNAL void gc_sweep(gcmem_t *mem);
+ARCANE_INTERNAL void gc_unmark_all(gcmem_t *mem);
+ARCANE_INTERNAL void gc_mark_objects(object_t *objects, int count);
+ARCANE_INTERNAL void gc_mark_object(object_t object);
+ARCANE_INTERNAL void gc_sweep(gcmem_t *mem);
 
-APE_INTERNAL bool gc_disable_on_object(object_t obj);
-APE_INTERNAL void gc_enable_on_object(object_t obj);
+ARCANE_INTERNAL bool gc_disable_on_object(object_t obj);
+ARCANE_INTERNAL void gc_enable_on_object(object_t obj);
 
-APE_INTERNAL int gc_should_sweep(gcmem_t *mem);
+ARCANE_INTERNAL int gc_should_sweep(gcmem_t *mem);
 
 #endif /* gc_h */

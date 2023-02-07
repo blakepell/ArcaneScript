@@ -1,4 +1,4 @@
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "optimisation.h"
 #endif
 
@@ -76,11 +76,11 @@ static expression_t *optimise_infix_expression(expression_t *expr) {
             }
             case OPERATOR_EQ:
             {
-                res = expression_make_bool_literal(alloc, APE_DBLEQ(left_val, right_val)); break;
+                res = expression_make_bool_literal(alloc, ARCANE_DBLEQ(left_val, right_val)); break;
             }
             case OPERATOR_NOT_EQ:
             {
-                res = expression_make_bool_literal(alloc, !APE_DBLEQ(left_val, right_val)); break;
+                res = expression_make_bool_literal(alloc, !ARCANE_DBLEQ(left_val, right_val)); break;
             }
             case OPERATOR_MODULUS:
             {
@@ -115,7 +115,7 @@ static expression_t *optimise_infix_expression(expression_t *expr) {
     else if (expr->infix.op == OPERATOR_PLUS && left_is_string && right_is_string) {
         const char *left_val = left->string_literal;
         const char *right_val = right->string_literal;
-        char *res_str = ape_stringf(alloc, "%s%s", left_val, right_val);
+        char *res_str = arcane_stringf(alloc, "%s%s", left_val, right_val);
         if (res_str) {
             res = expression_make_string_literal(alloc, res_str);
             if (!res) {

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 #include "gc.h"
 #include "object.h"
 #endif
@@ -92,7 +92,7 @@ object_data_t *gcmem_alloc_object_data(gcmem_t *mem, object_type_t type) {
 
     memset(data, 0, sizeof(object_data_t));
 
-    APE_ASSERT(ptrarray_count(mem->objects_back) >= ptrarray_count(mem->objects));
+    ARCANE_ASSERT(ptrarray_count(mem->objects_back) >= ptrarray_count(mem->objects));
     // we want to make sure that appending to objects_back never fails in sweep
     // so this only reserves space there.
     bool ok = ptrarray_add(mem->objects_back, data);
@@ -117,7 +117,7 @@ object_data_t *gcmem_get_object_data_from_pool(gcmem_t *mem, object_type_t type)
     }
     object_data_t *data = pool->data[pool->count - 1];
 
-    APE_ASSERT(ptrarray_count(mem->objects_back) >= ptrarray_count(mem->objects));
+    ARCANE_ASSERT(ptrarray_count(mem->objects_back) >= ptrarray_count(mem->objects));
 
     // we want to make sure that appending to objects_back never fails in sweep
     // so this only reserves space there.
@@ -221,7 +221,7 @@ void gc_mark_object(object_t obj) {
 void gc_sweep(gcmem_t *mem) {
     gc_mark_objects(array_data(mem->objects_not_gced), array_count(mem->objects_not_gced));
 
-    APE_ASSERT(ptrarray_count(mem->objects_back) >= ptrarray_count(mem->objects));
+    ARCANE_ASSERT(ptrarray_count(mem->objects_back) >= ptrarray_count(mem->objects));
 
     ptrarray_clear(mem->objects_back);
     for (int i = 0; i < ptrarray_count(mem->objects); i++) {
@@ -230,7 +230,7 @@ void gc_sweep(gcmem_t *mem) {
             // this should never fail because objects_back's size should be equal to objects
             bool ok = ptrarray_add(mem->objects_back, data);
             (void) ok;
-            APE_ASSERT(ok);
+            ARCANE_ASSERT(ok);
         }
         else {
             if (can_data_be_put_in_pool(mem, data)) {

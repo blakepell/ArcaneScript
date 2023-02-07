@@ -9,56 +9,56 @@
 #include <float.h>
 
 #if defined(__linux__)
-#define APE_LINUX
-#define APE_POSIX
+#define ARCANE_LINUX
+#define ARCANE_POSIX
 #elif defined(_WIN32)
-#define APE_WINDOWS
+#define ARCANE_WINDOWS
 #elif (defined(__APPLE__) && defined(__MACH__))
-#define APE_APPLE
-#define APE_POSIX
+#define ARCANE_APPLE
+#define ARCANE_POSIX
 #elif defined(__EMSCRIPTEN__)
-#define APE_EMSCRIPTEN
+#define ARCANE_EMSCRIPTEN
 #endif
 
 #if defined(__unix__)
 #include <unistd.h>
 #if defined(_POSIX_VERSION)
-#define APE_POSIX
+#define ARCANE_POSIX
 #endif
 #endif
 
-#if defined(APE_POSIX)
+#if defined(ARCANE_POSIX)
 #include <sys/time.h>
-#elif defined(APE_WINDOWS)
+#elif defined(ARCANE_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#elif defined(APE_EMSCRIPTEN)
+#elif defined(ARCANE_EMSCRIPTEN)
 #include <emscripten/emscripten.h>
 #endif
 
-#ifndef APE_AMALGAMATED
-#include "ape.h"
+#ifndef ARCANE_AMALGAMATED
+#include "arcane.h"
 #endif
 
-#define APE_STREQ(a, b) (strcmp((a), (b)) == 0)
-#define APE_STRNEQ(a, b, n) (strncmp((a), (b), (n)) == 0)
-#define APE_ARRAY_LEN(array) ((int)(sizeof(array) / sizeof(array[0])))
-#define APE_DBLEQ(a, b) (fabs((a) - (b)) < DBL_EPSILON)
+#define ARCANE_STREQ(a, b) (strcmp((a), (b)) == 0)
+#define ARCANE_STRNEQ(a, b, n) (strncmp((a), (b), (n)) == 0)
+#define ARCANE_ARRAY_LEN(array) ((int)(sizeof(array) / sizeof(array[0])))
+#define ARCANE_DBLEQ(a, b) (fabs((a) - (b)) < DBL_EPSILON)
 
-#ifdef APE_DEBUG
-#define APE_ASSERT(x) assert((x))
-#define APE_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define APE_LOG(...) ape_log(APE_FILENAME, __LINE__, __VA_ARGS__)
+#ifdef ARCANE_DEBUG
+#define ARCANE_ASSERT(x) assert((x))
+#define ARCANE_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define ARCANE_LOG(...) arcane_log(ARCANE_FILENAME, __LINE__, __VA_ARGS__)
 #else
-#define APE_ASSERT(x) ((void)0)
-#define APE_LOG(...) ((void)0)
+#define ARCANE_ASSERT(x) ((void)0)
+#define ARCANE_LOG(...) ((void)0)
 #endif
 
-#ifdef APE_AMALGAMATED
+#ifdef ARCANE_AMALGAMATED
 #define COLLECTIONS_AMALGAMATED
-#define APE_INTERNAL static
+#define ARCANE_INTERNAL static
 #else
-#define APE_INTERNAL
+#define ARCANE_INTERNAL
 #endif
 
 typedef struct compiled_file compiled_file_t;
@@ -70,22 +70,22 @@ typedef struct src_pos {
     int column;
 } src_pos_t;
 
-typedef struct ape_config {
+typedef struct arcane_config {
     struct {
         struct {
-            ape_stdout_write_fn write;
+            arcane_stdout_write_fn write;
             void *context;
         } write;
     } stdio;
 
     struct {
         struct {
-            ape_read_file_fn read_file;
+            arcane_read_file_fn read_file;
             void *context;
         } read_file;
 
         struct {
-            ape_write_file_fn write_file;
+            arcane_write_file_fn write_file;
             void *context;
         } write_file;
     } fileio;
@@ -94,33 +94,33 @@ typedef struct ape_config {
 
     double max_execution_time_ms;
     bool max_execution_time_set;
-} ape_config_t;
+} arcane_config_t;
 
-typedef struct ape_timer {
-#if defined(APE_POSIX)
+typedef struct arcane_timer {
+#if defined(ARCANE_POSIX)
     int64_t start_offset;
-#elif defined(APE_WINDOWS)
+#elif defined(ARCANE_WINDOWS)
     double pc_frequency;
 #endif
     double start_time_ms;
-} ape_timer_t;
+} arcane_timer_t;
 
-#ifndef APE_AMALGAMATED
+#ifndef ARCANE_AMALGAMATED
 extern const src_pos_t src_pos_invalid;
 extern const src_pos_t src_pos_zero;
 #endif
 
-APE_INTERNAL src_pos_t src_pos_make(const compiled_file_t *file, int line, int column);
-APE_INTERNAL char *ape_stringf(allocator_t *alloc, const char *format, ...);
-APE_INTERNAL void ape_log(const char *file, int line, const char *format, ...);
-APE_INTERNAL char *ape_strndup(allocator_t *alloc, const char *string, size_t n);
-APE_INTERNAL char *ape_strdup(allocator_t *alloc, const char *string);
+ARCANE_INTERNAL src_pos_t src_pos_make(const compiled_file_t *file, int line, int column);
+ARCANE_INTERNAL char *arcane_stringf(allocator_t *alloc, const char *format, ...);
+ARCANE_INTERNAL void arcane_log(const char *file, int line, const char *format, ...);
+ARCANE_INTERNAL char *arcane_strndup(allocator_t *alloc, const char *string, size_t n);
+ARCANE_INTERNAL char *arcane_strdup(allocator_t *alloc, const char *string);
 
-APE_INTERNAL uint64_t ape_double_to_uint64(double val);
-APE_INTERNAL double ape_uint64_to_double(uint64_t val);
+ARCANE_INTERNAL uint64_t arcane_double_to_uint64(double val);
+ARCANE_INTERNAL double arcane_uint64_to_double(uint64_t val);
 
-APE_INTERNAL bool ape_timer_platform_supported(void);
-APE_INTERNAL ape_timer_t ape_timer_start(void);
-APE_INTERNAL double ape_timer_get_elapsed_ms(const ape_timer_t *timer);
+ARCANE_INTERNAL bool arcane_timer_platform_supported(void);
+ARCANE_INTERNAL arcane_timer_t arcane_timer_start(void);
+ARCANE_INTERNAL double arcane_timer_get_elapsed_ms(const arcane_timer_t *timer);
 
 #endif /* common_h */
