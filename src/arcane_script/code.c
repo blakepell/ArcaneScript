@@ -235,5 +235,5 @@ bool code_read_operands(opcode_definition_t *def, uint8_t *instr, uint64_t out_o
         }
         offset += operand_width;
     }
-    return true;;
+    return true;
 }
