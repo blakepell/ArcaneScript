@@ -33,6 +33,7 @@
     <ClCompile Include="gc.c" />
     <ClCompile Include="global_store.c" />
     <ClCompile Include="lexer.c" />
+    <ClCompile Include="main.c" />
     <ClCompile Include="object.c" />
     <ClCompile Include="optimisation.c" />
     <ClCompile Include="parser.c" />
@@ -88,7 +89,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
