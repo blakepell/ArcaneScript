@@ -7,11 +7,10 @@
 #include <crtdbg.h>
 #include<stdio.h>
 #include "arcane.h"
-#include "arcane.h"
 
 char *read_file(const char *file_name);
 
-static arcane_object_t debug_fn(arcane_t *arcane, void *data, int argc, arcane_object_t *args);
+static arcane_object_t debug_fn(arcane_engine_t *arcane, void *data, int argc, arcane_object_t *args);
 
 int main()
 {
@@ -22,25 +21,25 @@ int main()
     char *code = read_file("C:\\Git\\ArcaneScript\\src\\examples\\test.arc");
 
     // Create the scripting environment
-    arcane_t *arcane = arcane_make();
+    arcane_engine_t *engine = arcane_make();
 
     // Add the native functions we're adding on before the program is compiled
-    arcane_set_native_function(arcane, "debug", debug_fn, NULL);
+    arcane_set_native_function(engine, "debug", debug_fn, NULL);
 
     // Compile the given program
-    arcane_program_t *program = arcane_compile(arcane, code);
+    arcane_program_t *program = arcane_compile(engine, code);
 
     for (int i = 0; i < 10000; i++)
     {
         printf("%d :: ", i);
         // Execute the program against it's scripting environment.
-        arcane_execute_program(arcane, program);
+        arcane_execute_program(engine, program);
         Sleep(1);
     }
 
     // Free the resources for the program and the scripting environment.
     arcane_program_destroy(program);
-    arcane_destroy(arcane);
+    arcane_destroy(engine);
 
     free(code);
     code = NULL;
@@ -51,7 +50,7 @@ int main()
     //Sleep(500);
 }
 
-static arcane_object_t debug_fn(arcane_t *arcane, void *data, int argc, arcane_object_t *args)
+static arcane_object_t debug_fn(arcane_engine_t *arcane, void *data, int argc, arcane_object_t *args)
 {
     if (argc == 1 && arcane_object_get_type(args[0]) == ARCANE_OBJECT_STRING)
     {

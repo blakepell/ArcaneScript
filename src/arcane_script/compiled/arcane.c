@@ -1,9 +1,13 @@
 /*
 SPDX-License-Identifier: MIT
 
+Arcane Script
+https:github.com/blakpell/ArcaneScript
+Copyright (c) 2023 Blake Pell
+
 ape
 https://github.com/kgabis/ape
-Copyright (c) 2021 Krzysztof Gabis
+Copyright (c) 2023 Krzysztof Gabis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1669,7 +1673,11 @@ extern "C"
 #define LOWER(c)             ((c) >= 'A' && (c) <= 'Z' ? (c)+'a'-'A' : (c))
 #define UPPER(c)             ((c) >= 'a' && (c) <= 'z' ? (c)+'A'-'a' : (c))
 
-typedef struct arcane arcane_t;
+/**
+ * \brief The execution environment for an instance of the script engine.
+ */
+typedef struct arcane_engine arcane_engine_t;
+
 typedef struct arcane_object {
     uint64_t _internal;
 } arcane_object_t;
@@ -1703,7 +1711,7 @@ typedef enum arcane_object_type {
     ARCANE_OBJECT_ANY = 0xffff, // for checking types with &
 } arcane_object_type_t;
 
-typedef arcane_object_t(*arcane_native_fn)(arcane_t *arcane, void *data, int argc, arcane_object_t *args);
+typedef arcane_object_t(*arcane_native_fn)(arcane_engine_t *arcane, void *data, int argc, arcane_object_t *args);
 typedef void *(*arcane_malloc_fn)(void *ctx, size_t size);
 typedef void (*arcane_free_fn)(void *ctx, void *ptr);
 typedef void (*arcane_data_destroy_fn)(void *data);
@@ -1716,33 +1724,33 @@ typedef size_t(*arcane_write_file_fn)(void *context, const char *path, const cha
 //-----------------------------------------------------------------------------
 // Ape API
 //-----------------------------------------------------------------------------
-arcane_t *arcane_make(void);
-arcane_t *arcane_make_ex(arcane_malloc_fn malloc_fn, arcane_free_fn free_fn, void *ctx);
-void   arcane_destroy(arcane_t *arcane);
+arcane_engine_t *arcane_make(void);
+arcane_engine_t *arcane_make_ex(arcane_malloc_fn malloc_fn, arcane_free_fn free_fn, void *ctx);
+void   arcane_destroy(arcane_engine_t *arcane);
 
-void   arcane_free_allocated(arcane_t *arcane, void *ptr);
+void   arcane_free_allocated(arcane_engine_t *arcane, void *ptr);
 
-void arcane_set_repl_mode(arcane_t *arcane, bool enabled);
+void arcane_set_repl_mode(arcane_engine_t *arcane, bool enabled);
 
 // -1 to disable, returns false if it can't be set for current platform (otherwise true).
 // If execution time exceeds given limit an ARCANE_ERROR_TIMEOUT error is set.
 // Precision is not guaranteed because time can't be checked every VM tick
 // but expect it to be submilisecond.
-bool arcane_set_timeout(arcane_t *arcane, double max_execution_time_ms);
+bool arcane_set_timeout(arcane_engine_t *arcane, double max_execution_time_ms);
 
-void arcane_set_stdout_write_function(arcane_t *arcane, arcane_stdout_write_fn stdout_write, void *context);
-void arcane_set_file_write_function(arcane_t *arcane, arcane_write_file_fn file_write, void *context);
-void arcane_set_file_read_function(arcane_t *arcane, arcane_read_file_fn file_read, void *context);
+void arcane_set_stdout_write_function(arcane_engine_t *arcane, arcane_stdout_write_fn stdout_write, void *context);
+void arcane_set_file_write_function(arcane_engine_t *arcane, arcane_write_file_fn file_write, void *context);
+void arcane_set_file_read_function(arcane_engine_t *arcane, arcane_read_file_fn file_read, void *context);
 
-arcane_program_t *arcane_compile(arcane_t *arcane, const char *code);
-arcane_program_t *arcane_compile_file(arcane_t *arcane, const char *path);
-arcane_object_t   arcane_execute_program(arcane_t *arcane, const arcane_program_t *program);
+arcane_program_t *arcane_compile(arcane_engine_t *arcane, const char *code);
+arcane_program_t *arcane_compile_file(arcane_engine_t *arcane, const char *path);
+arcane_object_t   arcane_execute_program(arcane_engine_t *arcane, const arcane_program_t *program);
 void           arcane_program_destroy(arcane_program_t *program);
 
-arcane_object_t  arcane_execute(arcane_t *arcane, const char *code);
-arcane_object_t  arcane_execute_file(arcane_t *arcane, const char *path);
+arcane_object_t  arcane_execute(arcane_engine_t *arcane, const char *code);
+arcane_object_t  arcane_execute_file(arcane_engine_t *arcane, const char *path);
 
-arcane_object_t  arcane_call(arcane_t *arcane, const char *function_name, int argc, arcane_object_t *args);
+arcane_object_t  arcane_call(arcane_engine_t *arcane, const char *function_name, int argc, arcane_object_t *args);
 #define ARCANE_CALL(arcane, function_name, ...) \
     arcane_call(\
         (arcane),\
@@ -1750,18 +1758,18 @@ arcane_object_t  arcane_call(arcane_t *arcane, const char *function_name, int ar
         sizeof((arcane_object_t[]){__VA_ARGS__}) / sizeof(arcane_object_t),\
         (arcane_object_t[]){__VA_ARGS__})
 
-void arcane_set_runtime_error(arcane_t *arcane, const char *message);
-void arcane_set_runtime_errorf(arcane_t *arcane, const char *format, ...) __attribute__((format(printf, 2, 3)));
-bool arcane_has_errors(const arcane_t *arcane);
-int  arcane_errors_count(const arcane_t *arcane);
-void arcane_clear_errors(arcane_t *arcane);
-const arcane_error_t *arcane_get_error(const arcane_t *arcane, int index);
+void arcane_set_runtime_error(arcane_engine_t *arcane, const char *message);
+void arcane_set_runtime_errorf(arcane_engine_t *arcane, const char *format, ...) __attribute__((format(printf, 2, 3)));
+bool arcane_has_errors(const arcane_engine_t *arcane);
+int  arcane_errors_count(const arcane_engine_t *arcane);
+void arcane_clear_errors(arcane_engine_t *arcane);
+const arcane_error_t *arcane_get_error(const arcane_engine_t *arcane, int index);
 
-bool arcane_set_native_function(arcane_t *arcane, const char *name, arcane_native_fn fn, void *data);
-bool arcane_set_global_constant(arcane_t *arcane, const char *name, arcane_object_t obj);
-arcane_object_t arcane_get_object(arcane_t *arcane, const char *name);
+bool arcane_set_native_function(arcane_engine_t *arcane, const char *name, arcane_native_fn fn, void *data);
+bool arcane_set_global_constant(arcane_engine_t *arcane, const char *name, arcane_object_t obj);
+arcane_object_t arcane_get_object(arcane_engine_t *arcane, const char *name);
 
-bool arcane_check_args(arcane_t *arcane, bool generate_error, int argc, arcane_object_t *args, int expected_argc, int *expected_types);
+bool arcane_check_args(arcane_engine_t *arcane, bool generate_error, int argc, arcane_object_t *args, int expected_argc, int *expected_types);
 #define ARCANE_CHECK_ARGS(arcane, generate_error, argc, args, ...)\
     arcane_check_args(\
         (arcane),\
@@ -1778,16 +1786,16 @@ bool arcane_check_args(arcane_t *arcane, bool generate_error, int argc, arcane_o
 arcane_object_t arcane_object_make_number(double val);
 arcane_object_t arcane_object_make_bool(bool val);
 arcane_object_t arcane_object_make_null(void);
-arcane_object_t arcane_object_make_string(arcane_t *arcane, const char *str);
-arcane_object_t arcane_object_make_stringf(arcane_t *arcane, const char *format, ...) __attribute__((format(printf, 2, 3)));
-arcane_object_t arcane_object_make_array(arcane_t *arcane);
-arcane_object_t arcane_object_make_map(arcane_t *arcane);
-arcane_object_t arcane_object_make_native_function(arcane_t *arcane, arcane_native_fn fn, void *data);
-arcane_object_t arcane_object_make_error(arcane_t *arcane, const char *message);
-arcane_object_t arcane_object_make_errorf(arcane_t *arcane, const char *format, ...) __attribute__((format(printf, 2, 3)));
-arcane_object_t arcane_object_make_external(arcane_t *arcane, void *data);
+arcane_object_t arcane_object_make_string(arcane_engine_t *arcane, const char *str);
+arcane_object_t arcane_object_make_stringf(arcane_engine_t *arcane, const char *format, ...) __attribute__((format(printf, 2, 3)));
+arcane_object_t arcane_object_make_array(arcane_engine_t *arcane);
+arcane_object_t arcane_object_make_map(arcane_engine_t *arcane);
+arcane_object_t arcane_object_make_native_function(arcane_engine_t *arcane, arcane_native_fn fn, void *data);
+arcane_object_t arcane_object_make_error(arcane_engine_t *arcane, const char *message);
+arcane_object_t arcane_object_make_errorf(arcane_engine_t *arcane, const char *format, ...) __attribute__((format(printf, 2, 3)));
+arcane_object_t arcane_object_make_external(arcane_engine_t *arcane, void *data);
 
-char *arcane_object_serialize(arcane_t *arcane, arcane_object_t obj);
+char *arcane_object_serialize(arcane_engine_t *arcane, arcane_object_t obj);
 
 bool arcane_object_disable_gc(arcane_object_t obj);
 void arcane_object_enable_gc(arcane_object_t obj);
@@ -1868,7 +1876,7 @@ int              arcane_error_get_column_number(const arcane_error_t *error);
 arcane_error_type_t arcane_error_get_type(const arcane_error_t *error);
 const char *arcane_error_get_type_string(const arcane_error_t *error);
 const char *arcane_error_type_to_string(arcane_error_type_t type);
-char *arcane_error_serialize(arcane_t *arcane, const arcane_error_t *error);
+char *arcane_error_serialize(arcane_engine_t *arcane, const arcane_error_t *error);
 const arcane_traceback_t *arcane_error_get_traceback(const arcane_error_t *error);
 
 //-----------------------------------------------------------------------------
@@ -15188,16 +15196,16 @@ static bool try_overload_operator(vm_t *vm, object_t left, object_t right, opcod
 
 typedef struct native_fn_wrapper {
     arcane_native_fn fn;
-    arcane_t *arcane;
+    arcane_engine_t *arcane;
     void *data;
 } native_fn_wrapper_t;
 
 typedef struct arcane_program {
-    arcane_t *arcane;
+    arcane_engine_t *arcane;
     compilation_result_t *comp_res;
 } arcane_program_t;
 
-typedef struct arcane {
+typedef struct arcane_engine {
     allocator_t alloc;
     gcmem_t *mem;
     ptrarray(compiled_file_t) *files;
@@ -15209,16 +15217,16 @@ typedef struct arcane {
 
     allocator_t custom_allocator;
 
-} arcane_t;
+} arcane_engine_t;
 
-static void arcane_deinit(arcane_t *arcane);
+static void arcane_deinit(arcane_engine_t *arcane);
 static object_t arcane_native_fn_wrapper(vm_t *vm, void *data, int argc, object_t *args);
 static object_t arcane_object_to_object(arcane_object_t obj);
 static arcane_object_t object_to_arcane_object(object_t obj);
-static arcane_object_t arcane_object_make_native_function_with_name(arcane_t *arcane, const char *name, arcane_native_fn fn, void *data);
+static arcane_object_t arcane_object_make_native_function_with_name(arcane_engine_t *arcane, const char *name, arcane_native_fn fn, void *data);
 
-static void reset_state(arcane_t *arcane);
-static void set_default_config(arcane_t *arcane);
+static void reset_state(arcane_engine_t *arcane);
+static void set_default_config(arcane_engine_t *arcane);
 static char *read_file_default(void *ctx, const char *filename);
 static size_t write_file_default(void *context, const char *path, const char *string, size_t string_size);
 static size_t stdout_write_default(void *context, const void *data, size_t size);
@@ -15229,19 +15237,19 @@ static void arcane_free(void *ctx, void *ptr);
 //-----------------------------------------------------------------------------
 // Ape
 //-----------------------------------------------------------------------------
-arcane_t *arcane_make(void) {
+arcane_engine_t *arcane_make(void) {
     return arcane_make_ex(NULL, NULL, NULL);
 }
 
-arcane_t *arcane_make_ex(arcane_malloc_fn malloc_fn, arcane_free_fn free_fn, void *ctx) {
+arcane_engine_t *arcane_make_ex(arcane_malloc_fn malloc_fn, arcane_free_fn free_fn, void *ctx) {
     allocator_t custom_alloc = allocator_make((allocator_malloc_fn) malloc_fn, (allocator_free_fn) free_fn, ctx);
 
-    arcane_t *arcane = allocator_malloc(&custom_alloc, sizeof(arcane_t));
+    arcane_engine_t *arcane = allocator_malloc(&custom_alloc, sizeof(arcane_engine_t));
     if (!arcane) {
         return NULL;
     }
 
-    memset(arcane, 0, sizeof(arcane_t));
+    memset(arcane, 0, sizeof(arcane_engine_t));
     arcane->alloc = allocator_make(arcane_malloc, arcane_free, arcane);
     arcane->custom_allocator = custom_alloc;
 
@@ -15281,7 +15289,7 @@ err:
     return NULL;
 }
 
-void arcane_destroy(arcane_t *arcane) {
+void arcane_destroy(arcane_engine_t *arcane) {
     if (!arcane) {
         return;
     }
@@ -15290,15 +15298,15 @@ void arcane_destroy(arcane_t *arcane) {
     allocator_free(&alloc, arcane);
 }
 
-void arcane_free_allocated(arcane_t *arcane, void *ptr) {
+void arcane_free_allocated(arcane_engine_t *arcane, void *ptr) {
     allocator_free(&arcane->alloc, ptr);
 }
 
-void arcane_set_repl_mode(arcane_t *arcane, bool enabled) {
+void arcane_set_repl_mode(arcane_engine_t *arcane, bool enabled) {
     arcane->config.repl_mode = enabled;
 }
 
-bool arcane_set_timeout(arcane_t *arcane, double max_execution_time_ms) {
+bool arcane_set_timeout(arcane_engine_t *arcane, double max_execution_time_ms) {
     if (!arcane_timer_platform_supported()) {
         arcane->config.max_execution_time_ms = 0;
         arcane->config.max_execution_time_set = false;
@@ -15316,22 +15324,22 @@ bool arcane_set_timeout(arcane_t *arcane, double max_execution_time_ms) {
     return true;
 }
 
-void arcane_set_stdout_write_function(arcane_t *arcane, arcane_stdout_write_fn stdout_write, void *context) {
+void arcane_set_stdout_write_function(arcane_engine_t *arcane, arcane_stdout_write_fn stdout_write, void *context) {
     arcane->config.stdio.write.write = stdout_write;
     arcane->config.stdio.write.context = context;
 }
 
-void arcane_set_file_write_function(arcane_t *arcane, arcane_write_file_fn file_write, void *context) {
+void arcane_set_file_write_function(arcane_engine_t *arcane, arcane_write_file_fn file_write, void *context) {
     arcane->config.fileio.write_file.write_file = file_write;
     arcane->config.fileio.write_file.context = context;
 }
 
-void arcane_set_file_read_function(arcane_t *arcane, arcane_read_file_fn file_read, void *context) {
+void arcane_set_file_read_function(arcane_engine_t *arcane, arcane_read_file_fn file_read, void *context) {
     arcane->config.fileio.read_file.read_file = file_read;
     arcane->config.fileio.read_file.context = context;
 }
 
-arcane_program_t *arcane_compile(arcane_t *arcane, const char *code) {
+arcane_program_t *arcane_compile(arcane_engine_t *arcane, const char *code) {
     arcane_clear_errors(arcane);
 
     compilation_result_t *comp_res = NULL;
@@ -15354,7 +15362,7 @@ err:
     return NULL;
 }
 
-arcane_program_t *arcane_compile_file(arcane_t *arcane, const char *path) {
+arcane_program_t *arcane_compile_file(arcane_engine_t *arcane, const char *path) {
     arcane_clear_errors(arcane);
 
     compilation_result_t *comp_res = NULL;
@@ -15378,7 +15386,7 @@ err:
     return NULL;
 }
 
-arcane_object_t arcane_execute_program(arcane_t *arcane, const arcane_program_t *program) {
+arcane_object_t arcane_execute_program(arcane_engine_t *arcane, const arcane_program_t *program) {
     reset_state(arcane);
 
     if (arcane != program->arcane) {
@@ -15409,7 +15417,7 @@ void arcane_program_destroy(arcane_program_t *program) {
     allocator_free(&program->arcane->alloc, program);
 }
 
-arcane_object_t arcane_execute(arcane_t *arcane, const char *code) {
+arcane_object_t arcane_execute(arcane_engine_t *arcane, const char *code) {
     reset_state(arcane);
 
     compilation_result_t *comp_res = NULL;
@@ -15440,7 +15448,7 @@ err:
     return arcane_object_make_null();
 }
 
-arcane_object_t arcane_execute_file(arcane_t *arcane, const char *path) {
+arcane_object_t arcane_execute_file(arcane_engine_t *arcane, const char *path) {
     reset_state(arcane);
 
     compilation_result_t *comp_res = NULL;
@@ -15471,7 +15479,7 @@ err:
     return arcane_object_make_null();
 }
 
-arcane_object_t arcane_call(arcane_t *arcane, const char *function_name, int argc, arcane_object_t *args) {
+arcane_object_t arcane_call(arcane_engine_t *arcane, const char *function_name, int argc, arcane_object_t *args) {
     reset_state(arcane);
 
     object_t callee = arcane_object_to_object(arcane_get_object(arcane, function_name));
@@ -15485,23 +15493,23 @@ arcane_object_t arcane_call(arcane_t *arcane, const char *function_name, int arg
     return object_to_arcane_object(res);
 }
 
-bool arcane_has_errors(const arcane_t *arcane) {
+bool arcane_has_errors(const arcane_engine_t *arcane) {
     return arcane_errors_count(arcane) > 0;
 }
 
-int arcane_errors_count(const arcane_t *arcane) {
+int arcane_errors_count(const arcane_engine_t *arcane) {
     return errors_get_count(&arcane->errors);
 }
 
-void arcane_clear_errors(arcane_t *arcane) {
+void arcane_clear_errors(arcane_engine_t *arcane) {
     errors_clear(&arcane->errors);
 }
 
-const arcane_error_t *arcane_get_error(const arcane_t *arcane, int index) {
+const arcane_error_t *arcane_get_error(const arcane_engine_t *arcane, int index) {
     return (const arcane_error_t *) errors_getc(&arcane->errors, index);
 }
 
-bool arcane_set_native_function(arcane_t *arcane, const char *name, arcane_native_fn fn, void *data) {
+bool arcane_set_native_function(arcane_engine_t *arcane, const char *name, arcane_native_fn fn, void *data) {
     arcane_object_t obj = arcane_object_make_native_function_with_name(arcane, name, fn, data);
     if (arcane_object_is_null(obj)) {
         return false;
@@ -15509,11 +15517,11 @@ bool arcane_set_native_function(arcane_t *arcane, const char *name, arcane_nativ
     return arcane_set_global_constant(arcane, name, obj);
 }
 
-bool arcane_set_global_constant(arcane_t *arcane, const char *name, arcane_object_t obj) {
+bool arcane_set_global_constant(arcane_engine_t *arcane, const char *name, arcane_object_t obj) {
     return global_store_set(arcane->global_store, name, arcane_object_to_object(obj));
 }
 
-arcane_object_t arcane_get_object(arcane_t *arcane, const char *name) {
+arcane_object_t arcane_get_object(arcane_engine_t *arcane, const char *name) {
     symbol_table_t *st = compiler_get_symbol_table(arcane->compiler);
     const symbol_t *symbol = symbol_table_resolve(st, name);
     if (!symbol) {
@@ -15539,7 +15547,7 @@ arcane_object_t arcane_get_object(arcane_t *arcane, const char *name) {
     return object_to_arcane_object(res);
 }
 
-bool arcane_check_args(arcane_t *arcane, bool generate_error, int argc, arcane_object_t *args, int expected_argc, int *expected_types) {
+bool arcane_check_args(arcane_engine_t *arcane, bool generate_error, int argc, arcane_object_t *args, int expected_argc, int *expected_types) {
     if (argc != expected_argc) {
         if (generate_error) {
             arcane_set_runtime_errorf(arcane, "Invalid number or arguments, got %d instead of %d", argc, expected_argc);
@@ -15575,11 +15583,11 @@ arcane_object_t arcane_object_make_bool(bool val) {
     return object_to_arcane_object(object_make_bool(val));
 }
 
-arcane_object_t arcane_object_make_string(arcane_t *arcane, const char *str) {
+arcane_object_t arcane_object_make_string(arcane_engine_t *arcane, const char *str) {
     return object_to_arcane_object(object_make_string(arcane->mem, str));
 }
 
-arcane_object_t arcane_object_make_stringf(arcane_t *arcane, const char *fmt, ...) {
+arcane_object_t arcane_object_make_stringf(arcane_engine_t *arcane, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     int to_write = vsnprintf(NULL, 0, fmt, args);
@@ -15602,23 +15610,23 @@ arcane_object_t arcane_object_make_null() {
     return object_to_arcane_object(object_make_null());
 }
 
-arcane_object_t arcane_object_make_array(arcane_t *arcane) {
+arcane_object_t arcane_object_make_array(arcane_engine_t *arcane) {
     return object_to_arcane_object(object_make_array(arcane->mem));
 }
 
-arcane_object_t arcane_object_make_map(arcane_t *arcane) {
+arcane_object_t arcane_object_make_map(arcane_engine_t *arcane) {
     return object_to_arcane_object(object_make_map(arcane->mem));
 }
 
-arcane_object_t arcane_object_make_native_function(arcane_t *arcane, arcane_native_fn fn, void *data) {
+arcane_object_t arcane_object_make_native_function(arcane_engine_t *arcane, arcane_native_fn fn, void *data) {
     return arcane_object_make_native_function_with_name(arcane, "", fn, data);
 }
 
-arcane_object_t arcane_object_make_error(arcane_t *arcane, const char *msg) {
+arcane_object_t arcane_object_make_error(arcane_engine_t *arcane, const char *msg) {
     return object_to_arcane_object(object_make_error(arcane->mem, msg));
 }
 
-arcane_object_t arcane_object_make_errorf(arcane_t *arcane, const char *fmt, ...) {
+arcane_object_t arcane_object_make_errorf(arcane_engine_t *arcane, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     int to_write = vsnprintf(NULL, 0, fmt, args);
@@ -15635,12 +15643,12 @@ arcane_object_t arcane_object_make_errorf(arcane_t *arcane, const char *fmt, ...
     return object_to_arcane_object(object_make_error_no_copy(arcane->mem, res));
 }
 
-arcane_object_t arcane_object_make_external(arcane_t *arcane, void *data) {
+arcane_object_t arcane_object_make_external(arcane_engine_t *arcane, void *data) {
     object_t res = object_make_external(arcane->mem, data);
     return object_to_arcane_object(res);
 }
 
-char *arcane_object_serialize(arcane_t *arcane, arcane_object_t obj) {
+char *arcane_object_serialize(arcane_engine_t *arcane, arcane_object_t obj) {
     return object_serialize(&arcane->alloc, arcane_object_to_object(obj));
 }
 
@@ -15678,11 +15686,11 @@ arcane_object_t arcane_object_deep_copy(arcane_object_t arcane_obj) {
     return object_to_arcane_object(res);
 }
 
-void arcane_set_runtime_error(arcane_t *arcane, const char *message) {
+void arcane_set_runtime_error(arcane_engine_t *arcane, const char *message) {
     errors_add_error(&arcane->errors, ERROR_RUNTIME, src_pos_invalid, message);
 }
 
-void arcane_set_runtime_errorf(arcane_t *arcane, const char *fmt, ...) {
+void arcane_set_runtime_errorf(arcane_engine_t *arcane, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     int to_write = vsnprintf(NULL, 0, fmt, args);
@@ -16040,7 +16048,7 @@ const char *arcane_error_type_to_string(arcane_error_type_t type) {
     }
 }
 
-char *arcane_error_serialize(arcane_t *arcane, const arcane_error_t *err) {
+char *arcane_error_serialize(arcane_engine_t *arcane, const arcane_error_t *err) {
     const char *type_str = arcane_error_get_type_string(err);
     const char *filename = arcane_error_get_filepath(err);
     const char *line = arcane_error_get_line(err);
@@ -16136,7 +16144,7 @@ const char *arcane_traceback_get_function_name(const arcane_traceback_t *arcane_
 //-----------------------------------------------------------------------------
 // Ape internal
 //-----------------------------------------------------------------------------
-static void arcane_deinit(arcane_t *arcane) {
+static void arcane_deinit(arcane_engine_t *arcane) {
     vm_destroy(arcane->vm);
     compiler_destroy(arcane->compiler);
     global_store_destroy(arcane->global_store);
@@ -16168,7 +16176,7 @@ static arcane_object_t object_to_arcane_object(object_t obj) {
     };
 }
 
-static arcane_object_t arcane_object_make_native_function_with_name(arcane_t *arcane, const char *name, arcane_native_fn fn, void *data) {
+static arcane_object_t arcane_object_make_native_function_with_name(arcane_engine_t *arcane, const char *name, arcane_native_fn fn, void *data) {
     native_fn_wrapper_t wrapper;
     memset(&wrapper, 0, sizeof(native_fn_wrapper_t));
     wrapper.fn = fn;
@@ -16181,12 +16189,12 @@ static arcane_object_t arcane_object_make_native_function_with_name(arcane_t *ar
     return object_to_arcane_object(wrapper_native_function);
 }
 
-static void reset_state(arcane_t *arcane) {
+static void reset_state(arcane_engine_t *arcane) {
     arcane_clear_errors(arcane);
     vm_reset(arcane->vm);
 }
 
-static void set_default_config(arcane_t *arcane) {
+static void set_default_config(arcane_engine_t *arcane) {
     memset(&arcane->config, 0, sizeof(arcane_config_t));
     arcane_set_repl_mode(arcane, false);
     arcane_set_timeout(arcane, -1);
@@ -16196,7 +16204,7 @@ static void set_default_config(arcane_t *arcane) {
 }
 
 static char *read_file_default(void *ctx, const char *filename) {
-    arcane_t *arcane = (arcane_t *) ctx;
+    arcane_engine_t *arcane = (arcane_engine_t *) ctx;
     FILE *fp = fopen(filename, "r");
     size_t size_to_read = 0;
     size_t size_read = 0;
@@ -16246,7 +16254,7 @@ static size_t stdout_write_default(void *ctx, const void *data, size_t size) {
 }
 
 static void *arcane_malloc(void *ctx, size_t size) {
-    arcane_t *arcane = (arcane_t *) ctx;
+    arcane_engine_t *arcane = (arcane_engine_t *) ctx;
     void *res = allocator_malloc(&arcane->custom_allocator, size);
     if (!res) {
         errors_add_error(&arcane->errors, ERROR_ALLOCATION, src_pos_invalid, "Allocation failed");
@@ -16255,6 +16263,6 @@ static void *arcane_malloc(void *ctx, size_t size) {
 }
 
 static void arcane_free(void *ctx, void *ptr) {
-    arcane_t *arcane = (arcane_t *) ctx;
+    arcane_engine_t *arcane = (arcane_engine_t *) ctx;
     allocator_free(&arcane->custom_allocator, ptr);
 }//FILE_END
