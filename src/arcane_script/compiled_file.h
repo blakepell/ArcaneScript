@@ -8,14 +8,15 @@
 
 typedef struct compiled_file compiled_file_t;
 
-typedef struct compiled_file {
-    allocator_t *alloc;
-    char *dir_path;
-    char *path;
-    ptrarray(char *) *lines;
+typedef struct compiled_file
+{
+	allocator_t* alloc;
+	char* dir_path;
+	char* path;
+	ptrarray(char *)* lines;
 } compiled_file_t;
 
-ARCANE_INTERNAL compiled_file_t *compiled_file_make(allocator_t *alloc, const char *path);
-ARCANE_INTERNAL void compiled_file_destroy(compiled_file_t *file);
+ARCANE_INTERNAL compiled_file_t* compiled_file_make(allocator_t* alloc, const char* path);
+ARCANE_INTERNAL void compiled_file_destroy(compiled_file_t* file);
 
 #endif /* compiled_file_h */
