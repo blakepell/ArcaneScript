@@ -255,6 +255,13 @@ err:
 
 arcane_object_t arcane_execute_program(arcane_engine_t* arcane, const arcane_program_t* program)
 {
+	if (program == NULL)
+	{
+		errors_add_error(&arcane->errors, ERROR_USER, src_pos_invalid,
+			"program passed to execute was null.");
+		return arcane_object_make_null();
+	}
+
 	reset_state(arcane);
 
 	if (arcane != program->arcane)
