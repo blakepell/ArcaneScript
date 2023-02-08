@@ -2183,9 +2183,9 @@ static void change_uint16_operand(compiler_t* comp, int ip, uint16_t operand)
 		ARCANE_ASSERT(false);
 		return;
 	}
-	uint8_t hi = (uint8_t)(operand >> 8);
+	uint8_t hi = operand >> 8;
 	array_set(bytecode, ip, &hi);
-	uint8_t lo = (uint8_t)(operand);
+	uint8_t lo = operand;
 	array_set(bytecode, ip + 1, &lo);
 }
 

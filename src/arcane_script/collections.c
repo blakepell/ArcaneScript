@@ -32,7 +32,7 @@ static unsigned int upper_power_of_two(unsigned int v);
 
 static char* collections_strndup(allocator_t* alloc, const char* string, size_t n)
 {
-	char* output_string = (char*)allocator_malloc(alloc, n + 1);
+	char* output_string = allocator_malloc(alloc, n + 1);
 	if (!output_string)
 	{
 		return NULL;
@@ -54,7 +54,7 @@ static char* collections_strdup(allocator_t* alloc, const char* string)
 static unsigned long collections_hash(const void* ptr, size_t len)
 {
 	/* djb2 */
-	const uint8_t* ptr_u8 = (const uint8_t*)ptr;
+	const uint8_t* ptr_u8 = ptr;
 	unsigned long hash = 5381;
 	for (size_t i = 0; i < len; i++)
 	{
@@ -853,10 +853,7 @@ static bool valdict_keys_are_equal(const valdict_t_* dict, const void* a, const 
 	{
 		return dict->_keys_equals(a, b);
 	}
-	else
-	{
-		return memcmp(a, b, dict->key_size) == 0;
-	}
+	return memcmp(a, b, dict->key_size) == 0;
 }
 
 static unsigned long valdict_hash_key(const valdict_t_* dict, const void* key)
@@ -865,10 +862,7 @@ static unsigned long valdict_hash_key(const valdict_t_* dict, const void* key)
 	{
 		return dict->_hash_key(key);
 	}
-	else
-	{
-		return collections_hash(key, dict->key_size);
-	}
+	return collections_hash(key, dict->key_size);
 }
 
 //-----------------------------------------------------------------------------
@@ -1909,7 +1903,6 @@ char* kg_canonicalise_path(allocator_t* alloc, const char* path)
 			ptrarray_remove_at(split, i);
 			ptrarray_remove_at(split, i);
 			i = -1;
-			continue;
 		}
 	}
 

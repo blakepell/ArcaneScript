@@ -91,7 +91,7 @@ static expression_t* parse_incdec_postfix_expression(parser_t* p, expression_t* 
 static precedence_t get_precedence(token_type_t tk);
 static operator_t token_to_operator(token_type_t tk);
 
-static char escarcane_char(const char c);
+static char escarcane_char(char c);
 static char* process_and_copy_string(allocator_t* alloc, const char* input, size_t len);
 static expression_t*
 wrap_expression_in_function_call(allocator_t* alloc, expression_t* expr, const char* function_name);
@@ -710,10 +710,7 @@ static statement_t* parse_for_loop_statement(parser_t* p)
 	{
 		return parse_foreach(p);
 	}
-	else
-	{
-		return parse_classic_for_loop(p);
-	}
+	return parse_classic_for_loop(p);
 }
 
 static statement_t* parse_foreach(parser_t* p)
@@ -2022,7 +2019,7 @@ error:
 static expression_t* wrap_expression_in_function_call(allocator_t* alloc, expression_t* expr, const char* function_name)
 {
 	token_t fn_token;
-	token_init(&fn_token, TOKEN_IDENT, function_name, (int)strlen(function_name));
+	token_init(&fn_token, TOKEN_IDENT, function_name, strlen(function_name));
 	fn_token.pos = expr->pos;
 
 	ident_t* ident = ident_make(alloc, fn_token);
@@ -2032,7 +2029,7 @@ static expression_t* wrap_expression_in_function_call(allocator_t* alloc, expres
 	}
 	ident->pos = fn_token.pos;
 
-	expression_t* function_ident_expr = expression_make_ident(alloc, ident);;
+	expression_t* function_ident_expr = expression_make_ident(alloc, ident);
 	if (!function_ident_expr)
 	{
 		ident_destroy(ident);

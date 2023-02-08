@@ -87,7 +87,7 @@ arcane_engine_t* arcane_make(void)
 
 arcane_engine_t* arcane_make_ex(arcane_malloc_fn malloc_fn, arcane_free_fn free_fn, void* ctx)
 {
-	allocator_t custom_alloc = allocator_make((allocator_malloc_fn)malloc_fn, (allocator_free_fn)free_fn, ctx);
+	allocator_t custom_alloc = allocator_make(malloc_fn, free_fn, ctx);
 
 	arcane_engine_t* arcane = allocator_malloc(&custom_alloc, sizeof(arcane_engine_t));
 	if (!arcane)
@@ -549,7 +549,7 @@ arcane_object_t arcane_object_make_errorf(arcane_engine_t* arcane, const char* f
 	int to_write = vsnprintf(NULL, 0, fmt, args);
 	va_end(args);
 	va_start(args, fmt);
-	char* res = (char*)allocator_malloc(&arcane->alloc, to_write + 1);
+	char* res = allocator_malloc(&arcane->alloc, to_write + 1);
 	if (!res)
 	{
 		return arcane_object_make_null();
@@ -737,12 +737,12 @@ const arcane_traceback_t* arcane_object_get_error_traceback(arcane_object_t arca
 
 bool arcane_object_set_external_destroy_function(arcane_object_t object, arcane_data_destroy_fn destroy_fn)
 {
-	return object_set_external_destroy_function(arcane_object_to_object(object), (external_data_destroy_fn)destroy_fn);
+	return object_set_external_destroy_function(arcane_object_to_object(object), destroy_fn);
 }
 
 bool arcane_object_set_external_copy_function(arcane_object_t object, arcane_data_copy_fn copy_fn)
 {
-	return object_set_external_copy_function(arcane_object_to_object(object), (external_data_copy_fn)copy_fn);
+	return object_set_external_copy_function(arcane_object_to_object(object), copy_fn);
 }
 
 //-----------------------------------------------------------------------------
@@ -1216,7 +1216,7 @@ static void arcane_deinit(arcane_engine_t* arcane)
 static object_t arcane_native_fn_wrapper(vm_t* vm, void* data, int argc, object_t* args)
 {
 	(void)vm;
-	native_fn_wrapper_t* wrapper = (native_fn_wrapper_t*)data;
+	native_fn_wrapper_t* wrapper = data;
 	ARCANE_ASSERT(vm == wrapper->arcane->vm);
 	arcane_object_t res = wrapper->fn(wrapper->arcane, wrapper->data, argc, (arcane_object_t*)args);
 	if (arcane_has_errors(wrapper->arcane))
@@ -1275,7 +1275,7 @@ static void set_default_config(arcane_engine_t* arcane)
 
 static char* read_file_default(void* ctx, const char* filename)
 {
-	arcane_engine_t* arcane = (arcane_engine_t*)ctx;
+	arcane_engine_t* arcane = ctx;
 	FILE* fp = fopen(filename, "r");
 	size_t size_to_read = 0;
 	size_t size_read = 0;
@@ -1333,7 +1333,7 @@ static size_t stdout_write_default(void* ctx, const void* data, size_t size)
 
 static void* arcane_malloc(void* ctx, size_t size)
 {
-	arcane_engine_t* arcane = (arcane_engine_t*)ctx;
+	arcane_engine_t* arcane = ctx;
 	void* res = allocator_malloc(&arcane->custom_allocator, size);
 	if (!res)
 	{
@@ -1344,6 +1344,6 @@ static void* arcane_malloc(void* ctx, size_t size)
 
 static void arcane_free(void* ctx, void* ptr)
 {
-	arcane_engine_t* arcane = (arcane_engine_t*)ctx;
+	arcane_engine_t* arcane = ctx;
 	allocator_free(&arcane->custom_allocator, ptr);
 }

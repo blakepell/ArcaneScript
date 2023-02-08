@@ -27,7 +27,7 @@ void errors_add_error(errors_t* errors, error_type_t type, src_pos_t pos, const 
 	error_t err;
 	memset(&err, 0, sizeof(error_t));
 	err.type = type;
-	int len = (int)strlen(message);
+	int len = strlen(message);
 	int to_copy = len;
 	if (to_copy >= (ERROR_MESSAGE_MAX_LENGTH - 1))
 	{

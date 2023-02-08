@@ -73,7 +73,7 @@ object_t object_make_null()
 
 object_t object_make_string(gcmem_t* mem, const char* string)
 {
-	int len = (int)strlen(string);
+	int len = strlen(string);
 	object_t res = object_make_string_with_capacity(mem, len);
 	if (object_is_null(res))
 	{
@@ -211,8 +211,8 @@ object_t object_make_map_with_capacity(gcmem_t* mem, unsigned capacity)
 	{
 		return object_make_null();
 	}
-	valdict_set_hash_function(data->map, (collections_hash_fn)object_hash);
-	valdict_set_equals_function(data->map, (collections_equals_fn)object_equals_wrapped);
+	valdict_set_hash_function(data->map, object_hash);
+	valdict_set_equals_function(data->map, object_equals_wrapped);
 	return object_make_from_data(OBJECT_MAP, data);
 }
 
@@ -251,7 +251,7 @@ object_t object_make_errorf(gcmem_t* mem, const char* fmt, ...)
 	int to_write = vsnprintf(NULL, 0, fmt, args);
 	va_end(args);
 	va_start(args, fmt);
-	char* res = (char*)allocator_malloc(mem->alloc, to_write + 1);
+	char* res = allocator_malloc(mem->alloc, to_write + 1);
 	if (!res)
 	{
 		return object_make_null();
@@ -740,7 +740,7 @@ double object_compare(object_t a, object_t b, bool* out_ok)
 		double right_val = object_get_number(b);
 		return left_val - right_val;
 	}
-	else if (a_type == b_type && a_type == OBJECT_STRING)
+	if (a_type == b_type && a_type == OBJECT_STRING)
 	{
 		int a_len = object_get_string_length(a);
 		int b_len = object_get_string_length(b);
@@ -758,17 +758,14 @@ double object_compare(object_t a, object_t b, bool* out_ok)
 		const char* b_string = object_get_string(b);
 		return strcmp(a_string, b_string);
 	}
-	else if ((object_is_allocated(a) || object_is_null(a))
+	if ((object_is_allocated(a) || object_is_null(a))
 		&& (object_is_allocated(b) || object_is_null(b)))
 	{
 		intptr_t a_data_val = (intptr_t)object_get_allocated_data(a);
 		intptr_t b_data_val = (intptr_t)object_get_allocated_data(b);
 		return (double)(a_data_val - b_data_val);
 	}
-	else
-	{
-		*out_ok = false;
-	}
+	*out_ok = false;
 	return 1;
 }
 
@@ -968,10 +965,7 @@ const char* object_get_function_name(object_t obj)
 	{
 		return data->function.name;
 	}
-	else
-	{
-		return data->function.const_name;
-	}
+	return data->function.const_name;
 }
 
 object_t object_get_function_free_val(object_t obj, int ix)
@@ -993,10 +987,7 @@ object_t object_get_function_free_val(object_t obj, int ix)
 	{
 		return fun->free_vals_allocated[ix];
 	}
-	else
-	{
-		return fun->free_vals_buf[ix];
-	}
+	return fun->free_vals_buf[ix];
 }
 
 void object_set_function_free_val(object_t obj, int ix, object_t val)
@@ -1038,10 +1029,7 @@ object_t* object_get_function_free_vals(object_t obj)
 	{
 		return fun->free_vals_allocated;
 	}
-	else
-	{
-		return fun->free_vals_buf;
-	}
+	return fun->free_vals_buf;
 }
 
 const char* object_get_error_message(object_t object)
@@ -1526,10 +1514,7 @@ static char* object_data_get_string(object_data_t* data)
 	{
 		return data->string.value_allocated;
 	}
-	else
-	{
-		return data->string.value_buf;
-	}
+	return data->string.value_buf;
 }
 
 static bool object_data_string_reserve_capacity(object_data_t* data, int capacity)

@@ -153,15 +153,12 @@ object_t vm_call(vm_t* vm, array(object_t)* constants, object_t callee, int argc
 		vm->this_sp = old_this_sp;
 		return vm_get_last_popped(vm);
 	}
-	else if (type == OBJECT_NATIVE_FUNCTION)
+	if (type == OBJECT_NATIVE_FUNCTION)
 	{
 		return call_native_function(vm, callee, src_pos_invalid, argc, args);
 	}
-	else
-	{
-		errors_add_error(vm->errors, ERROR_USER, src_pos_invalid, "Object is not callable");
-		return object_make_null();
-	}
+	errors_add_error(vm->errors, ERROR_USER, src_pos_invalid, "Object is not callable");
+	return object_make_null();
 }
 
 bool vm_execute_function(vm_t* vm, object_t function, array(object_t)* constants)
@@ -287,8 +284,8 @@ bool vm_execute_function(vm_t* vm, object_t function, array(object_t)* constants
 				}
 				else if (left_type == OBJECT_STRING && right_type == OBJECT_STRING && opcode == OPCODE_ADD)
 				{
-					int left_len = (int)object_get_string_length(left);
-					int right_len = (int)object_get_string_length(right);
+					int left_len = object_get_string_length(left);
+					int right_len = object_get_string_length(right);
 
 					if (left_len == 0)
 					{
@@ -975,31 +972,28 @@ bool vm_execute_function(vm_t* vm, object_t function, array(object_t)* constants
 				{
 					goto end;
 				}
-				else
+				if (!err->traceback)
 				{
-					if (!err->traceback)
-					{
-						err->traceback = traceback_make(vm->alloc);
-					}
-					if (err->traceback)
-					{
-						traceback_append_from_vm(err->traceback, vm);
-					}
-					while (vm->frames_count > (recover_frame_ix + 1))
-					{
-						pop_frame(vm);
-					}
-					object_t err_obj = object_make_error(vm->mem, err->message);
-					if (!object_is_null(err_obj))
-					{
-						object_set_error_traceback(err_obj, err->traceback);
-						err->traceback = NULL;
-					}
-					stack_push(vm, err_obj);
-					vm->current_frame->ip = vm->current_frame->recover_ip;
-					vm->current_frame->is_recovering = true;
-					errors_clear(vm->errors);
+					err->traceback = traceback_make(vm->alloc);
 				}
+				if (err->traceback)
+				{
+					traceback_append_from_vm(err->traceback, vm);
+				}
+				while (vm->frames_count > (recover_frame_ix + 1))
+				{
+					pop_frame(vm);
+				}
+				object_t err_obj = object_make_error(vm->mem, err->message);
+				if (!object_is_null(err_obj))
+				{
+					object_set_error_traceback(err_obj, err->traceback);
+					err->traceback = NULL;
+				}
+				stack_push(vm, err_obj);
+				vm->current_frame->ip = vm->current_frame->recover_ip;
+				vm->current_frame->is_recovering = true;
+				errors_clear(vm->errors);
 			}
 			else
 			{

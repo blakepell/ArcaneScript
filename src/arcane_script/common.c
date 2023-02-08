@@ -32,7 +32,7 @@ char* arcane_stringf(allocator_t* alloc, const char* format, ...)
 	int to_write = vsnprintf(NULL, 0, format, args);
 	va_end(args);
 	va_start(args, format);
-	char* res = (char*)allocator_malloc(alloc, to_write + 1);
+	char* res = allocator_malloc(alloc, to_write + 1);
 	if (!res)
 	{
 		return NULL;
@@ -62,7 +62,7 @@ void arcane_log(const char* file, int line, const char* format, ...)
 
 char* arcane_strndup(allocator_t* alloc, const char* string, size_t n)
 {
-	char* output_string = (char*)allocator_malloc(alloc, n + 1);
+	char* output_string = allocator_malloc(alloc, n + 1);
 	if (!output_string)
 	{
 		return NULL;

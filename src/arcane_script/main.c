@@ -77,7 +77,7 @@ char* read_file(const char* filename)
 	rewind(file);
 
 	// Allocate memory for the file contents
-	char* file_contents = (char*)calloc(file_size, sizeof(char) + 1);
+	char* file_contents = calloc(file_size, sizeof(char) + 1);
 	//char *file_contents = (char *) malloc(file_size * sizeof(char));
 	if (file_contents == NULL)
 	{
@@ -87,7 +87,7 @@ char* read_file(const char* filename)
 	}
 
 	// Read the file into the allocated memory
-	size_t result = fread(file_contents, sizeof(char), (size_t)file_size, file);
+	size_t result = fread(file_contents, sizeof(char), file_size, file);
 	file_contents[file_size] = '\0';
 
 	if (result != file_size)

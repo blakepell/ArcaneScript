@@ -274,7 +274,7 @@ token_t lexer_next_token_internal(lexer_t* lex)
 					}
 					continue;
 				}
-				else if (peek_char(lex) == '=')
+				if (peek_char(lex) == '=')
 				{
 					token_init(&out_tok, TOKEN_SLASH_ASSIGN, "/=", 2);
 					read_char(lex);
@@ -452,7 +452,7 @@ token_t lexer_next_token_internal(lexer_t* lex)
 					token_init(&out_tok, type, ident, ident_len);
 					return out_tok;
 				}
-				else if (is_digit(lex->ch))
+				if (is_digit(lex->ch))
 				{
 					int number_len = 0;
 					const char* number = read_number(lex, &number_len);
@@ -530,10 +530,7 @@ static char peek_char(lexer_t* lex)
 	{
 		return '\0';
 	}
-	else
-	{
-		return lex->input[lex->next_position];
-	}
+	return lex->input[lex->next_position];
 }
 
 static bool is_letter(char ch)

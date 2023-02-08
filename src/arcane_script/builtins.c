@@ -481,12 +481,12 @@ static object_t len_fn(vm_t* vm, void* data, int argc, object_t* args)
 		int len = object_get_string_length(arg);
 		return object_make_number(len);
 	}
-	else if (type == OBJECT_ARRAY)
+	if (type == OBJECT_ARRAY)
 	{
 		int len = object_get_array_length(arg);
 		return object_make_number(len);
 	}
-	else if (type == OBJECT_MAP)
+	if (type == OBJECT_MAP)
 	{
 		int len = object_get_map_length(arg);
 		return object_make_number(len);
@@ -576,7 +576,7 @@ static object_t reverse_fn(vm_t* vm, void* data, int argc, object_t* args)
 		}
 		return res;
 	}
-	else if (type == OBJECT_STRING)
+	if (type == OBJECT_STRING)
 	{
 		const char* str = object_get_string(arg);
 		int len = object_get_string_length(arg);
@@ -624,7 +624,7 @@ static object_t array_fn(vm_t* vm, void* data, int argc, object_t* args)
 		}
 		return res;
 	}
-	else if (argc == 2)
+	if (argc == 2)
 	{
 		if (!CHECK_ARGS(vm, true, argc, args, OBJECT_NUMBER, OBJECT_ANY))
 		{
@@ -747,8 +747,8 @@ static object_t write_file_fn(vm_t* vm, void* data, int argc, object_t* args)
 	const char* string = object_get_string(args[1]);
 	int string_len = object_get_string_length(args[1]);
 
-	int written = (int)config->fileio.write_file.
-	                           write_file(config->fileio.write_file.context, path, string, string_len);
+	int written = config->fileio.write_file.
+	                      write_file(config->fileio.write_file.context, path, string, string_len);
 
 	return object_make_number(written);
 }
@@ -830,14 +830,14 @@ static object_t to_num_fn(vm_t* vm, void* data, int argc, object_t* args)
 		result = strtod(string, &end);
 		if (errno == ERANGE && (result <= -HUGE_VAL || result >= HUGE_VAL))
 		{
-			goto err;;
+			goto err;
 		}
 		if (errno && errno != ERANGE)
 		{
 			goto err;
 		}
 		int string_len = object_get_string_length(args[0]);
-		int parsed_len = (int)(end - string);
+		int parsed_len = end - string;
 		if (string_len != parsed_len)
 		{
 			goto err;
@@ -1036,17 +1036,17 @@ static object_t concat_fn(vm_t* vm, void* data, int argc, object_t* args)
 		}
 		return object_make_number(object_get_array_length(args[0]));
 	}
-	else if (type == OBJECT_STRING)
+	if (type == OBJECT_STRING)
 	{
 		if (!CHECK_ARGS(vm, true, argc, args, OBJECT_STRING, OBJECT_STRING))
 		{
 			return object_make_null();
 		}
 		const char* left_val = object_get_string(args[0]);
-		int left_len = (int)object_get_string_length(args[0]);
+		int left_len = object_get_string_length(args[0]);
 
 		const char* right_val = object_get_string(args[1]);
-		int right_len = (int)object_get_string_length(args[1]);
+		int right_len = object_get_string_length(args[1]);
 
 		object_t res = object_make_string_with_capacity(vm->mem, left_len + right_len);
 		if (object_is_null(res))
@@ -1131,10 +1131,7 @@ static object_t error_fn(vm_t* vm, void* data, int argc, object_t* args)
 	{
 		return object_make_error(vm->mem, object_get_string(args[0]));
 	}
-	else
-	{
-		return object_make_error(vm->mem, "");
-	}
+	return object_make_error(vm->mem, "");
 }
 
 static object_t crash_fn(vm_t* vm, void* data, int argc, object_t* args)
@@ -1188,7 +1185,7 @@ static object_t random_fn(vm_t* vm, void* data, int argc, object_t* args)
 	{
 		return object_make_number(res);
 	}
-	else if (argc == 2)
+	if (argc == 2)
 	{
 		if (!CHECK_ARGS(vm, true, argc, args, OBJECT_NUMBER, OBJECT_NUMBER))
 		{
@@ -1205,11 +1202,8 @@ static object_t random_fn(vm_t* vm, void* data, int argc, object_t* args)
 		res = min + (res * range);
 		return object_make_number(res);
 	}
-	else
-	{
-		errors_add_error(vm->errors, ERROR_RUNTIME, src_pos_invalid, "Invalid number or arguments");
-		return object_make_null();
-	}
+	errors_add_error(vm->errors, ERROR_RUNTIME, src_pos_invalid, "Invalid number or arguments");
+	return object_make_null();
 }
 
 static object_t slice_fn(vm_t* vm, void* data, int argc, object_t* args)
@@ -1248,10 +1242,10 @@ static object_t slice_fn(vm_t* vm, void* data, int argc, object_t* args)
 		}
 		return res;
 	}
-	else if (arg_type == OBJECT_STRING)
+	if (arg_type == OBJECT_STRING)
 	{
 		const char* str = object_get_string(args[0]);
-		int len = (int)object_get_string_length(args[0]);
+		int len = object_get_string_length(args[0]);
 		if (index < 0)
 		{
 			index = len + index;
@@ -1281,13 +1275,10 @@ static object_t slice_fn(vm_t* vm, void* data, int argc, object_t* args)
 		object_set_string_length(res, res_len);
 		return res;
 	}
-	else
-	{
-		const char* type_str = object_get_type_name(arg_type);
-		errors_add_errorf(vm->errors, ERROR_RUNTIME, src_pos_invalid,
-		                  "Invalid argument 0 passed to slice, got %s instead", type_str);
-		return object_make_null();
-	}
+	const char* type_str = object_get_type_name(arg_type);
+	errors_add_errorf(vm->errors, ERROR_RUNTIME, src_pos_invalid,
+	                  "Invalid argument 0 passed to slice, got %s instead", type_str);
+	return object_make_null();
 }
 
 //-----------------------------------------------------------------------------

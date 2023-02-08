@@ -193,13 +193,12 @@ void code_to_string(uint8_t* code, src_pos_t* source_positions, size_t code_size
 			}
 			else
 			{
-				strbuf_appendf(res, " %llu", (long long unsigned int)operands[i]);
+				strbuf_appendf(res, " %llu", operands[i]);
 			}
 			pos += def->operand_widths[i];
 		}
 		strbuf_append(res, "\n");
 	}
-	return;
 }
 
 bool code_read_operands(opcode_definition_t* def, uint8_t* instr, uint64_t out_operands[2])
