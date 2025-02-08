@@ -1,5 +1,5 @@
-#ifndef INTERP_H
-#define INTERP_H
+#ifndef ARCANE_H
+#define ARCANE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,4 +46,4 @@ void free_value(Value v);
 }
 #endif
 
-#endif // INTERP_H
+#endif // ARCANE_H

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 
 /* ============================================================
    Utility functions for Value creation and freeing
@@ -140,10 +141,6 @@ Value builtin_typeof(Value *args, int arg_count) {
     return make_string(type_str);
 }
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 Value builtin_left(Value *args, int arg_count) {
     if(arg_count != 2) {
         fprintf(stderr, "Runtime error: left() expects 2 arguments: a string and an int.\n");
@@ -273,7 +270,7 @@ void add_token(TokenList *list, TokenType type, const char *text) {
         exit(1);
     }
     list->tokens[list->count].type = type;
-    list->tokens[list->count].text = strdup(text);
+    list->tokens[list->count].text = _strdup(text);
     list->count++;
 }
 

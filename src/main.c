@@ -83,7 +83,8 @@
         "name = \"Blake Pell\";"
         "print(left(name, 5));"
         "print(right(name, 4));"
-        "return 1; ";
+        "print(left(name, 100));"
+        "return 1;";
         
     Value ret = interpret(script);
     printf("Script returned: ");
