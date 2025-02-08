@@ -251,6 +251,17 @@ void tokenize(const char *src, TokenList *list) {
             continue;
         }
 
+        // Check for two-character operators: "++" and "--"
+        if ((p[0]=='+' && p[1]=='+') || (p[0]=='-' && p[1]=='-')) {
+            char op[3];
+            op[0] = p[0];
+            op[1] = p[1];
+            op[2] = '\0';
+            add_token(list, TOKEN_OPERATOR, op);
+            p += 2;
+            continue;
+        }
+
         // Check for two-character operators: "==", "+=", "!=", ">=", "<="
         if ((p[0]=='=' && p[1]=='=') ||
         (p[0]=='+' && p[1]=='=') ||
@@ -393,7 +404,28 @@ Value parse_primary(Parser *p) {
             }
             free(id);
             return ret;
-        } else {
+        } 
+        else if(current(p)->type == TOKEN_OPERATOR &&
+            (strcmp(current(p)->text, "++") == 0 ||
+            strcmp(current(p)->text, "--") == 0)) {
+            char op[3];
+            strcpy(op, current(p)->text);
+            advance(p);
+            Value orig = get_var(id);
+            if(orig.type != VAL_INT) {
+                fprintf(stderr, "Runtime error: %s operator only valid for ints.\n", op);
+                exit(1);
+            }
+            int oldVal = orig.int_val;
+            if(strcmp(op, "++") == 0)
+                orig.int_val++;
+            else
+                orig.int_val--;
+            set_var(id, orig);
+            free(id);
+            return make_int(oldVal); // Postfix returns original value.        
+        }
+        else {
             /* Variable reference */
             Value v = get_var(id);
             free(id);
@@ -410,6 +442,84 @@ Value parse_primary(Parser *p) {
     exit(1);
 }
 
+// Forward declaration of parse_primary if not already declared
+Value parse_primary(Parser *p);
+
+// parse_unary handles prefix ++ and --
+Value parse_unary(Parser *p) {
+    if (current(p)->type == TOKEN_OPERATOR &&
+       (strcmp(current(p)->text, "++") == 0 || strcmp(current(p)->text, "--") == 0)) {
+        char op[3];
+        strcpy(op, current(p)->text);
+        advance(p);
+        // The next token must be an identifier
+        if (current(p)->type != TOKEN_IDENTIFIER) {
+            fprintf(stderr, "Parser error: Expected identifier after unary %s\n", op);
+            exit(1);
+        }
+        char *id = strdup(current(p)->text);
+        advance(p);
+        Value v = get_var(id);
+        if(v.type != VAL_INT) {
+            fprintf(stderr, "Runtime error: %s operator only valid for ints.\n", op);
+            exit(1);
+        }
+        // For prefix, update before returning.
+        if(strcmp(op, "++") == 0)
+            v.int_val++;
+        else
+            v.int_val--;
+        set_var(id, v);
+        free(id);
+        return v;
+    } else {
+        // No prefix operator, so delegate to parse_primary.
+        Value v = parse_primary(p);
+        // Now check for a postfix ++ or -- operator.
+        if (current(p)->type == TOKEN_OPERATOR &&
+           (strcmp(current(p)->text, "++") == 0 || strcmp(current(p)->text, "--") == 0)) {
+            // To support postfix, the expression must have come from an identifier.
+            // We must have preserved the identifier name. One simple (if limited)
+            // approach is to require that parse_primary() for an identifier
+            // handles postfix operators directly.
+            //
+            // For example, if parse_primary() was modified as follows:
+            //
+            //   if(tok->type == TOKEN_IDENTIFIER) {
+            //       char *id = strdup(tok->text);
+            //       advance(p);
+            //       if(current(p)->type == TOKEN_OPERATOR &&
+            //          (strcmp(current(p)->text, "++") == 0 ||
+            //           strcmp(current(p)->text, "--") == 0)) {
+            //           char op[3];
+            //           strcpy(op, current(p)->text);
+            //           advance(p);
+            //           Value orig = get_var(id);
+            //           if(orig.type != VAL_INT) {
+            //               fprintf(stderr, "Runtime error: %s operator only valid for ints.\n", op);
+            //               exit(1);
+            //           }
+            //           int oldVal = orig.int_val;
+            //           if(strcmp(op, "++") == 0)
+            //               orig.int_val++;
+            //           else
+            //               orig.int_val--;
+            //           set_var(id, orig);
+            //           free(id);
+            //           return make_int(oldVal); // Postfix returns original value.
+            //       } else {
+            //           Value v = get_var(id);
+            //           free(id);
+            //           return v;
+            //       }
+            //   }
+            //
+            // If you have already implemented that logic in parse_primary, then simply return v.
+        }
+        return v;
+    }
+}
+
 /* Forward declarations */
 Value parse_primary(Parser *p);
 Value parse_factor(Parser *p);
@@ -418,6 +528,7 @@ Value parse_relational(Parser *p);
 Value parse_equality(Parser *p);
 Value parse_assignment(Parser *p);
 Value parse_expression(Parser *p);
+Value parse_unary(Parser *p);
 
 /* Now, define parse_relational which calls parse_term */
 Value parse_relational(Parser *p) {

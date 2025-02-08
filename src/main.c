@@ -44,6 +44,11 @@
         "if (z >= 5) { print(\"z is >= 5\"); } "
         "if (z > 15) { print(\"z is > 15\"); } "
         "if (z < 10) { print(\"z is < 10\"); } "
+        "print(\"a = \" + a); "
+        "a++;"
+        "print(\"a = \" + a); "
+        "a--;"
+        "print(\"a = \" + a); "
         "return b; ";
         
     Value ret = interpret(script);
