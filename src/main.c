@@ -67,6 +67,13 @@
         "if ( (a != 5) || (!b) ) { print(\"At least one condition is met\"); }"
         "name = \"Lucy\";"
         "if (name == \"Lucy\" || name == \"Blake\") { print(\"Hello, \" + name); }"
+        "i = 0; "
+        "b = false;"
+        "while ( i < 10 ) { "
+        "    b = !b; "
+        "    if (b) { print(i); }"
+        "    i = i + 1; "
+        "} "        
         "return 1; ";
         
     Value ret = interpret(script);

@@ -166,6 +166,7 @@ typedef enum {
     TOKEN_IF,
     TOKEN_ELSE,
     TOKEN_FOR,
+    TOKEN_WHILE,
     TOKEN_RETURN,
     TOKEN_PRINT,
     TOKEN_EOF
@@ -255,6 +256,8 @@ void tokenize(const char *src, TokenList *list) {
                 add_token(list, TOKEN_ELSE, id);
             else if(strcmp(id, "for") == 0)
                 add_token(list, TOKEN_FOR, id);
+            else if (strcmp(id, "while") == 0)
+                add_token(list, TOKEN_WHILE, id);                
             else if(strcmp(id, "return") == 0)
                 add_token(list, TOKEN_RETURN, id);
             else if(strcmp(id, "print") == 0)
@@ -988,6 +991,77 @@ void parse_statement(Parser *p) {
         p->pos = block_end;
         return;
     }
+    else if (tok->type == TOKEN_WHILE) {
+        // Consume the "while" keyword.
+        advance(p);
+        expect(p, TOKEN_LPAREN, "Expected '(' after while");
+    
+        // Save the starting position of the condition.
+        int cond_start = p->pos;
+        // Parse the condition once (for syntax checking).
+        {
+            Value dummy_cond = parse_expression(p);
+            if (dummy_cond.type == VAL_STRING && dummy_cond.temp)
+                free_value(dummy_cond);
+        }
+        expect(p, TOKEN_RPAREN, "Expected ')' after while condition");
+    
+        // Expect a block for the loop body.
+        expect(p, TOKEN_LBRACE, "Expected '{' to start while-loop body");
+        // Consume the '{' and record the start of the body.
+        int block_start = p->pos;
+    
+        // Find the matching '}' to determine the end of the block.
+        int brace_count = 1;
+        int i = p->pos;
+        while (i < p->tokens->count && brace_count > 0) {
+            if (p->tokens->tokens[i].type == TOKEN_LBRACE)
+                brace_count++;
+            else if (p->tokens->tokens[i].type == TOKEN_RBRACE)
+                brace_count--;
+            i++;
+        }
+        int block_end = i;  // token index just after the matching '}'
+    
+        // --- Execute the while loop ---
+        while (1) {
+            // Create a temporary parser for the condition, starting at cond_start.
+            Parser condParser;
+            condParser.tokens = p->tokens;
+            condParser.pos = cond_start;
+            Value cond_val = parse_expression(&condParser);
+            // Determine truth: accept both int and bool.
+            int loop_true = 0;
+            if (cond_val.type == VAL_INT || cond_val.type == VAL_BOOL)
+                loop_true = (cond_val.int_val != 0);
+            else {
+                fprintf(stderr, "Runtime error: while condition must be int or bool.\n");
+                exit(1);
+            }
+            if (cond_val.type == VAL_STRING && cond_val.temp)
+                free_value(cond_val);
+            if (!loop_true)
+                break;  // exit loop if condition is false
+    
+            // Execute the loop body using a temporary parser.
+            {
+                Parser bodyParser;
+                bodyParser.tokens = p->tokens;
+                bodyParser.pos = block_start;
+                // Execute until we reach the token just before the closing '}'.
+                while (bodyParser.pos < block_end &&
+                       current(&bodyParser)->type != TOKEN_RBRACE &&
+                       current(&bodyParser)->type != TOKEN_EOF &&
+                       !return_flag) {
+                    parse_statement(&bodyParser);
+                }
+            }
+        }
+    
+        // Advance the main parser position to after the loop block.
+        p->pos = block_end;
+        return;
+    }    
     else {
         /* Expression statement */
         Value v = parse_expression(p);
