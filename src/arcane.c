@@ -43,29 +43,20 @@ Value make_bool(int b)
     return v;
 }
 
-/* free_value() frees a Value’s allocated memory.
-   (Only string values allocate memory.) */
+/*
+ * Frees a values allocated memory.
+ */
 void free_value(Value v)
 {
     if (v.type == VAL_STRING && v.str_val)
     {
         free(v.str_val);
     }
-
-    // Nothing to free for VAL_INT or VAL_BOOL.        
 }
 
 /* ============================================================
    Symbol Table (for local script–variables)
    ============================================================ */
-
-typedef struct Variable
-{
-    char *name;
-    Value value;
-    struct Variable *next;
-} Variable;
-
 static Variable *local_variables = NULL;
 
 Variable* find_variable(const char *name)
@@ -74,7 +65,9 @@ Variable* find_variable(const char *name)
     while (cur)
     {
         if (strcmp(cur->name, name) == 0)
+        {
             return cur;
+        }
         cur = cur->next;
     }
     return NULL;
@@ -90,7 +83,9 @@ void set_variable(const char *name, Value v)
     {
         /* free any previous string if needed */
         if (var->value.type == VAL_STRING && var->value.str_val)
+        {
             free(var->value.str_val);
+        }
         var->value = v;
     }
     else
@@ -138,7 +133,7 @@ void free_variables()
    Built–in Functions
    ============================================================ */
 
-Value builtin_typeof(Value *args, int arg_count)
+Value fn_typeof(Value *args, int arg_count)
 {
     if (arg_count != 1)
     {
@@ -170,7 +165,7 @@ Value builtin_typeof(Value *args, int arg_count)
     return make_string(type_str);
 }
 
-Value builtin_left(Value *args, int arg_count)
+Value fn_left(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
@@ -217,7 +212,7 @@ Value builtin_left(Value *args, int arg_count)
     return ret;
 }
 
-Value builtin_right(Value *args, int arg_count)
+Value fn_right(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
@@ -264,20 +259,22 @@ Value builtin_right(Value *args, int arg_count)
     return ret;
 }
 
-#define NUM_BUILTINS 3
+#define MAX_INTEROP_FUNCTIONS 3
 
-static Function builtins[NUM_BUILTINS] = {
-    {"typeof", builtin_typeof},
-    {"left", builtin_left},
-    {"right", builtin_right}
+static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
+    {"typeof", fn_typeof},
+    {"left", fn_left},
+    {"right", fn_right}
 };
 
 Value call_function(const char *name, Value *args, int arg_count)
 {
-    for (int i = 0; i < NUM_BUILTINS; i++)
+    for (int i = 0; i < MAX_INTEROP_FUNCTIONS; i++)
     {
-        if (strcmp(builtins[i].name, name) == 0)
-            return builtins[i].func(args, arg_count);
+        if (strcmp(interop_functions[i].name, name) == 0)
+        {
+            return interop_functions[i].func(args, arg_count);
+        }
     }
 
     fprintf(stderr, "Runtime error: Unknown function \"%s\".\n", name);
@@ -287,42 +284,6 @@ Value call_function(const char *name, Value *args, int arg_count)
 /* ============================================================
    Tokenizer
    ============================================================ */
-
-typedef enum
-{
-    TOKEN_INT,
-    TOKEN_STRING,
-    TOKEN_BOOL,
-    TOKEN_IDENTIFIER,
-    TOKEN_OPERATOR,
-    TOKEN_SEMICOLON,
-    TOKEN_LPAREN,
-    TOKEN_RPAREN,
-    TOKEN_LBRACE,
-    TOKEN_RBRACE,
-    TOKEN_COMMA,
-    TOKEN_IF,
-    TOKEN_ELSE,
-    TOKEN_FOR,
-    TOKEN_WHILE,
-    TOKEN_RETURN,
-    TOKEN_PRINT,
-    TOKEN_EOF
-} TokenType;
-
-typedef struct
-{
-    TokenType type;
-    char *text; /* For identifiers, literals, or operator text */
-} Token;
-
-#define MAX_TOKENS 1024
-
-typedef struct
-{
-    Token tokens[MAX_TOKENS];
-    int count;
-} TokenList;
 
 void add_token(TokenList *list, TokenType type, const char *text)
 {
@@ -364,7 +325,10 @@ void tokenize(const char *src, TokenList *list)
         if (isdigit(*p))
         {
             const char *start = p;
-            while (isdigit(*p)) p++;
+            while (isdigit(*p))
+            {
+                p++;
+            }
             int len = p - start;
             char *num_str = malloc(len + 1);
             strncpy(num_str, start, len);
@@ -379,7 +343,10 @@ void tokenize(const char *src, TokenList *list)
         {
             p++; /* skip opening quote */
             const char *start = p;
-            while (*p && *p != '"') p++;
+            while (*p && *p != '"')
+            {
+                p++;
+            }
             if (*p != '"')
             {
                 fprintf(stderr, "Tokenizer error: Unterminated string literal.\n");
@@ -399,27 +366,46 @@ void tokenize(const char *src, TokenList *list)
         if (isalpha(*p) || *p == '_')
         {
             const char *start = p;
-            while (isalnum(*p) || *p == '_') p++;
+            while (isalnum(*p) || *p == '_')
+            {
+                p++;
+            }
             int len = p - start;
             char *id = malloc(len + 1);
             strncpy(id, start, len);
             id[len] = '\0';
             if (strcmp(id, "if") == 0)
+            {
                 add_token(list, TOKEN_IF, id);
+            }
             else if (strcmp(id, "else") == 0)
+            {
                 add_token(list, TOKEN_ELSE, id);
+            }
             else if (strcmp(id, "for") == 0)
+            {
                 add_token(list, TOKEN_FOR, id);
+            }
             else if (strcmp(id, "while") == 0)
+            {
                 add_token(list, TOKEN_WHILE, id);
+            }
             else if (strcmp(id, "return") == 0)
+            {
                 add_token(list, TOKEN_RETURN, id);
+            }
             else if (strcmp(id, "print") == 0)
+            {
                 add_token(list, TOKEN_PRINT, id);
+            }
             else if (strcmp(id, "true") == 0 || strcmp(id, "false") == 0)
+            {
                 add_token(list, TOKEN_BOOL, id); // add TOKEN_BOOL for boolean literals
+            }
             else
+            {
                 add_token(list, TOKEN_IDENTIFIER, id);
+            }
             free(id);
             continue;
         }
@@ -534,13 +520,6 @@ void tokenize(const char *src, TokenList *list)
 /* ============================================================
    Parser and Interpreter
    ============================================================ */
-
-typedef struct
-{
-    TokenList *tokens;
-    int pos;
-} Parser;
-
 Token* current(Parser *p)
 {
     return &p->tokens->tokens[p->pos];
@@ -549,14 +528,18 @@ Token* current(Parser *p)
 Token* peek(Parser *p)
 {
     if (p->pos + 1 < p->tokens->count)
+    {
         return &p->tokens->tokens[p->pos + 1];
+    }
     return NULL;
 }
 
 void advance(Parser *p)
 {
     if (p->pos < p->tokens->count)
+    {
         p->pos++;
+    }
 }
 
 void expect(Parser *p, TokenType type, const char *msg)
@@ -569,9 +552,6 @@ void expect(Parser *p, TokenType type, const char *msg)
     advance(p);
 }
 
-/* Forward declaration */
-Value parse_expression(Parser *p);
-
 /* --- Primary expressions --- */
 Value parse_primary(Parser *p)
 {
@@ -582,12 +562,14 @@ Value parse_primary(Parser *p)
         advance(p);
         return make_int(num);
     }
+
     if (tok->type == TOKEN_STRING)
     {
         Value v = make_string(tok->text);
         advance(p);
         return v;
     }
+
     if (tok->type == TOKEN_BOOL)
     {
         // Create a boolean value based on the literal text.
@@ -596,6 +578,7 @@ Value parse_primary(Parser *p)
         advance(p);
         return v;
     }
+
     if (tok->type == TOKEN_IDENTIFIER)
     {
         char *id = _strdup(tok->text);
@@ -610,25 +593,33 @@ Value parse_primary(Parser *p)
             {
                 while (1)
                 {
-                    args[arg_count] = parse_expression(p);
+                    args[arg_count] = parse_assignment(p);
                     arg_count++;
                     if (current(p)->type == TOKEN_COMMA)
+                    {
                         advance(p);
+                    }
                     else
+                    {
                         break;
+                    }
                 }
             }
+
             expect(p, TOKEN_RPAREN, "Expected ')' after function arguments");
             Value ret = call_function(id, args, arg_count);
             /* Free temporary argument values */
             for (int i = 0; i < arg_count; i++)
             {
                 if (args[i].type == VAL_STRING && args[i].temp)
+                {
                     free_value(args[i]);
+                }
             }
             free(id);
             return ret;
         }
+
         if (current(p)->type == TOKEN_OPERATOR &&
             (strcmp(current(p)->text, "++") == 0 ||
                 strcmp(current(p)->text, "--") == 0))
@@ -644,9 +635,13 @@ Value parse_primary(Parser *p)
             }
             int oldVal = orig.int_val;
             if (strcmp(op, "++") == 0)
+            {
                 orig.int_val++;
+            }
             else
+            {
                 orig.int_val--;
+            }
             set_variable(id, orig);
             free(id);
             return make_int(oldVal); // Postfix returns original value.        
@@ -659,16 +654,13 @@ Value parse_primary(Parser *p)
     if (tok->type == TOKEN_LPAREN)
     {
         advance(p); // consume '('
-        Value v = parse_expression(p);
+        Value v = parse_assignment(p);
         expect(p, TOKEN_RPAREN, "Expected ')' after expression");
         return v;
     }
     fprintf(stderr, "Parser error: Unexpected token '%s'\n", tok->text);
     exit(1);
 }
-
-// Forward declaration of parse_primary if not already declared
-Value parse_primary(Parser *p);
 
 // parse_unary handles prefix ++ and --
 Value parse_unary(Parser *p)
@@ -709,9 +701,13 @@ Value parse_unary(Parser *p)
         }
         // For prefix, update before returning.
         if (strcmp(op, "++") == 0)
+        {
             v.int_val++;
+        }
         else
+        {
             v.int_val--;
+        }
         set_variable(id, v);
         free(id);
         return v;
@@ -726,24 +722,13 @@ Value parse_unary(Parser *p)
     return v;
 }
 
-/* Forward declarations */
-Value parse_primary(Parser *p);
-Value parse_factor(Parser *p);
-Value parse_term(Parser *p); // Add this forward declaration
-Value parse_relational(Parser *p);
-Value parse_equality(Parser *p);
-Value parse_assignment(Parser *p);
-Value parse_expression(Parser *p);
-Value parse_unary(Parser *p);
-Value parse_logical_and(Parser *p);
-Value parse_logical(Parser *p);
-
 /*
  * Parse the And operator.
  */
 Value parse_logical_and(Parser *p)
 {
     Value left = parse_equality(p);
+
     while (current(p)->type == TOKEN_OPERATOR && strcmp(current(p)->text, "&&") == 0)
     {
         advance(p); // consume "&&"
@@ -751,6 +736,7 @@ Value parse_logical_and(Parser *p)
         int result = ((left.int_val != 0) && (right.int_val != 0));
         left = make_bool(result);
     }
+
     return left;
 }
 
@@ -791,16 +777,26 @@ Value parse_relational(Parser *p)
         }
         int result = 0;
         if (strcmp(op, ">") == 0)
+        {
             result = (left.int_val > right.int_val);
+        }
         else if (strcmp(op, "<") == 0)
+        {
             result = (left.int_val < right.int_val);
+        }
         else if (strcmp(op, ">=") == 0)
+        {
             result = (left.int_val >= right.int_val);
+        }
         else if (strcmp(op, "<=") == 0)
+        {
             result = (left.int_val <= right.int_val);
+        }
         left = make_int(result);
         if (right.type == VAL_STRING && right.temp)
+        {
             free_value(right);
+        }
     }
     return left;
 }
@@ -862,22 +858,30 @@ Value parse_term(Parser *p)
             if (left.type == VAL_STRING || right.type == VAL_STRING)
             {
                 /* String concatenation (convert ints to strings if needed) */
-                char buffer1[64], buffer2[64];
                 char *s1, *s2;
+
                 if (left.type == VAL_STRING)
+                {
                     s1 = left.str_val;
+                }
                 else
                 {
+                    char buffer1[64];
                     sprintf(buffer1, "%d", left.int_val);
                     s1 = buffer1;
                 }
+
                 if (right.type == VAL_STRING)
+                {
                     s2 = right.str_val;
+                }
                 else
                 {
+                    char buffer2[64];
                     sprintf(buffer2, "%d", right.int_val);
                     s2 = buffer2;
                 }
+
                 char *concat = malloc(strlen(s1) + strlen(s2) + 1);
                 strcpy(concat, s1);
                 strcat(concat, s2);
@@ -899,29 +903,45 @@ Value parse_term(Parser *p)
             }
             left = make_int(left.int_val - right.int_val);
         }
+
         if (right.type == VAL_STRING && right.temp)
+        {
             free_value(right);
+        }
     }
     return left;
 }
 
 /* --- Equality (handles "==") --- */
-int values_equal(Value a, Value b)
+int values_equal(const Value a, const Value b)
 {
     if (a.type != b.type)
+    {
         return 0;
+    }
+
     if (a.type == VAL_INT)
+    {
         return a.int_val == b.int_val;
+    }
+
     if (a.type == VAL_BOOL)
+    {
         return a.int_val == b.int_val;
+    }
+
     if (a.type == VAL_STRING)
+    {
         return strcmp(a.str_val, b.str_val) == 0;
+    }
+
     return 0;
 }
 
 Value parse_equality(Parser *p)
 {
     Value left = parse_relational(p);
+
     while (current(p)->type == TOKEN_OPERATOR &&
         (strcmp(current(p)->text, "==") == 0 || strcmp(current(p)->text, "!=") == 0))
     {
@@ -930,19 +950,24 @@ Value parse_equality(Parser *p)
         {
             isNotEqual = 1;
         }
+
         advance(p); // skip '==' or '!='
         Value right = parse_relational(p);
         int eq = values_equal(left, right);
+
         if (isNotEqual)
         {
             eq = !eq;
         }
+
         left = make_int(eq);
+
         if (right.type == VAL_STRING && right.temp)
         {
             free_value(right);
         }
     }
+
     return left;
 }
 
@@ -958,6 +983,7 @@ Value parse_assignment(Parser *p)
         char *assign_op = _strdup(current(p)->text);
         advance(p); // consume '=' or '+='
         Value right = parse_assignment(p);
+
         if (strcmp(assign_op, "=") == 0)
         {
             set_variable(varName, right);
@@ -974,7 +1000,9 @@ Value parse_assignment(Parser *p)
                 char *s1, *s2;
 
                 if (currentVal.type == VAL_STRING)
+                {
                     s1 = currentVal.str_val;
+                }
                 else
                 {
                     sprintf(buffer1, "%d", currentVal.int_val);
@@ -990,6 +1018,7 @@ Value parse_assignment(Parser *p)
                     sprintf(buffer2, "%d", right.int_val);
                     s2 = buffer2;
                 }
+
                 char *concat = malloc(strlen(s1) + strlen(s2) + 1);
                 strcpy(concat, s1);
                 strcat(concat, s2);
@@ -1013,18 +1042,10 @@ Value parse_assignment(Parser *p)
     return parse_logical(p);
 }
 
-/* --- Top-level expression parser --- */
-Value parse_expression(Parser *p)
-{
-    return parse_assignment(p);
-}
-
 /* --- Statements --- */
 
 static int return_flag = 0;
 static Value return_value;
-
-void parse_statement(Parser *p);
 
 void parse_block(Parser *p)
 {
@@ -1044,7 +1065,7 @@ void parse_statement(Parser *p)
     if (tok->type == TOKEN_PRINT)
     {
         advance(p); // consume 'print'
-        Value v = parse_expression(p);
+        Value v = parse_assignment(p);
         expect(p, TOKEN_SEMICOLON, "Expected ';' after print statement");
         if (v.type == VAL_INT)
         {
@@ -1071,7 +1092,7 @@ void parse_statement(Parser *p)
     else if (tok->type == TOKEN_RETURN)
     {
         advance(p); // consume 'return'
-        Value v = parse_expression(p);
+        Value v = parse_assignment(p);
         expect(p, TOKEN_SEMICOLON, "Expected ';' after return statement");
         return_flag = 1;
         return_value = v;
@@ -1081,7 +1102,7 @@ void parse_statement(Parser *p)
         // Consume the "if" token.
         advance(p);
         expect(p, TOKEN_LPAREN, "Expected '(' after if");
-        Value cond = parse_expression(p);
+        Value cond = parse_assignment(p);
         expect(p, TOKEN_RPAREN, "Expected ')' after if condition");
 
         // Accept both integers and booleans as valid conditions.
@@ -1139,7 +1160,7 @@ void parse_statement(Parser *p)
                 // Else if branch.
                 advance(p); // consume 'if'
                 expect(p, TOKEN_LPAREN, "Expected '(' after else if");
-                Value cond2 = parse_expression(p);
+                Value cond2 = parse_assignment(p);
                 expect(p, TOKEN_RPAREN, "Expected ')' after else if condition");
 
                 int condition_true2 = 0;
@@ -1204,7 +1225,7 @@ void parse_statement(Parser *p)
         /* --- Parse the initializer expression (if any) --- */
         if (current(p)->type != TOKEN_SEMICOLON)
         {
-            parse_expression(p);
+            parse_assignment(p);
         }
 
         expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop initializer");
@@ -1214,9 +1235,11 @@ void parse_statement(Parser *p)
 
         {
             // Verify condition syntax:
-            Value dummy_cond = parse_expression(p);
+            Value dummy_cond = parse_assignment(p);
             if (dummy_cond.type == VAL_STRING && dummy_cond.temp)
+            {
                 free_value(dummy_cond);
+            }
         }
 
         expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop condition");
@@ -1226,7 +1249,7 @@ void parse_statement(Parser *p)
 
         if (current(p)->type != TOKEN_RPAREN)
         {
-            parse_expression(p);
+            parse_assignment(p);
         }
 
         expect(p, TOKEN_RPAREN, "Expected ')' after for-loop post expression");
@@ -1265,15 +1288,19 @@ void parse_statement(Parser *p)
                 Parser condParser;
                 condParser.tokens = p->tokens;
                 condParser.pos = cond_start;
-                Value cond_val = parse_expression(&condParser);
+                Value cond_val = parse_assignment(&condParser);
                 if (cond_val.type != VAL_INT || cond_val.int_val == 0)
                 {
                     if (cond_val.type == VAL_STRING && cond_val.temp)
+                    {
                         free_value(cond_val);
+                    }
                     break; // condition false: exit loop
                 }
                 if (cond_val.type == VAL_STRING && cond_val.temp)
+                {
                     free_value(cond_val);
+                }
             }
 
             /* --- Execute the loop body --- */
@@ -1301,7 +1328,7 @@ void parse_statement(Parser *p)
                 Parser postParser;
                 postParser.tokens = p->tokens;
                 postParser.pos = post_start;
-                parse_expression(&postParser);
+                parse_assignment(&postParser);
             }
         }
 
@@ -1319,7 +1346,7 @@ void parse_statement(Parser *p)
 
         // Parse the condition once (for syntax checking).
         {
-            Value dummy_cond = parse_expression(p);
+            Value dummy_cond = parse_assignment(p);
 
             if (dummy_cond.type == VAL_STRING && dummy_cond.temp)
             {
@@ -1360,20 +1387,26 @@ void parse_statement(Parser *p)
             Parser condParser;
             condParser.tokens = p->tokens;
             condParser.pos = cond_start;
-            Value cond_val = parse_expression(&condParser);
+            Value cond_val = parse_assignment(&condParser);
             // Determine truth: accept both int and bool.
             int loop_true = 0;
             if (cond_val.type == VAL_INT || cond_val.type == VAL_BOOL)
+            {
                 loop_true = (cond_val.int_val != 0);
+            }
             else
             {
                 fprintf(stderr, "Runtime error: while condition must be int or bool.\n");
                 exit(1);
             }
             if (cond_val.type == VAL_STRING && cond_val.temp)
+            {
                 free_value(cond_val);
+            }
             if (!loop_true)
+            {
                 break; // exit loop if condition is false
+            }
 
             // Execute the loop body using a temporary parser.
             {
@@ -1397,7 +1430,7 @@ void parse_statement(Parser *p)
     else
     {
         /* Expression statement */
-        Value v = parse_expression(p);
+        Value v = parse_assignment(p);
         expect(p, TOKEN_SEMICOLON, "Expected ';' after expression statement");
         if (v.type == VAL_STRING && v.temp)
         {
@@ -1406,10 +1439,10 @@ void parse_statement(Parser *p)
     }
 }
 
-/* ============================================================
-   The interpret() Function
-   ============================================================ */
-
+/*
+ * The main interpreter.  This is the entry point for a script to begin
+ * execution.
+ */
 Value interpret(const char *src)
 {
     TokenList tokens;
