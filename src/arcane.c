@@ -154,6 +154,7 @@ typedef enum {
     TOKEN_COMMA,
     TOKEN_IF,
     TOKEN_ELSE,
+    TOKEN_FOR,
     TOKEN_RETURN,
     TOKEN_PRINT,
     TOKEN_EOF
@@ -241,6 +242,8 @@ void tokenize(const char *src, TokenList *list) {
                 add_token(list, TOKEN_IF, id);
             else if(strcmp(id, "else") == 0)
                 add_token(list, TOKEN_ELSE, id);
+            else if(strcmp(id, "for") == 0)
+                add_token(list, TOKEN_FOR, id);
             else if(strcmp(id, "return") == 0)
                 add_token(list, TOKEN_RETURN, id);
             else if(strcmp(id, "print") == 0)
@@ -834,6 +837,92 @@ void parse_statement(Parser *p) {
                 break;
             }
         }
+    }
+    else if(tok->type == TOKEN_FOR) {
+        advance(p);  // consume "for"
+        expect(p, TOKEN_LPAREN, "Expected '(' after for");
+        
+        /* --- Parse the initializer expression (if any) --- */
+        if(current(p)->type != TOKEN_SEMICOLON) {
+            parse_expression(p);
+        }
+        expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop initializer");
+        
+        /* --- Save the current token position for the condition expression --- */
+        int cond_start = p->pos;
+        {  // Verify condition syntax:
+            Value dummy_cond = parse_expression(p);
+            if(dummy_cond.type == VAL_STRING && dummy_cond.temp)
+                free_value(dummy_cond);
+        }
+        expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop condition");
+        
+        /* --- Save the current token position for the post expression --- */
+        int post_start = p->pos;
+        if(current(p)->type != TOKEN_RPAREN) {
+            parse_expression(p);
+        }
+        expect(p, TOKEN_RPAREN, "Expected ')' after for-loop post expression");
+        
+        /* --- Parse the loop body --- */
+        expect(p, TOKEN_LBRACE, "Expected '{' to start for-loop body");
+        // Consume the '{'
+        int block_start = p->pos; // body starts after '{'
+        
+        // Scan to find the matching '}'
+        int brace_count = 1;
+        int i = p->pos;
+        while(i < p->tokens->count && brace_count > 0) {
+            if(p->tokens->tokens[i].type == TOKEN_LBRACE)
+                brace_count++;
+            else if(p->tokens->tokens[i].type == TOKEN_RBRACE)
+                brace_count--;
+            i++;
+        }
+        int block_end = i;  // token position just after the matching '}'
+        
+        /* --- Execute the for loop --- */
+        while (1) {
+            /* --- Evaluate the condition --- */
+            {
+                Parser condParser;
+                condParser.tokens = p->tokens;
+                condParser.pos = cond_start;
+                Value cond_val = parse_expression(&condParser);
+                if(cond_val.type != VAL_INT || cond_val.int_val == 0) {
+                    if(cond_val.type == VAL_STRING && cond_val.temp)
+                        free_value(cond_val);
+                    break;  // condition false: exit loop
+                }
+                if(cond_val.type == VAL_STRING && cond_val.temp)
+                    free_value(cond_val);
+            }
+            
+            /* --- Execute the loop body --- */
+            {
+                Parser bodyParser;
+                bodyParser.tokens = p->tokens;
+                bodyParser.pos = block_start;
+                // STOP when encountering the closing brace (TOKEN_RBRACE)
+                while(bodyParser.pos < block_end &&
+                      current(&bodyParser)->type != TOKEN_RBRACE &&
+                      !return_flag) {
+                    parse_statement(&bodyParser);
+                }
+            }
+            if(return_flag) break;
+            
+            /* --- Execute the post expression --- */
+            {
+                Parser postParser;
+                postParser.tokens = p->tokens;
+                postParser.pos = post_start;
+                parse_expression(&postParser);
+            }
+        }
+        // Skip the entire for-loop block.
+        p->pos = block_end;
+        return;
     }
     else {
         /* Expression statement */
