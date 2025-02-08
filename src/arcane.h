@@ -13,6 +13,7 @@ extern "C" {
 typedef enum {
     VAL_INT,
     VAL_STRING,
+    VAL_BOOL,
     VAL_NULL
 } ValueType;
 

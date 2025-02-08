@@ -30,11 +30,21 @@ Value make_null() {
     return v;
 }
 
+Value make_bool(int b) {
+    Value v;
+    v.type = VAL_BOOL;
+    v.int_val = b;  // 0 = false, nonzero = true
+    v.temp = 1;
+    return v;
+}
+
 /* free_value() frees a Value’s allocated memory.
    (Only string values allocate memory.) */
 void free_value(Value v) {
     if(v.type == VAL_STRING && v.str_val)
         free(v.str_val);
+
+    // Nothing to free for VAL_INT or VAL_BOOL.        
 }
 
 /* ============================================================
@@ -144,6 +154,7 @@ Value call_function(const char *name, Value *args, int arg_count) {
 typedef enum {
     TOKEN_INT,
     TOKEN_STRING,
+    TOKEN_BOOL,
     TOKEN_IDENTIFIER,
     TOKEN_OPERATOR,
     TOKEN_SEMICOLON,
@@ -248,6 +259,8 @@ void tokenize(const char *src, TokenList *list) {
                 add_token(list, TOKEN_RETURN, id);
             else if(strcmp(id, "print") == 0)
                 add_token(list, TOKEN_PRINT, id);
+            else if(strcmp(id, "true") == 0 || strcmp(id, "false") == 0)
+                add_token(list, TOKEN_BOOL, id);   // add TOKEN_BOOL for boolean literals
             else
                 add_token(list, TOKEN_IDENTIFIER, id);
             free(id);
@@ -294,6 +307,14 @@ void tokenize(const char *src, TokenList *list) {
                 p++;
                 break;
             }
+            case '!': {
+                char op[2];
+                op[0] = *p;
+                op[1] = '\0';
+                add_token(list, TOKEN_OPERATOR, op);
+                p++;
+                break;
+            }            
             case ';':
                 add_token(list, TOKEN_SEMICOLON, ";");
                 p++;
@@ -380,6 +401,13 @@ Value parse_primary(Parser *p) {
         advance(p);
         return v;
     }
+    if(tok->type == TOKEN_BOOL) {
+        // Create a boolean value based on the literal text.
+        int b = (strcmp(tok->text, "true") == 0) ? 1 : 0;
+        Value v = make_bool(b);
+        advance(p);
+        return v;
+    }    
     if(tok->type == TOKEN_IDENTIFIER) {
         char *id = strdup(tok->text);
         advance(p);
@@ -450,6 +478,18 @@ Value parse_primary(Parser *p);
 
 // parse_unary handles prefix ++ and --
 Value parse_unary(Parser *p) {
+    // Handle the '!' operator for logical negation
+    if (current(p)->type == TOKEN_OPERATOR && strcmp(current(p)->text, "!") == 0) {
+        advance(p); // consume '!'
+        Value operand = parse_unary(p);
+        if(operand.type != VAL_BOOL && operand.type != VAL_INT) {
+            fprintf(stderr, "Runtime error: ! operator only works on bools or ints.\n");
+            exit(1);
+        }
+        int result = !(operand.int_val); // works for both VAL_INT and VAL_BOOL
+        return make_bool(result);
+    }
+
     if (current(p)->type == TOKEN_OPERATOR &&
        (strcmp(current(p)->text, "++") == 0 || strcmp(current(p)->text, "--") == 0)) {
         char op[3];
@@ -481,43 +521,6 @@ Value parse_unary(Parser *p) {
         // Now check for a postfix ++ or -- operator.
         if (current(p)->type == TOKEN_OPERATOR &&
            (strcmp(current(p)->text, "++") == 0 || strcmp(current(p)->text, "--") == 0)) {
-            // To support postfix, the expression must have come from an identifier.
-            // We must have preserved the identifier name. One simple (if limited)
-            // approach is to require that parse_primary() for an identifier
-            // handles postfix operators directly.
-            //
-            // For example, if parse_primary() was modified as follows:
-            //
-            //   if(tok->type == TOKEN_IDENTIFIER) {
-            //       char *id = strdup(tok->text);
-            //       advance(p);
-            //       if(current(p)->type == TOKEN_OPERATOR &&
-            //          (strcmp(current(p)->text, "++") == 0 ||
-            //           strcmp(current(p)->text, "--") == 0)) {
-            //           char op[3];
-            //           strcpy(op, current(p)->text);
-            //           advance(p);
-            //           Value orig = get_var(id);
-            //           if(orig.type != VAL_INT) {
-            //               fprintf(stderr, "Runtime error: %s operator only valid for ints.\n", op);
-            //               exit(1);
-            //           }
-            //           int oldVal = orig.int_val;
-            //           if(strcmp(op, "++") == 0)
-            //               orig.int_val++;
-            //           else
-            //               orig.int_val--;
-            //           set_var(id, orig);
-            //           free(id);
-            //           return make_int(oldVal); // Postfix returns original value.
-            //       } else {
-            //           Value v = get_var(id);
-            //           free(id);
-            //           return v;
-            //       }
-            //   }
-            //
-            // If you have already implemented that logic in parse_primary, then simply return v.
         }
         return v;
     }
@@ -567,7 +570,7 @@ Value parse_relational(Parser *p) {
 
 /* --- Factors (handle * and /) --- */
 Value parse_factor(Parser *p) {
-    Value left = parse_primary(p);
+    Value left = parse_unary(p);
     while (current(p)->type == TOKEN_OPERATOR &&
            (strcmp(current(p)->text, "*") == 0 || strcmp(current(p)->text, "/") == 0)) {
         char op[3];
@@ -651,6 +654,8 @@ int values_equal(Value a, Value b) {
     if(a.type != b.type)
         return 0;
     if(a.type == VAL_INT)
+        return a.int_val == b.int_val;
+    if(a.type == VAL_BOOL)
         return a.int_val == b.int_val;
     if(a.type == VAL_STRING)
         return strcmp(a.str_val, b.str_val) == 0;
@@ -756,6 +761,8 @@ void parse_statement(Parser *p) {
             printf("%d\n", v.int_val);
         else if(v.type == VAL_STRING)
             printf("%s\n", v.str_val);
+        else if(v.type == VAL_BOOL)
+            printf("%s\n", (v.int_val ? "true" : "false"));            
         else
             printf("null\n");
         if(v.type == VAL_STRING && v.temp)
@@ -768,76 +775,92 @@ void parse_statement(Parser *p) {
         return_flag = 1;
         return_value = v;
     }
-    else if(tok->type == TOKEN_IF) {
-        advance(p); // consume 'if'
+    else if (tok->type == TOKEN_IF) {
+        // Consume the "if" token.
+        advance(p);
         expect(p, TOKEN_LPAREN, "Expected '(' after if");
         Value cond = parse_expression(p);
         expect(p, TOKEN_RPAREN, "Expected ')' after if condition");
-        int executed = 0;
-        if(cond.type == VAL_INT && cond.int_val != 0) {
-            parse_block(p);
-            executed = 1;
+    
+        // Accept both integers and booleans as valid conditions.
+        int condition_true = 0;
+        if (cond.type == VAL_INT || cond.type == VAL_BOOL) {
+            condition_true = (cond.int_val != 0);
         } else {
-            /* Skip block */
-            if(current(p)->type == TOKEN_LBRACE) {
+            fprintf(stderr, "Runtime error: if condition must be int or bool.\n");
+            exit(1);
+        }
+    
+        // Execute the block if condition is true; otherwise, skip it.
+        if (condition_true) {
+            parse_block(p);
+        } else {
+            // Skip the block: if the current token is '{', then skip ahead past the block.
+            if (current(p)->type == TOKEN_LBRACE) {
                 int brace_count = 0;
-                brace_count++;
-                advance(p);
-                while(brace_count > 0 && current(p)->type != TOKEN_EOF) {
-                    if(current(p)->type == TOKEN_LBRACE)
-                        brace_count++;
-                    else if(current(p)->type == TOKEN_RBRACE)
-                        brace_count--;
+                if (current(p)->type == TOKEN_LBRACE) {
+                    brace_count++;
                     advance(p);
+                    while (brace_count > 0 && current(p)->type != TOKEN_EOF) {
+                        if (current(p)->type == TOKEN_LBRACE)
+                            brace_count++;
+                        else if (current(p)->type == TOKEN_RBRACE)
+                            brace_count--;
+                        advance(p);
+                    }
                 }
             }
         }
-        while(current(p)->type == TOKEN_ELSE) {
-            advance(p); // consume 'else'
-            if(current(p)->type == TOKEN_IF) {
-                advance(p); // consume 'if'
+    
+        // Handle optional "else if" and "else" clauses.
+        while (current(p)->type == TOKEN_ELSE) {
+            advance(p);  // consume 'else'
+            if (current(p)->type == TOKEN_IF) {
+                // Else if branch.
+                advance(p);  // consume 'if'
                 expect(p, TOKEN_LPAREN, "Expected '(' after else if");
                 Value cond2 = parse_expression(p);
                 expect(p, TOKEN_RPAREN, "Expected ')' after else if condition");
-                if(!executed && cond2.type == VAL_INT && cond2.int_val != 0) {
-                    parse_block(p);
-                    executed = 1;
+    
+                int condition_true2 = 0;
+                if (cond2.type == VAL_INT || cond2.type == VAL_BOOL) {
+                    condition_true2 = (cond2.int_val != 0);
                 } else {
-                    if(current(p)->type == TOKEN_LBRACE) {
+                    fprintf(stderr, "Runtime error: else if condition must be int or bool.\n");
+                    exit(1);
+                }
+    
+                if (condition_true2) {
+                    parse_block(p);
+                    // After a successful branch, we do not evaluate further else/else if clauses.
+                    break;
+                } else {
+                    // Skip the block for the else if.
+                    if (current(p)->type == TOKEN_LBRACE) {
                         int brace_count = 0;
-                        brace_count++;
-                        advance(p);
-                        while(brace_count > 0 && current(p)->type != TOKEN_EOF) {
-                            if(current(p)->type == TOKEN_LBRACE)
-                                brace_count++;
-                            else if(current(p)->type == TOKEN_RBRACE)
-                                brace_count--;
+                        if (current(p)->type == TOKEN_LBRACE) {
+                            brace_count++;
                             advance(p);
+                            while (brace_count > 0 && current(p)->type != TOKEN_EOF) {
+                                if (current(p)->type == TOKEN_LBRACE)
+                                    brace_count++;
+                                else if (current(p)->type == TOKEN_RBRACE)
+                                    brace_count--;
+                                advance(p);
+                            }
                         }
                     }
+                    // Then continue to check for further else if / else.
                 }
             } else {
-                if(!executed) {
+                // Else branch.
+                if (current(p)->type == TOKEN_LBRACE) {
                     parse_block(p);
-                    executed = 1;
-                } else {
-                    if(current(p)->type == TOKEN_LBRACE) {
-                        int brace_count = 0;
-                        brace_count++;
-                        advance(p);
-                        while(brace_count > 0 && current(p)->type != TOKEN_EOF) {
-                            if(current(p)->type == TOKEN_LBRACE)
-                                brace_count++;
-                            else if(current(p)->type == TOKEN_RBRACE)
-                                brace_count--;
-                            advance(p);
-                        }
-                    }
                 }
-                break;
+                break; // No further else clauses.
             }
         }
-    }
+    }    
     else if(tok->type == TOKEN_FOR) {
         advance(p);  // consume "for"
         expect(p, TOKEN_LPAREN, "Expected '(' after for");

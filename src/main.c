@@ -57,7 +57,13 @@
         "for ( i = 10; i > 0; i-- ) { "
         "    print(i); "
         "}"
-        "return b; ";
+        "b = false; "
+        "if (b == true) { print(\"b is true\"); } "
+        "if (b == false) { print(\"b is false\"); } "
+        "c = false;"
+        "if (c == false) { print(\"if (c) is false\"); } "
+        "if (!c) { print(\"if (!c) is false\"); } "        
+        "return 1; ";
         
     Value ret = interpret(script);
     printf("Script returned: ");
