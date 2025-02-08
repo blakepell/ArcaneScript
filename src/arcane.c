@@ -113,25 +113,6 @@ void free_vars() {
    Built–in Functions
    ============================================================ */
 
-/* Example: inc(x) returns x+1 */
-Value builtin_inc(Value *args, int arg_count) {
-    if(arg_count != 1 || args[0].type != VAL_INT) {
-        fprintf(stderr, "Runtime error: inc() expects one integer argument.\n");
-        exit(1);
-    }
-    return make_int(args[0].int_val + 1);
-}
-
-/* Example: foo() prints a message and returns 42 */
-Value builtin_foo(Value *args, int arg_count) {
-    if(arg_count != 0) {
-        fprintf(stderr, "Runtime error: foo() expects no arguments.\n");
-        exit(1);
-    }
-    printf("[builtin foo called]\n");
-    return make_int(42);
-}
-
 Value builtin_typeof(Value *args, int arg_count) {
     if(arg_count != 1) {
         fprintf(stderr, "Runtime error: typeof() expects exactly one argument.\n");
@@ -159,11 +140,85 @@ Value builtin_typeof(Value *args, int arg_count) {
     return make_string(type_str);
 }
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+Value builtin_left(Value *args, int arg_count) {
+    if(arg_count != 2) {
+        fprintf(stderr, "Runtime error: left() expects 2 arguments: a string and an int.\n");
+        exit(1);
+    }
+    if(args[0].type != VAL_STRING) {
+        fprintf(stderr, "Runtime error: left() expects the first argument to be a string.\n");
+        exit(1);
+    }
+    if(args[1].type != VAL_INT) {
+        fprintf(stderr, "Runtime error: left() expects the second argument to be an int.\n");
+        exit(1);
+    }
+    
+    char *s = args[0].str_val;
+    int n = args[1].int_val;
+    if(n < 0)
+        n = 0;
+    int len = (int)strlen(s);
+    int result_len = (n < len) ? n : len;
+    
+    char *result = malloc(result_len + 1);
+    if(!result) {
+        fprintf(stderr, "Runtime error: Memory allocation failed in left().\n");
+        exit(1);
+    }
+    strncpy(result, s, result_len);
+    result[result_len] = '\0';
+    
+    // Create a Value containing the new string.
+    Value ret = make_string(result);
+    free(result);
+    return ret;
+}
+
+Value builtin_right(Value *args, int arg_count) {
+    if(arg_count != 2) {
+        fprintf(stderr, "Runtime error: right() expects 2 arguments: a string and an int.\n");
+        exit(1);
+    }
+    if(args[0].type != VAL_STRING) {
+        fprintf(stderr, "Runtime error: right() expects the first argument to be a string.\n");
+        exit(1);
+    }
+    if(args[1].type != VAL_INT) {
+        fprintf(stderr, "Runtime error: right() expects the second argument to be an int.\n");
+        exit(1);
+    }
+    
+    char *s = args[0].str_val;
+    int n = args[1].int_val;
+    if(n < 0)
+        n = 0;
+    int len = (int)strlen(s);
+    int result_len = (n < len) ? n : len;
+    
+    char *result = malloc(result_len + 1);
+    if(!result) {
+        fprintf(stderr, "Runtime error: Memory allocation failed in right().\n");
+        exit(1);
+    }
+    /* Copy the last result_len characters from s. */
+    strncpy(result, s + (len - result_len), result_len);
+    result[result_len] = '\0';
+    
+    Value ret = make_string(result);
+    free(result);
+    return ret;
+}
+
 #define NUM_BUILTINS 3
 static Function builtins[NUM_BUILTINS] = {
-    { "inc", builtin_inc },
-    { "foo", builtin_foo },
-    { "typeof", builtin_typeof }
+    { "typeof", builtin_typeof },
+    { "left", builtin_left },
+    { "right", builtin_right }    
 };
 
 Value call_function(const char *name, Value *args, int arg_count) {

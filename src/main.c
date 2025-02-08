@@ -35,9 +35,8 @@
         "else { print(\"a is something else\"); } "
         "a = a * 2; "
         "print(\"a = \" + a);"
-        "b = inc(a); "
+        "b = 2; "
         "print(b); "
-        "print(foo()); "
         "z = 5;"
         "if (z != 5) { print(\"z is not 5\"); } else { print(\"z is 5\"); } "
         "if (z > 5) { print(\"z is > 5\"); } "
@@ -78,11 +77,12 @@
         "x = 42; "
         "s = \"hello\"; "
         "b = true; "
-        //"n = NULL; "        
         "print(typeof(x)); "   // prints "int"
         "print(typeof(s)); "   // prints "string"
         "print(typeof(b)); "   // prints "bool"
-        //"print(typeof(n)); "   // prints "null"        
+        "name = \"Blake Pell\";"
+        "print(left(name, 5));"
+        "print(right(name, 4));"
         "return 1; ";
         
     Value ret = interpret(script);
