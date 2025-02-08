@@ -73,7 +73,16 @@
         "    b = !b; "
         "    if (b) { print(i); }"
         "    i = i + 1; "
-        "} "        
+        "} "
+        "print(\"TYPEOF TESTS\"); "
+        "x = 42; "
+        "s = \"hello\"; "
+        "b = true; "
+        //"n = NULL; "        
+        "print(typeof(x)); "   // prints "int"
+        "print(typeof(s)); "   // prints "string"
+        "print(typeof(b)); "   // prints "bool"
+        //"print(typeof(n)); "   // prints "null"        
         "return 1; ";
         
     Value ret = interpret(script);

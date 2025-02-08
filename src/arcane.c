@@ -132,10 +132,38 @@ Value builtin_foo(Value *args, int arg_count) {
     return make_int(42);
 }
 
-#define NUM_BUILTINS 2
+Value builtin_typeof(Value *args, int arg_count) {
+    if(arg_count != 1) {
+        fprintf(stderr, "Runtime error: typeof() expects exactly one argument.\n");
+        exit(1);
+    }
+    Value arg = args[0];
+    const char *type_str = "unknown";
+    switch(arg.type) {
+        case VAL_INT:
+            type_str = "int";
+            break;
+        case VAL_STRING:
+            type_str = "string";
+            break;
+        case VAL_BOOL:
+            type_str = "bool";
+            break;
+        case VAL_NULL:
+            type_str = "null";
+            break;
+        default:
+            type_str = "unknown";
+            break;
+    }
+    return make_string(type_str);
+}
+
+#define NUM_BUILTINS 3
 static Function builtins[NUM_BUILTINS] = {
     { "inc", builtin_inc },
-    { "foo", builtin_foo }
+    { "foo", builtin_foo },
+    { "typeof", builtin_typeof }
 };
 
 Value call_function(const char *name, Value *args, int arg_count) {
