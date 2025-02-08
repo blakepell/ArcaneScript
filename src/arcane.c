@@ -267,6 +267,17 @@ void tokenize(const char *src, TokenList *list) {
             continue;
         }
 
+        // Check for two-character operators for logical && and ||
+        if ((p[0]=='&' && p[1]=='&') || (p[0]=='|' && p[1]=='|')) {
+            char op[3];
+            op[0] = p[0];
+            op[1] = p[1];
+            op[2] = '\0';
+            add_token(list, TOKEN_OPERATOR, op);
+            p += 2;
+            continue;
+        }
+
         // Check for two-character operators: "++" and "--"
         if ((p[0]=='+' && p[1]=='+') || (p[0]=='-' && p[1]=='-')) {
             char op[3];
@@ -535,6 +546,36 @@ Value parse_equality(Parser *p);
 Value parse_assignment(Parser *p);
 Value parse_expression(Parser *p);
 Value parse_unary(Parser *p);
+Value parse_logical_and(Parser *p);
+Value parse_logical(Parser *p);
+
+/*
+ * Parse the And operator.
+ */
+Value parse_logical_and(Parser *p) {
+    Value left = parse_equality(p);
+    while (current(p)->type == TOKEN_OPERATOR && strcmp(current(p)->text, "&&") == 0) {
+        advance(p);  // consume "&&"
+        Value right = parse_equality(p);
+        int result = ((left.int_val != 0) && (right.int_val != 0));
+        left = make_bool(result);
+    }
+    return left;
+}
+
+/*
+ * Parse the Or operator.
+ */
+Value parse_logical(Parser *p) {
+    Value left = parse_logical_and(p);
+    while (current(p)->type == TOKEN_OPERATOR && strcmp(current(p)->text, "||") == 0) {
+        advance(p);  // consume "||"
+        Value right = parse_logical_and(p);
+        int result = ((left.int_val != 0) || (right.int_val != 0));
+        left = make_bool(result);
+    }
+    return left;
+}
 
 /* Now, define parse_relational which calls parse_term */
 Value parse_relational(Parser *p) {
@@ -728,7 +769,7 @@ Value parse_assignment(Parser *p) {
         free(assign_op);
         return right;
     }
-    return parse_equality(p);
+    return parse_logical(p);
 }
 
 /* --- Top-level expression parser --- */

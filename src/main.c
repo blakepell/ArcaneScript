@@ -57,12 +57,16 @@
         "for ( i = 10; i > 0; i-- ) { "
         "    print(i); "
         "}"
-        "b = false; "
+        "b = true; "
         "if (b == true) { print(\"b is true\"); } "
         "if (b == false) { print(\"b is false\"); } "
         "c = false;"
         "if (c == false) { print(\"if (c) is false\"); } "
-        "if (!c) { print(\"if (!c) is false\"); } "        
+        "if (!c) { print(\"if (!c) is false\"); } "     
+        "if ( (a == 5) && (b == true) ) { print(\"Both conditions met\"); }"
+        "if ( (a != 5) || (!b) ) { print(\"At least one condition is met\"); }"
+        "name = \"Lucy\";"
+        "if (name == \"Lucy\" || name == \"Blake\") { print(\"Hello, \" + name); }"
         "return 1; ";
         
     Value ret = interpret(script);
