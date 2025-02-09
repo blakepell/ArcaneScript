@@ -1122,49 +1122,41 @@ void parse_statement(Parser *p)
     {
         advance(p); // consume "for"
         expect(p, TOKEN_LPAREN, "Expected '(' after for");
-
+        
         /* --- Parse the initializer expression (if any) --- */
         if (current(p)->type != TOKEN_SEMICOLON)
         {
             parse_assignment(p);
         }
-
         expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop initializer");
-
-        /* --- Save the current token position for the condition expression --- */
+        
+        /* --- Capture the condition expression range --- */
         int cond_start = p->pos;
-
+        int cond_end = cond_start;
+        while (current(p)->type != TOKEN_SEMICOLON)
         {
-            // Verify condition syntax:
-            Value dummy_cond = parse_assignment(p);
-            if (dummy_cond.type == VAL_STRING && dummy_cond.temp)
-            {
-                free_value(dummy_cond);
-            }
+            cond_end++;
+            advance(p);
         }
-
         expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop condition");
-
-        /* --- Save the current token position for the post expression --- */
+        
+        /* --- Capture the post expression range --- */
         int post_start = p->pos;
-
-        if (current(p)->type != TOKEN_RPAREN)
+        int post_end = post_start;
+        while (current(p)->type != TOKEN_RPAREN)
         {
-            parse_assignment(p);
+            post_end++;
+            advance(p);
         }
-
         expect(p, TOKEN_RPAREN, "Expected ')' after for-loop post expression");
-
+        
         /* --- Parse the loop body --- */
         expect(p, TOKEN_LBRACE, "Expected '{' to start for-loop body");
-
-        // Consume the '{'
         int block_start = p->pos; // body starts after '{'
-
+        
         // Scan to find the matching '}'
         int brace_count = 1;
         int i = p->pos;
-
         while (i < p->tokens->count && brace_count > 0)
         {
             if (p->tokens->tokens[i].type == TOKEN_LBRACE)
@@ -1175,12 +1167,10 @@ void parse_statement(Parser *p)
             {
                 brace_count--;
             }
-
             i++;
         }
-
         int block_end = i; // token position just after the matching '}'
-
+        
         /* --- Execute the for loop --- */
         while (1)
         {
@@ -1189,7 +1179,11 @@ void parse_statement(Parser *p)
                 Parser condParser;
                 condParser.tokens = p->tokens;
                 condParser.pos = cond_start;
+                // Temporarily restrict the parser to the condition tokens.
+                int original_count = condParser.tokens->count;
+                condParser.tokens->count = cond_end;
                 Value cond_val = parse_assignment(&condParser);
+                condParser.tokens->count = original_count;
                 if (cond_val.type != VAL_INT || cond_val.int_val == 0)
                 {
                     if (cond_val.type == VAL_STRING && cond_val.temp)
@@ -1203,54 +1197,54 @@ void parse_statement(Parser *p)
                     free_value(cond_val);
                 }
             }
-
+        
             /* --- Execute the loop body --- */
             {
                 Parser bodyParser;
                 bodyParser.tokens = p->tokens;
                 bodyParser.pos = block_start;
-
-                // STOP when encountering the closing brace (TOKEN_RBRACE)
                 while (bodyParser.pos < block_end &&
-                    current(&bodyParser)->type != TOKEN_RBRACE &&
-                    !return_flag &&
-                    !continue_flag &&
-                    !break_flag)
+                       current(&bodyParser)->type != TOKEN_RBRACE &&
+                       !return_flag && !continue_flag && !break_flag)
                 {
                     parse_statement(&bodyParser);
                 }
             }
-
-            // If a break was executed in the loop body, reset the flag and exit the loop.
+        
             if (break_flag)
             {
                 break_flag = 0;
                 break;
             }
-
-            /* If a continue was encountered, reset the flag for this iteration. */
             if (continue_flag)
             {
                 continue_flag = 0;
             }
-
             if (return_flag)
             {
                 break;
             }
-
+        
             /* --- Execute the post expression --- */
             {
                 Parser postParser;
                 postParser.tokens = p->tokens;
                 postParser.pos = post_start;
-                parse_assignment(&postParser);
+                int original_post_count = postParser.tokens->count;
+                postParser.tokens->count = post_end;
+                Value post_val = parse_assignment(&postParser);
+                postParser.tokens->count = original_post_count;
+                post_val.temp = 0; // mark as non-temporary
+                if (post_val.type == VAL_STRING && post_val.temp)
+                {
+                    free_value(post_val);
+                }
             }
         }
-
+        
         // Skip the entire for-loop block.
         p->pos = block_end;
-    }
+    }    
     else if (tok->type == TOKEN_WHILE)
     {
         // Consume the "while" keyword.
