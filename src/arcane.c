@@ -437,6 +437,10 @@ void tokenize(const char *src, TokenList *list)
             {
                 add_token(list, TOKEN_PRINT, id);
             }
+            else if (strcmp(id, "continue") == 0)
+            {
+                add_token(list, TOKEN_CONTINUE, id);
+            }
             else if (strcmp(id, "true") == 0 || strcmp(id, "false") == 0)
             {
                 add_token(list, TOKEN_BOOL, id); // add TOKEN_BOOL for boolean literals
@@ -1085,6 +1089,7 @@ Value parse_assignment(Parser *p)
 
 static int return_flag = 0;
 static Value return_value;
+static int continue_flag = 0;
 
 void parse_block(Parser *p)
 {
@@ -1351,10 +1356,17 @@ void parse_statement(Parser *p)
                 // STOP when encountering the closing brace (TOKEN_RBRACE)
                 while (bodyParser.pos < block_end &&
                     current(&bodyParser)->type != TOKEN_RBRACE &&
-                    !return_flag)
+                    !return_flag &&
+                    !continue_flag)
                 {
                     parse_statement(&bodyParser);
                 }
+            }
+
+            /* If a continue was encountered, reset the flag for this iteration. */
+            if (continue_flag)
+            {
+                continue_flag = 0;
             }
 
             if (return_flag)
@@ -1456,15 +1468,29 @@ void parse_statement(Parser *p)
                 while (bodyParser.pos < block_end &&
                     current(&bodyParser)->type != TOKEN_RBRACE &&
                     current(&bodyParser)->type != TOKEN_EOF &&
-                    !return_flag)
+                    !return_flag &&
+                    !continue_flag)
                 {
                     parse_statement(&bodyParser);
                 }
+            }
+
+            // If a continue was executed in the loop body, reset the flag.
+            if (continue_flag)
+            {
+                continue_flag = 0;
             }
         }
 
         // Advance the main parser position to after the loop block.
         p->pos = block_end;
+    }
+    else if (tok->type == TOKEN_CONTINUE)
+    {
+        advance(p);
+        expect(p, TOKEN_SEMICOLON, "Expected ';' after continue statement");
+        continue_flag = 1;
+        return;
     }
     else
     {

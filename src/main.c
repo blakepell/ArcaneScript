@@ -84,6 +84,13 @@
         "print(left(name, 5));"
         "print(right(name, 4));"
         "print(left(name, 100));"
+        "for ( i = 10; i > 0; i-- ) { "
+        "    if (i > 5) { continue; } print(i);"
+        "}"
+        "i = 0;"
+        "while ( i < 10 ) { "
+        "    i++; if (i > 5) { continue; } print(i);"
+        "}"
         "return 1;";
         
     Value ret = interpret(script);
