@@ -110,7 +110,7 @@ int main(void)
         "while ( i > 0 ) { "
         "    i--; if (i < 100) { break; } print(i);"
         "}"
-        "return 1;";
+        "return true;";
         
     Value ret = interpret(script);
     printf("Script returned: ");
@@ -118,6 +118,8 @@ int main(void)
         printf("%d\n", ret.int_val);
     else if(ret.type == VAL_STRING)
         printf("%s\n", ret.str_val);
+    else if(ret.type == VAL_BOOL)
+        printf("%d\n", ret.int_val);
     else
         printf("null\n");
     if(ret.type == VAL_STRING && ret.temp)

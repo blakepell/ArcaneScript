@@ -24,7 +24,8 @@
 #endif
 
 /* ============================================================
-   Utility functions for Value creation and freeing   
+   Utility functions for Value creation and freeing for the
+   in language supported types. 
    ============================================================ */
 
 Value make_int(int x)
