@@ -61,11 +61,11 @@ typedef enum
     TOKEN_RETURN,
     TOKEN_PRINT,
     TOKEN_EOF
-} TokenType;
+} AstTokenType;
 
 typedef struct
 {
-    TokenType type;
+    AstTokenType type;
     char *text; /* For identifiers, literals, or operator text */
 } Token;
 

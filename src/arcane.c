@@ -3,6 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <time.h>
+#include <errno.h>
+#endif
 
 /* ============================================================
    Utility functions for Value creation and freeing
@@ -59,7 +65,7 @@ void free_value(Value v)
    ============================================================ */
 static Variable *local_variables = NULL;
 
-Variable* find_variable(const char *name)
+Variable *find_variable(const char *name)
 {
     Variable *cur = local_variables;
     while (cur)
@@ -145,21 +151,21 @@ Value fn_typeof(Value *args, int arg_count)
     const char *type_str = "unknown";
     switch (arg.type)
     {
-    case VAL_INT:
-        type_str = "int";
-        break;
-    case VAL_STRING:
-        type_str = "string";
-        break;
-    case VAL_BOOL:
-        type_str = "bool";
-        break;
-    case VAL_NULL:
-        type_str = "null";
-        break;
-    default:
-        type_str = "unknown";
-        break;
+        case VAL_INT:
+            type_str = "int";
+            break;
+        case VAL_STRING:
+            type_str = "string";
+            break;
+        case VAL_BOOL:
+            type_str = "bool";
+            break;
+        case VAL_NULL:
+            type_str = "null";
+            break;
+        default:
+            type_str = "unknown";
+            break;
     }
 
     return make_string(type_str);
@@ -259,12 +265,45 @@ Value fn_right(Value *args, int arg_count)
     return ret;
 }
 
-#define MAX_INTEROP_FUNCTIONS 3
+Value fn_sleep(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_INT) {
+        fprintf(stderr, "Runtime error: sleep() expects 1 integer argument (milliseconds).\n");
+        exit(1);
+    }
+
+    int ms = args[0].int_val;
+
+    if (ms < 0)
+    {
+        ms = 0;
+    }
+
+#ifdef _WIN32
+    // Sleep() takes milliseconds.
+    Sleep(ms);
+#else
+    // For POSIX, use nanosleep. Construct a timespec.
+    struct timespec req, rem;
+    req.tv_sec = ms / 1000;
+    req.tv_nsec = (ms % 1000) * 1000000; // convert ms to ns
+    // Loop in case nanosleep is interrupted by a signal.
+    while (nanosleep(&req, &rem) == -1 && errno == EINTR) {
+        req = rem;
+    }
+#endif
+
+    // Return null as sleep does not produce a meaningful value.
+    return make_null();
+}
+
+#define MAX_INTEROP_FUNCTIONS 4
 
 static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
     {"typeof", fn_typeof},
     {"left", fn_left},
-    {"right", fn_right}
+    {"right", fn_right},
+    {"sleep", fn_sleep}
 };
 
 Value call_function(const char *name, Value *args, int arg_count)
@@ -285,7 +324,7 @@ Value call_function(const char *name, Value *args, int arg_count)
    Tokenizer
    ============================================================ */
 
-void add_token(TokenList *list, TokenType type, const char *text)
+void add_token(TokenList *list, AstTokenType type, const char *text)
 {
     if (list->count >= MAX_TOKENS)
     {
@@ -453,11 +492,11 @@ void tokenize(const char *src, TokenList *list)
         /* Single-character tokens */
         switch (*p)
         {
-        case '=':
-        case '+':
-        case '-':
-        case '*':
-        case '/':
+            case '=':
+            case '+':
+            case '-':
+            case '*':
+            case '/':
             {
                 char op[2];
                 op[0] = *p;
@@ -466,7 +505,7 @@ void tokenize(const char *src, TokenList *list)
                 p++;
                 break;
             }
-        case '!':
+            case '!':
             {
                 char op[2];
                 op[0] = *p;
@@ -475,32 +514,32 @@ void tokenize(const char *src, TokenList *list)
                 p++;
                 break;
             }
-        case ';':
-            add_token(list, TOKEN_SEMICOLON, ";");
-            p++;
-            break;
-        case '(':
-            add_token(list, TOKEN_LPAREN, "(");
-            p++;
-            break;
-        case ')':
-            add_token(list, TOKEN_RPAREN, ")");
-            p++;
-            break;
-        case '{':
-            add_token(list, TOKEN_LBRACE, "{");
-            p++;
-            break;
-        case '}':
-            add_token(list, TOKEN_RBRACE, "}");
-            p++;
-            break;
-        case ',':
-            add_token(list, TOKEN_COMMA, ",");
-            p++;
-            break;
-        case '>':
-        case '<':
+            case ';':
+                add_token(list, TOKEN_SEMICOLON, ";");
+                p++;
+                break;
+            case '(':
+                add_token(list, TOKEN_LPAREN, "(");
+                p++;
+                break;
+            case ')':
+                add_token(list, TOKEN_RPAREN, ")");
+                p++;
+                break;
+            case '{':
+                add_token(list, TOKEN_LBRACE, "{");
+                p++;
+                break;
+            case '}':
+                add_token(list, TOKEN_RBRACE, "}");
+                p++;
+                break;
+            case ',':
+                add_token(list, TOKEN_COMMA, ",");
+                p++;
+                break;
+            case '>':
+            case '<':
             {
                 char op[2];
                 op[0] = *p;
@@ -509,9 +548,9 @@ void tokenize(const char *src, TokenList *list)
                 p++;
                 break;
             }
-        default:
-            fprintf(stderr, "Tokenizer error: Unexpected character '%c'\n", *p);
-            exit(1);
+            default:
+                fprintf(stderr, "Tokenizer error: Unexpected character '%c'\n", *p);
+                exit(1);
         }
     }
     add_token(list, TOKEN_EOF, "EOF");
@@ -520,12 +559,12 @@ void tokenize(const char *src, TokenList *list)
 /* ============================================================
    Parser and Interpreter
    ============================================================ */
-Token* current(Parser *p)
+Token *current(Parser *p)
 {
     return &p->tokens->tokens[p->pos];
 }
 
-Token* peek(Parser *p)
+Token *peek(Parser *p)
 {
     if (p->pos + 1 < p->tokens->count)
     {
@@ -542,7 +581,7 @@ void advance(Parser *p)
     }
 }
 
-void expect(Parser *p, TokenType type, const char *msg)
+void expect(Parser *p, AstTokenType type, const char *msg)
 {
     if (current(p)->type != type)
     {
