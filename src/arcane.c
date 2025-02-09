@@ -354,14 +354,64 @@ Value fn_input(Value *args, int arg_count)
     return make_string(buffer);
 }
 
-#define MAX_INTEROP_FUNCTIONS 5
+/**
+ * is_number: returns true if the string is an integer number, false otherwise.
+ */
+Value fn_is_number(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        fprintf(stderr, "Runtime error: is_number() expects exactly one argument.\n");
+        exit(1);
+    }
+    if (args[0].type != VAL_STRING)
+    {
+        fprintf(stderr, "Runtime error: is_number() expects a string argument.\n");
+        exit(1);
+    }
+
+    const char *s = args[0].str_val;
+
+    // Skip any leading whitespace.
+    while (*s && isspace((unsigned char)*s))
+    {
+        s++;
+    }
+
+    // Handle an optional '+' or '-' sign.
+    if (*s == '+' || *s == '-')
+    {
+        s++;
+    }
+
+    // There must be at least one digit.
+    if (!isdigit((unsigned char)*s))
+    {
+        return make_bool(0);
+    }
+
+    // Check the remainder of the string.
+    while (*s)
+    {
+        if (!isdigit((unsigned char)*s))
+        {
+            return make_bool(0);
+        }
+        s++;
+    }
+
+    return make_bool(1);
+}
+
+#define MAX_INTEROP_FUNCTIONS 6
 
 static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
     {"typeof", fn_typeof},
     {"left", fn_left},
     {"right", fn_right},
     {"sleep", fn_sleep},
-    {"input",  fn_input}
+    {"input",  fn_input},
+    {"is_number", fn_is_number}
 };
 
 Value call_function(const char *name, Value *args, int arg_count)
