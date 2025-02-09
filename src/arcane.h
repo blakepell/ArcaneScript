@@ -1,3 +1,13 @@
+/*
+ * Arcane Script Interpreter
+ *
+ *         File: arcane.h
+ *       Author: Blake Pell
+ * Initial Date: 2025-02-08
+ * Last Updated: 2025-02-09
+ *      License: MIT License
+ */
+
 #ifndef ARCANE_H
 #define ARCANE_H
 

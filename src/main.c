@@ -1,3 +1,16 @@
+/*
+ * Arcane Script Interpreter
+ *
+ *         File: main.c
+ *       Author: Blake Pell
+ * Initial Date: 2025-02-08
+ * Last Updated: 2025-02-09
+ *      License: MIT License
+ * 
+ * This is the main entry point for the Arcane scripting language when
+ * run from the command line.
+ */
+
 #include <sys/types.h>
 #include <time.h>
 #include <stdio.h>
@@ -7,11 +20,11 @@
 #include <errno.h>
 #include "arcane.h"
 
-/* ============================================================
-   Example Script (main)
-   ============================================================ */
-
-   int main(void) {
+/**
+ * Main entry point to the Arcane scripting language when run from the command line.
+ */
+int main(void) 
+{
     /* Example script demonstrating:
          - String variables and concatenation (using both + and +=)
          - Integer arithmetic and assignment
