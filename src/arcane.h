@@ -127,6 +127,16 @@ Value parse_assignment(Parser *p);
 Value parse_unary(Parser *p);
 Value parse_logical_and(Parser *p);
 Value parse_logical(Parser *p);
+Value make_int(int x);
+Value make_string(const char *s);
+Value make_null();
+Value make_bool(int b);
+Value fn_typeof(Value *args, int arg_count);
+Value fn_left(Value *args, int arg_count);
+Value fn_right(Value *args, int arg_count);
+Value fn_sleep(Value *args, int arg_count);
+Value fn_input(Value *args, int arg_count);
+Value fn_is_number(Value *args, int arg_count);
 
 #ifdef __cplusplus
 }

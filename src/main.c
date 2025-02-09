@@ -112,6 +112,10 @@ int main(void)
         "}"
         "name = input(\"Enter your name: \");"
         "print(\"You entered \" + name);"
+        "print(is_number(name));"
+        "print(typeof(is_number(name)));"
+        "if (is_number(name)) { print(\"You entered a number\"); } else { print(\"You did not enter a number\"); }"
+        "b = 5;"
         "return true;";
         
     Value ret = interpret(script);
