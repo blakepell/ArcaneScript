@@ -91,6 +91,12 @@
         "while ( i < 10 ) { "
         "    i++; if (i > 5) { continue; } print(i);"
         "}"
+        "for ( i = 100; i < 150; i++ ) { "
+        "    if (i > 110) { break; } print(i);"
+        "}"
+        "while ( i > 0 ) { "
+        "    i--; if (i < 100) { break; } print(i);"
+        "}"
         "return 1;";
         
     Value ret = interpret(script);

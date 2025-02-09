@@ -61,6 +61,7 @@ typedef enum
     TOKEN_RETURN,
     TOKEN_PRINT,
     TOKEN_CONTINUE,
+    TOKEN_BREAK,
     TOKEN_EOF
 } AstTokenType;
 

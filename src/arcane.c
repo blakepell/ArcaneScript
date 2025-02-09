@@ -441,6 +441,10 @@ void tokenize(const char *src, TokenList *list)
             {
                 add_token(list, TOKEN_CONTINUE, id);
             }
+            else if (strcmp(id, "break") == 0)
+            {
+                add_token(list, TOKEN_BREAK, id);
+            }
             else if (strcmp(id, "true") == 0 || strcmp(id, "false") == 0)
             {
                 add_token(list, TOKEN_BOOL, id); // add TOKEN_BOOL for boolean literals
@@ -1090,6 +1094,7 @@ Value parse_assignment(Parser *p)
 static int return_flag = 0;
 static Value return_value;
 static int continue_flag = 0;
+static int break_flag = 0;
 
 void parse_block(Parser *p)
 {
@@ -1357,10 +1362,18 @@ void parse_statement(Parser *p)
                 while (bodyParser.pos < block_end &&
                     current(&bodyParser)->type != TOKEN_RBRACE &&
                     !return_flag &&
-                    !continue_flag)
+                    !continue_flag &&
+                    !break_flag)
                 {
                     parse_statement(&bodyParser);
                 }
+            }
+
+            // If a break was executed in the loop body, reset the flag and exit the loop.
+            if (break_flag)
+            {
+                break_flag = 0;
+                break;
             }
 
             /* If a continue was encountered, reset the flag for this iteration. */
@@ -1469,10 +1482,18 @@ void parse_statement(Parser *p)
                     current(&bodyParser)->type != TOKEN_RBRACE &&
                     current(&bodyParser)->type != TOKEN_EOF &&
                     !return_flag &&
-                    !continue_flag)
+                    !continue_flag &&
+                    !break_flag)
                 {
                     parse_statement(&bodyParser);
                 }
+            }
+
+            // If a break was executed, reset the flag and exit the loop.
+            if (break_flag)
+            {
+                break_flag = 0;
+                break;
             }
 
             // If a continue was executed in the loop body, reset the flag.
@@ -1490,6 +1511,13 @@ void parse_statement(Parser *p)
         advance(p);
         expect(p, TOKEN_SEMICOLON, "Expected ';' after continue statement");
         continue_flag = 1;
+        return;
+    }
+    else if (tok->type == TOKEN_BREAK)
+    {
+        advance(p); // consume 'break'
+        expect(p, TOKEN_SEMICOLON, "Expected ';' after break statement");
+        break_flag = 1;
         return;
     }
     else
