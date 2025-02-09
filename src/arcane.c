@@ -311,13 +311,57 @@ Value fn_sleep(Value *args, int arg_count)
     return make_null();
 }
 
-#define MAX_INTEROP_FUNCTIONS 4
+Value fn_input(Value *args, int arg_count)
+{
+    // Allow zero or one argument (a prompt message)
+    if (arg_count > 1)
+    {
+        fprintf(stderr, "Runtime error: input() expects 0 or 1 argument.\n");
+        exit(1);
+    }
+
+    char prompt[256] = {0};
+    if (arg_count == 1)
+    {
+        if (args[0].type != VAL_STRING)
+        {
+            fprintf(stderr, "Runtime error: input() expects a string as prompt.\n");
+            exit(1);
+        }
+        // Copy the prompt into our buffer (limit its size)
+        strncpy(prompt, args[0].str_val, sizeof(prompt) - 1);
+    }
+
+    // If a prompt was provided, print it (and flush so the user sees it immediately)
+    if (prompt[0] != '\0')
+    {
+        printf("%s", prompt);
+        fflush(stdout);
+    }
+
+    // Read a line from stdin
+    char buffer[1024];
+    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
+    {
+        // On error or EOF, you might return null
+        return make_null();
+    }
+
+    // Remove the newline character, if present
+    buffer[strcspn(buffer, "\n")] = '\0';
+
+    // Return the input as a string value
+    return make_string(buffer);
+}
+
+#define MAX_INTEROP_FUNCTIONS 5
 
 static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
     {"typeof", fn_typeof},
     {"left", fn_left},
     {"right", fn_right},
-    {"sleep", fn_sleep}
+    {"sleep", fn_sleep},
+    {"input",  fn_input}
 };
 
 Value call_function(const char *name, Value *args, int arg_count)

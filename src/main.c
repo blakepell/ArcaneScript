@@ -110,6 +110,8 @@ int main(void)
         "while ( i > 0 ) { "
         "    i--; if (i < 100) { break; } print(i);"
         "}"
+        "name = input(\"Enter your name: \");"
+        "print(\"You entered \" + name);"
         "return true;";
         
     Value ret = interpret(script);
