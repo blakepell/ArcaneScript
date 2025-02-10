@@ -613,11 +613,7 @@ Value parse_unary(Parser *p)
     }
     // No prefix operator, so delegate to parse_primary.
     Value v = parse_primary(p);
-    // Now check for a postfix ++ or -- operator.
-    if (current(p)->type == TOKEN_OPERATOR &&
-        (strcmp(current(p)->text, "++") == 0 || strcmp(current(p)->text, "--") == 0))
-    {
-    }
+    
     return v;
 }
 
