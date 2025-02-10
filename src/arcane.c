@@ -421,6 +421,11 @@ void tokenize(const char *src, TokenList *list)
    ============================================================ */
 Token *current(Parser *p)
 {
+    if (p->pos >= p->tokens->count) {
+        // Return the EOF token which should be the last token.
+        return &p->tokens->tokens[p->tokens->count - 1];
+    }
+
     return &p->tokens->tokens[p->pos];
 }
 
@@ -443,11 +448,12 @@ void advance(Parser *p)
 
 void expect(Parser *p, AstTokenType type, const char *msg)
 {
-    if (current(p)->type != type)
+    if (p->pos >= p->tokens->count || current(p)->type != type)
     {
-        fprintf(stderr, "Parser error: %s (got '%s')\n", msg, current(p)->text);
+        fprintf(stderr, "Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
         exit(1);
     }
+    
     advance(p);
 }
 
@@ -1128,8 +1134,8 @@ void parse_statement(Parser *p)
         
         /* --- Capture the condition expression range --- */
         int cond_start = p->pos;
-        int cond_end = cond_start;
-        while (current(p)->type != TOKEN_SEMICOLON)
+        int cond_end = cond_start;        
+        while (p->pos < p->tokens->count && current(p)->type != TOKEN_SEMICOLON) 
         {
             cond_end++;
             advance(p);
@@ -1139,7 +1145,7 @@ void parse_statement(Parser *p)
         /* --- Capture the post expression range --- */
         int post_start = p->pos;
         int post_end = post_start;
-        while (current(p)->type != TOKEN_RPAREN)
+        while (p->pos < p->tokens->count && current(p)->type != TOKEN_RPAREN)
         {
             post_end++;
             advance(p);
