@@ -788,6 +788,10 @@ Value parse_term(Parser *p)
                 strcat(concat, s2);
                 Value temp = make_string(concat);
                 free(concat);
+                if (left.type == VAL_STRING && left.temp)
+                {
+                    free_value(left);
+                }
                 left = temp;
             }
             else
