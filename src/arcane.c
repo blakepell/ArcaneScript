@@ -6,7 +6,7 @@
  * Initial Date: 2025-02-08
  * Last Updated: 2025-02-09
  *      License: MIT License
- * 
+ *
  * Provides functionality for tokenizing, parsing, and interpreting
  * the Arcane scripting language.
  */
@@ -31,10 +31,10 @@
      {"input",  fn_input},
      {"is_number", fn_is_number}
  };
-    
+ 
  /* ============================================================
     Utility functions for Value creation and freeing for the
-    in language supported types. 
+    in language supported types.
     ============================================================ */
  
  Value make_int(int x)
@@ -149,6 +149,7 @@
      {
          Variable *next = cur->next;
          free(cur->name);
+         cur->name = NULL;
  
          if (cur->value.type == VAL_STRING && cur->value.str_val)
          {
@@ -456,7 +457,7 @@
          fprintf(stderr, "Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
          exit(1);
      }
-     
+ 
      advance(p);
  }
  
@@ -622,7 +623,7 @@
      }
      // No prefix operator, so delegate to parse_primary.
      Value v = parse_primary(p);
-     
+ 
      return v;
  }
  
@@ -1146,24 +1147,24 @@
      {
          advance(p); // consume "for"
          expect(p, TOKEN_LPAREN, "Expected '(' after for");
-         
+ 
          /* --- Parse the initializer expression (if any) --- */
          if (current(p)->type != TOKEN_SEMICOLON)
          {
              parse_assignment(p);
          }
          expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop initializer");
-         
+ 
          /* --- Capture the condition expression range --- */
          int cond_start = p->pos;
-         int cond_end = cond_start;        
-         while (p->pos < p->tokens->count && current(p)->type != TOKEN_SEMICOLON) 
+         int cond_end = cond_start;
+         while (p->pos < p->tokens->count && current(p)->type != TOKEN_SEMICOLON)
          {
              cond_end++;
              advance(p);
          }
          expect(p, TOKEN_SEMICOLON, "Expected ';' after for-loop condition");
-         
+ 
          /* --- Capture the post expression range --- */
          int post_start = p->pos;
          int post_end = post_start;
@@ -1173,11 +1174,11 @@
              advance(p);
          }
          expect(p, TOKEN_RPAREN, "Expected ')' after for-loop post expression");
-         
+ 
          /* --- Parse the loop body --- */
          expect(p, TOKEN_LBRACE, "Expected '{' to start for-loop body");
          int block_start = p->pos; // body starts after '{'
-         
+ 
          // Scan to find the matching '}'
          int brace_count = 1;
          int i = p->pos;
@@ -1194,7 +1195,7 @@
              i++;
          }
          int block_end = i; // token position just after the matching '}'
-         
+ 
          /* --- Execute the for loop --- */
          while (1)
          {
@@ -1221,20 +1222,20 @@
                      free_value(cond_val);
                  }
              }
-         
+ 
              /* --- Execute the loop body --- */
              {
                  Parser bodyParser;
                  bodyParser.tokens = p->tokens;
                  bodyParser.pos = block_start;
                  while (bodyParser.pos < block_end &&
-                        current(&bodyParser)->type != TOKEN_RBRACE &&
-                        !return_flag && !continue_flag && !break_flag)
+                     current(&bodyParser)->type != TOKEN_RBRACE &&
+                     !return_flag && !continue_flag && !break_flag)
                  {
                      parse_statement(&bodyParser);
                  }
              }
-         
+ 
              if (break_flag)
              {
                  break_flag = 0;
@@ -1248,7 +1249,7 @@
              {
                  break;
              }
-         
+ 
              /* --- Execute the post expression --- */
              {
                  Parser postParser;
@@ -1265,10 +1266,10 @@
                  }
              }
          }
-         
+ 
          // Skip the entire for-loop block.
          p->pos = block_end;
-     }    
+     }
      else if (tok->type == TOKEN_WHILE)
      {
          // Consume the "while" keyword.
@@ -1432,3 +1433,4 @@
      free_variables();
      return ret;
  }
+ 
