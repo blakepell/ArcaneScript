@@ -61,6 +61,7 @@ name = "Blake Pell";
 print(left(name, 5));
 print(right(name, 4));
 print(left(name, 100));
+print("name is " + strlen(name) + " characters long.");
 for ( i = 10; i > 0; i-- ) { 
     if (i > 5) { continue; } print(i);
 }
