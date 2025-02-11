@@ -20,11 +20,32 @@
 #include <errno.h>
 #include "arcane.h"
 
+// #include <crtdbg.h>
+
+// #define _CRTDBG_MAP_ALLOC
+
+// #ifdef _DEBUG
+// #define malloc(s)         _malloc_dbg(s, _NORMAL_BLOCK, __FILE__, __LINE__)
+// #define calloc(c, s)      _calloc_dbg(c, s, _NORMAL_BLOCK, __FILE__, __LINE__)
+// #define realloc(p, s)     _realloc_dbg(p, s, _NORMAL_BLOCK, __FILE__, __LINE__)
+// #define free(p)           _free_dbg(p, _NORMAL_BLOCK)
+// #endif
+
+
 /**
  * Main entry point to the Arcane scripting language when run from the command line.
  */
 int main(int argc, char *argv[])
 {
+    //     // Enable run-time memory check for debug builds.
+    //     int flags = _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG)
+    //     | _CRTDBG_LEAK_CHECK_DF
+    //     | _CRTDBG_ALLOC_MEM_DF);
+
+    // //_CrtSetBreakAlloc(1038);
+
+    // _CrtSetDbgFlag(flags);
+
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <script_file>\n", argv[0]);
         return 1;
