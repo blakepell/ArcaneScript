@@ -472,7 +472,6 @@
      {
          Value v = make_string(tok->text);
          advance(p);
-         v.temp = 0; // Mark as non-temporary so that it gets freed when the program is over.
          return v;
      }
  
