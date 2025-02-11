@@ -1006,15 +1006,12 @@ void parse_statement(Parser *p)
     }
     else if (tok->type == TOKEN_IF)
     {
-        // Consume the "if" token.
-        advance(p);
+        advance(p); // consume "if"
         expect(p, TOKEN_LPAREN, "Expected '(' after if");
         Value cond = parse_assignment(p);
         expect(p, TOKEN_RPAREN, "Expected ')' after if condition");
 
-        // Accept both integers and booleans as valid conditions.
         int condition_true = 0;
-
         if (cond.type == VAL_INT || cond.type == VAL_BOOL)
         {
             condition_true = (cond.int_val != 0);
@@ -1025,23 +1022,29 @@ void parse_statement(Parser *p)
             exit(1);
         }
 
-        // Execute the block if condition is true; otherwise, skip it.
         if (condition_true)
         {
             parse_block(p);
-        }
-        else
-        {
-            // Skip the block: if the current token is '{', then skip ahead past the block.
-            if (current(p)->type == TOKEN_LBRACE)
+            // Skip any trailing else/else if blocks.
+            while (current(p)->type == TOKEN_ELSE)
             {
-                int brace_count = 0;
-
+                advance(p); // consume 'else'
+                if (current(p)->type == TOKEN_IF)
+                {
+                    // Consume "else if" condition tokens without evaluating.
+                    advance(p); // consume 'if'
+                    expect(p, TOKEN_LPAREN, "Expected '(' after else if");
+                    while (current(p)->type != TOKEN_RPAREN && current(p)->type != TOKEN_EOF)
+                    {
+                        advance(p);
+                    }
+                    expect(p, TOKEN_RPAREN, "Expected ')' after else if condition");
+                }
                 if (current(p)->type == TOKEN_LBRACE)
                 {
-                    brace_count++;
-                    advance(p);
-
+                    // Skip the block.
+                    int brace_count = 1;
+                    advance(p); // consume '{'
                     while (brace_count > 0 && current(p)->type != TOKEN_EOF)
                     {
                         if (current(p)->type == TOKEN_LBRACE)
@@ -1057,70 +1060,77 @@ void parse_statement(Parser *p)
                 }
             }
         }
-
-        // Handle optional "else if" and "else" clauses.
-        while (current(p)->type == TOKEN_ELSE)
+        else
         {
-            advance(p); // consume 'else'
-            if (current(p)->type == TOKEN_IF)
+            // If false, process the if's block as before.
+            if (current(p)->type == TOKEN_LBRACE)
             {
-                // Else if branch.
-                advance(p); // consume 'if'
-                expect(p, TOKEN_LPAREN, "Expected '(' after else if");
-                Value cond2 = parse_assignment(p);
-                expect(p, TOKEN_RPAREN, "Expected ')' after else if condition");
-
-                int condition_true2 = 0;
-
-                if (cond2.type == VAL_INT || cond2.type == VAL_BOOL)
+                int brace_count = 1;
+                advance(p);
+                while (brace_count > 0 && current(p)->type != TOKEN_EOF)
                 {
-                    condition_true2 = (cond2.int_val != 0);
+                    if (current(p)->type == TOKEN_LBRACE)
+                        brace_count++;
+                    else if (current(p)->type == TOKEN_RBRACE)
+                        brace_count--;
+                    advance(p);
+                }
+            }
+            // Process subsequent else if/else clauses normally.
+            while (current(p)->type == TOKEN_ELSE)
+            {
+                advance(p); // consume 'else'
+                if (current(p)->type == TOKEN_IF)
+                {
+                    advance(p); // consume 'if'
+                    expect(p, TOKEN_LPAREN, "Expected '(' after else if");
+                    Value cond2 = parse_assignment(p);
+                    expect(p, TOKEN_RPAREN, "Expected ')' after else if condition");
+
+                    int condition_true2 = 0;
+                    if (cond2.type == VAL_INT || cond2.type == VAL_BOOL)
+                    {
+                        condition_true2 = (cond2.int_val != 0);
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Runtime error: else if condition must be int or bool.\n");
+                        exit(1);
+                    }
+
+                    if (condition_true2)
+                    {
+                        parse_block(p);
+                        break;
+                    }
+                    else
+                    {
+                        // Skip the else if block.
+                        if (current(p)->type == TOKEN_LBRACE)
+                        {
+                            int brace_count = 1;
+                            advance(p);
+                            while (brace_count > 0 && current(p)->type != TOKEN_EOF)
+                            {
+                                if (current(p)->type == TOKEN_LBRACE)
+                                    brace_count++;
+                                else if (current(p)->type == TOKEN_RBRACE)
+                                    brace_count--;
+                                advance(p);
+                            }
+                        }
+                        // Continue checking further else clauses.
+                    }
                 }
                 else
                 {
-                    fprintf(stderr, "Runtime error: else if condition must be int or bool.\n");
-                    exit(1);
-                }
-
-                if (condition_true2)
-                {
-                    parse_block(p);
-                    // After a successful branch, we do not evaluate further else/else if clauses.
-                    break;
-                }
-                // Skip the block for the else if.
-                if (current(p)->type == TOKEN_LBRACE)
-                {
-                    int brace_count = 0;
-
+                    // Else branch.
                     if (current(p)->type == TOKEN_LBRACE)
                     {
-                        brace_count++;
-                        advance(p);
-                        while (brace_count > 0 && current(p)->type != TOKEN_EOF)
-                        {
-                            if (current(p)->type == TOKEN_LBRACE)
-                            {
-                                brace_count++;
-                            }
-                            else if (current(p)->type == TOKEN_RBRACE)
-                            {
-                                brace_count--;
-                            }
-                            advance(p);
-                        }
+                        parse_block(p);
                     }
+                    break;
                 }
-                // Then continue to check for further else if / else.
-            }
-            else
-            {
-                // Else branch.
-                if (current(p)->type == TOKEN_LBRACE)
-                {
-                    parse_block(p);
-                }
-                break; // No further else clauses.
             }
         }
     }
