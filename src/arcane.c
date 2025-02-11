@@ -18,7 +18,7 @@
  #include <stdio.h>
  
  /* ============================================================
-    Interop Functions
+     Interop Functions
     ============================================================ */
  
  #define MAX_INTEROP_FUNCTIONS 7
@@ -34,10 +34,13 @@
  };
  
  /* ============================================================
-    Utility functions for Value creation and freeing for the
-    in language supported types.
+     Utility functions for Value creation and freeing for the
+     in language supported types.
     ============================================================ */
  
+/*
+ * Makes an integer value.
+ */
  Value make_int(int x)
  {
      Value v;
@@ -47,6 +50,9 @@
      return v;
  }
  
+ /*
+  * Makes a string value.
+  */
  Value make_string(const char *s)
  {
      Value v;
@@ -56,6 +62,9 @@
      return v;
  }
  
+ /*
+  * Makes a null value.
+  */
  Value make_null()
  {
      Value v;
@@ -64,6 +73,9 @@
      return v;
  }
  
+ /*
+  * Makes a boolean value.
+  */
  Value make_bool(int b)
  {
      Value v;
@@ -86,7 +98,7 @@
  }
  
  /* ============================================================
-    Symbol Table (for local script–variables)
+     Symbol Table (for local script–variables)
     ============================================================ */
  static Variable *local_variables = NULL;
  
@@ -192,7 +204,7 @@
  }
  
  /* ============================================================
-    Tokenizer
+     Tokenizer
     ============================================================ */
  
  /*
@@ -442,7 +454,7 @@
  }
  
  /* ============================================================
-    Parser and Interpreter
+     Parser and Interpreter
     ============================================================ */
 
 /*
