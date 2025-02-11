@@ -80,6 +80,7 @@
      if (v.type == VAL_STRING && v.str_val)
      {
          free(v.str_val);
+         v.str_val = NULL;
      }
  }
  
@@ -114,6 +115,7 @@
          if (var->value.type == VAL_STRING && var->value.str_val)
          {
              free(var->value.str_val);
+             var->value.str_val = NULL;
          }
          var->value = v;
      }
@@ -151,6 +153,7 @@
          if (cur->value.type == VAL_STRING && cur->value.str_val)
          {
              free(cur->value.str_val);
+             cur->value.str_val = NULL;
          }
          free(cur);
          cur = next;
@@ -929,6 +932,11 @@
                  strcat(concat, s2);
                  newVal = make_string(concat);
                  free(concat);
+                 // Free the temporary right value if needed.
+                 if (right.type == VAL_STRING && right.temp)
+                 {
+                     free_value(right);
+                 }
              }
              else
              {
@@ -937,7 +945,7 @@
  
              set_variable(varName, newVal);
              right = newVal;
-             right.temp = 0; /* <--- FIX: mark returned value as non-temporary */
+             right.temp = 0; /* mark returned value as non-temporary */
          }
  
          free(varName);
@@ -1424,4 +1432,3 @@
      free_variables();
      return ret;
  }
- 
