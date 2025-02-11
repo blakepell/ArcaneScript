@@ -22,7 +22,10 @@
  #include <time.h>
  #include <errno.h>
  #endif
- 
+
+/**
+ * Returns the type of the given value as a string.
+ */
 Value fn_typeof(Value *args, int arg_count)
 {
     if (arg_count != 1)
@@ -55,6 +58,13 @@ Value fn_typeof(Value *args, int arg_count)
     return make_string(type_str);
 }
 
+/**
+ * Returns the first n characters of the given string.
+ *
+ * @param args Expects a string and an int.
+ * @param arg_count Expects 2 arguments: a string and an int.
+ * @return A string containing the first n characters of the input string.  If n exceeds the string length then the entire string is returned.
+ */
 Value fn_left(Value *args, int arg_count)
 {
     if (arg_count != 2)
@@ -102,6 +112,12 @@ Value fn_left(Value *args, int arg_count)
     return ret;
 }
 
+/**
+ * Returns the right n characters of a string.
+ * @param args Expects 2 arguments, a string and an int.
+ * @param arg_count 2
+ * @return Returns the right n characters of a string.  If n is greater than the string length the entire string is returned.
+ */
 Value fn_right(Value *args, int arg_count)
 {
     if (arg_count != 2)
@@ -149,6 +165,12 @@ Value fn_right(Value *args, int arg_count)
     return ret;
 }
 
+/**
+ * Sleeps for the given number of milliseconds.
+ * @param args Expects 1 argument, an int.
+ * @param arg_count 1
+ * @return Null
+ */
 Value fn_sleep(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_INT) {
@@ -181,6 +203,10 @@ Value fn_sleep(Value *args, int arg_count)
     return make_null();
 }
 
+/**
+ * Gets input from the user.
+ * @return A string value of the input the user entered.
+ */
 Value fn_input(Value *args, int arg_count)
 {
     // Allow zero or one argument (a prompt message)
@@ -226,6 +252,7 @@ Value fn_input(Value *args, int arg_count)
 
 /**
  * is_number: returns true if the string is an integer number, false otherwise.
+ * @return A bool value of whether the string is a number.
  */
 Value fn_is_number(Value *args, int arg_count)
 {
