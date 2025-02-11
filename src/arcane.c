@@ -90,6 +90,9 @@
     ============================================================ */
  static Variable *local_variables = NULL;
  
+ /*
+  * Finds a variable by name in the local symbol table.
+  */
  Variable *find_variable(const char *name)
  {
      Variable *cur = local_variables;
@@ -104,8 +107,10 @@
      return NULL;
  }
  
- /* set_var() stores a value under a given name.
-    The passed-in Value’s “temp” flag is cleared (0) to indicate that the variable table now owns it. */
+ /*
+  *  Adds or updates a variable.  The passed-in Value’s "temp" flag is cleared (0) to 
+  *  indicate that the variable table now owns it. 
+  */
  void set_variable(const char *name, Value v)
  {
      Variable *var = find_variable(name);
@@ -130,6 +135,9 @@
      }
  }
  
+ /*
+  * Retrieves a variable by name from the local symbol table.
+  */
  Value get_variable(const char *name)
  {
      Variable *var = find_variable(name);
@@ -143,6 +151,9 @@
      exit(1);
  }
  
+ /*
+  * Frees all local variables.
+  */
  void free_variables()
  {
      Variable *cur = local_variables;
@@ -163,6 +174,9 @@
      local_variables = NULL;
  }
  
+ /*
+  * Lookup interop function by name and call it with the given arguments.
+  */
  Value call_function(const char *name, Value *args, int arg_count)
  {
      for (int i = 0; i < MAX_INTEROP_FUNCTIONS; i++)
@@ -181,6 +195,9 @@
     Tokenizer
     ============================================================ */
  
+ /*
+  * Adds a token to the token list for the script.
+  */
  void add_token(TokenList *list, AstTokenType type, const char *text)
  {
      if (list->count >= MAX_TOKENS)
@@ -193,6 +210,9 @@
      list->count++;
  }
  
+ /*
+  * Tokenizes the input script and populates the token list.
+  */
  void tokenize(const char *src, TokenList *list)
  {
      list->count = 0;
@@ -424,45 +444,60 @@
  /* ============================================================
     Parser and Interpreter
     ============================================================ */
- Token *current(Parser *p)
- {
-     if (p->pos >= p->tokens->count) {
-         // Return the EOF token which should be the last token.
-         return &p->tokens->tokens[p->tokens->count - 1];
-     }
+
+/*
+ * The current position in the token list.
+ */
+Token *current(Parser *p)
+{
+    if (p->pos >= p->tokens->count) {
+        // Return the EOF token which should be the last token.
+        return &p->tokens->tokens[p->tokens->count - 1];
+    }
+
+    return &p->tokens->tokens[p->pos];
+}
+
+/*
+ * The next token in the token list.
+ */
+Token *peek(Parser *p)
+{
+    if (p->pos + 1 < p->tokens->count)
+    {
+        return &p->tokens->tokens[p->pos + 1];
+    }
+    return NULL;
+}
+
+/*
+ * Advances the current position in the token list.
+ */
+void advance(Parser *p)
+{
+    if (p->pos < p->tokens->count)
+    {
+        p->pos++;
+    }
+}
+
+/*
+ * Expects the current token to be of the given type and advances to the next token.
+ */
+void expect(Parser *p, AstTokenType type, const char *msg)
+{
+    if (p->pos >= p->tokens->count || current(p)->type != type)
+    {
+        fprintf(stderr, "Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
+        exit(1);
+    }
+
+    advance(p);
+}
  
-     return &p->tokens->tokens[p->pos];
- }
- 
- Token *peek(Parser *p)
- {
-     if (p->pos + 1 < p->tokens->count)
-     {
-         return &p->tokens->tokens[p->pos + 1];
-     }
-     return NULL;
- }
- 
- void advance(Parser *p)
- {
-     if (p->pos < p->tokens->count)
-     {
-         p->pos++;
-     }
- }
- 
- void expect(Parser *p, AstTokenType type, const char *msg)
- {
-     if (p->pos >= p->tokens->count || current(p)->type != type)
-     {
-         fprintf(stderr, "Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
-         exit(1);
-     }
- 
-     advance(p);
- }
- 
-// Add this helper function to process string templates.
+/*
+ * Evaluates a template string by replacing variables with their values.
+ */
 char *evaluate_template(const char *tpl) {
     // Allocate an initial dynamic buffer.
     size_t buf_size = strlen(tpl) * 2 + 1;
@@ -535,7 +570,9 @@ char *evaluate_template(const char *tpl) {
     return result;
 }
 
-/* --- Primary expressions --- */
+/*
+ * Parse a primary expression.
+ */
 Value parse_primary(Parser *p)
 {
     Token *tok = current(p);
@@ -656,7 +693,9 @@ Value parse_primary(Parser *p)
      exit(1);
  }
  
- // parse_unary handles prefix ++ and --
+ /*
+  * Parse a unary expression.
+  */
  Value parse_unary(Parser *p)
  {
      // Handle the '!' operator for logical negation
@@ -746,7 +785,9 @@ Value parse_primary(Parser *p)
      return left;
  }
  
- /* Now, define parse_relational which calls parse_term */
+ /*
+  * Parse relational: Calls into parse_term and handles relational operators.
+  */
  Value parse_relational(Parser *p)
  {
      Value left = parse_term(p);
@@ -791,7 +832,9 @@ Value parse_primary(Parser *p)
      return left;
  }
  
- /* --- Factors (handle * and /) --- */
+ /*
+  * Parse a factor (a term that can be multiplied or divided).
+  */
  Value parse_factor(Parser *p)
  {
      Value left = parse_unary(p);
@@ -832,7 +875,9 @@ Value parse_primary(Parser *p)
      return left;
  }
  
- /* --- Terms (handle +, -; note: '+' is also used for string concatenation) --- */
+ /*
+  * Terms (handle +, -; note: '+' is also used for string concatenation)
+  */
  Value parse_term(Parser *p)
  {
      Value left = parse_factor(p);
@@ -906,7 +951,9 @@ Value parse_primary(Parser *p)
      return left;
  }
  
- /* --- Equality (handles "==") --- */
+ /*
+  * Compares two values for equality.
+  */
  int values_equal(const Value a, const Value b)
  {
      if (a.type != b.type)
@@ -932,6 +979,9 @@ Value parse_primary(Parser *p)
      return 0;
  }
  
+ /*
+  * Parse equality (handles == and !=)
+  */
  Value parse_equality(Parser *p)
  {
      Value left = parse_relational(p);
@@ -965,7 +1015,9 @@ Value parse_primary(Parser *p)
      return left;
  }
  
- /* --- Assignment (handles x = expr; and x += expr;) --- */
+ /*
+  * Parse an assignment expression.  (handles x = expr; and x += expr;)
+  */
  Value parse_assignment(Parser *p)
  {
      if (current(p)->type == TOKEN_IDENTIFIER && peek(p) &&
@@ -1041,13 +1093,18 @@ Value parse_primary(Parser *p)
      return parse_logical(p);
  }
  
- /* --- Statements --- */
- 
+  /* ============================================================
+      Statements
+     ============================================================ */
+
  static int return_flag = 0;
  static Value return_value;
  static int continue_flag = 0;
  static int break_flag = 0;
  
+ /*
+  * Parses a block of statements.
+  */
  void parse_block(Parser *p)
  {
      expect(p, TOKEN_LBRACE, "Expected '{' to start block");
@@ -1060,6 +1117,9 @@ Value parse_primary(Parser *p)
      expect(p, TOKEN_RBRACE, "Expected '}' to end block");
  }
  
+ /*
+  * Parses a statement.
+  */
  void parse_statement(Parser *p)
  {
      Token *tok = current(p);
