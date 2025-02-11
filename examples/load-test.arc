@@ -1,6 +1,8 @@
 running = true;
+counter = 0;
 while (running)
 {
+    counter++;
     // This is a test
     buf = "Hello";
     buf += ", ";
@@ -88,7 +90,12 @@ while (running)
     print(typeof(is_number(name)));
     if (is_number(name)) { print("You entered a number"); } else { print("You did not enter a number"); }
 
-    sleep(1000);
+    print("Finished Loop: " + counter);
+
+    if (counter == 10000) {
+        running = false;
+        //break;
+    }
 }
 
 return true;

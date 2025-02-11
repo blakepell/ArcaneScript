@@ -1,6 +1,7 @@
 // This is a test
 buf = "Hello";
 buf += ", ";
+buf += "ADDED WITH+=";
 buf = buf + "World";
 print(buf); 
 if (buf == "Hello, World") { print("Strings are equal"); } 
