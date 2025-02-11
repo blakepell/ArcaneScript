@@ -462,32 +462,116 @@
      advance(p);
  }
  
- /* --- Primary expressions --- */
- Value parse_primary(Parser *p)
- {
-     Token *tok = current(p);
-     if (tok->type == TOKEN_INT)
-     {
-         int num = atoi(tok->text);
-         advance(p);
-         return make_int(num);
-     }
- 
-     if (tok->type == TOKEN_STRING)
-     {
-         Value v = make_string(tok->text);
-         advance(p);
-         return v;
-     }
- 
-     if (tok->type == TOKEN_BOOL)
-     {
-         // Create a boolean value based on the literal text.
-         int b = (strcmp(tok->text, "true") == 0) ? 1 : 0;
-         Value v = make_bool(b);
-         advance(p);
-         return v;
-     }
+// Add this helper function to process string templates.
+char *evaluate_template(const char *tpl) {
+    // Allocate an initial dynamic buffer.
+    size_t buf_size = strlen(tpl) * 2 + 1;
+    char *result = malloc(buf_size);
+    if (!result) {
+        fprintf(stderr, "Memory allocation error in evaluate_template.\n");
+        exit(1);
+    }
+    result[0] = '\0';
+    
+    const char *p = tpl;
+    while (*p) {
+        if (p[0] == '$' && p[1] == '{') {
+            p += 2; // Skip "${"
+            const char *var_start = p;
+            while (*p && *p != '}')
+                p++;
+            if (*p != '}') {
+                fprintf(stderr, "Template error: missing '}'\n");
+                exit(1);
+            }
+            size_t var_len = p - var_start;
+            char *varName = malloc(var_len + 1);
+            strncpy(varName, var_start, var_len);
+            varName[var_len] = '\0';
+            p++; // Skip "}"
+            
+            // Look up the variable and convert it to a string.
+            Value val = get_variable(varName);
+            free(varName);
+            char temp[128];
+            const char *valStr;
+            if (val.type == VAL_INT) {
+                sprintf(temp, "%d", val.int_val);
+                valStr = temp;
+            } else if (val.type == VAL_BOOL) {
+                valStr = (val.int_val ? "true" : "false");
+            } else if (val.type == VAL_STRING) {
+                valStr = val.str_val;
+            } else {
+                valStr = "null";
+            }
+            
+            // Ensure buffer is large enough.
+            if (strlen(result) + strlen(valStr) + 1 > buf_size) {
+                buf_size = (strlen(result) + strlen(valStr)) * 2 + 1;
+                result = realloc(result, buf_size);
+                if (!result) {
+                    fprintf(stderr, "Memory reallocation error in evaluate_template.\n");
+                    exit(1);
+                }
+            }
+            strcat(result, valStr);
+        } else {
+            // Append regular character.
+            size_t len = strlen(result);
+            if (len + 2 > buf_size) {
+                buf_size *= 2;
+                result = realloc(result, buf_size);
+                if (!result) {
+                    fprintf(stderr, "Memory reallocation error in evaluate_template.\n");
+                    exit(1);
+                }
+            }
+            result[len] = *p;
+            result[len + 1] = '\0';
+            p++;
+        }
+    }
+    return result;
+}
+
+/* --- Primary expressions --- */
+Value parse_primary(Parser *p)
+{
+    Token *tok = current(p);
+    if (tok->type == TOKEN_INT)
+    {
+        int num = atoi(tok->text);
+        advance(p);
+        return make_int(num);
+    }
+    
+    if (tok->type == TOKEN_STRING)
+    {
+        char *processed;
+        // Check if the string literal contains a template pattern.
+        if (strstr(tok->text, "${") != NULL)
+        {
+            processed = evaluate_template(tok->text);
+        }
+        else
+        {
+            processed = _strdup(tok->text);
+        }
+        Value v = make_string(processed);
+        free(processed);
+        advance(p);
+        return v;
+    }
+    
+    if (tok->type == TOKEN_BOOL)
+    {
+        // Create a boolean value based on the literal text.
+        int b = (strcmp(tok->text, "true") == 0) ? 1 : 0;
+        Value v = make_bool(b);
+        advance(p);
+        return v;
+    }
  
      if (tok->type == TOKEN_IDENTIFIER)
      {
@@ -1434,4 +1518,3 @@
      free_variables();
      return ret;
  }
- 

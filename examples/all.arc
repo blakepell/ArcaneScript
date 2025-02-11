@@ -81,4 +81,5 @@ print(is_number(name));
 print(typeof(is_number(name)));
 if (is_number(name)) { print("You entered a number"); } else { print("You did not enter a number"); }
 b = 5;
+print("You entered ${name} as your name.  The value of x is ${x}");
 return true;
