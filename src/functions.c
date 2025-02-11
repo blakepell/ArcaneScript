@@ -299,3 +299,27 @@ Value fn_is_number(Value *args, int arg_count)
 
     return make_bool(1);
 }
+
+/**
+ * Returns the length of the string if the Value is of type string, or 0 otherwise.
+ *
+ * @param args Expects a single argument.
+ * @param arg_count Expects 1 argument.
+ * @return An int Value representing the string length or -1 if not a string.
+ */
+Value fn_strlen(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        fprintf(stderr, "Runtime error: strlen() expects exactly one argument.\n");
+        exit(1);
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        return make_int(-1);
+    }
+
+    int len = strlen(args[0].str_val);
+    return make_int(len);
+}

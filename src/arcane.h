@@ -141,6 +141,7 @@
  Value fn_sleep(Value *args, int arg_count);
  Value fn_input(Value *args, int arg_count);
  Value fn_is_number(Value *args, int arg_count);
+ Value fn_strlen(Value *args, int arg_count);
  
  #ifdef __cplusplus
  }

@@ -21,7 +21,7 @@
     Built–in Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 6
+ #define MAX_INTEROP_FUNCTIONS 7
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"typeof", fn_typeof},
@@ -29,7 +29,8 @@
      {"right", fn_right},
      {"sleep", fn_sleep},
      {"input",  fn_input},
-     {"is_number", fn_is_number}
+     {"is_number", fn_is_number},
+     {"strlen", fn_strlen}
  };
  
  /* ============================================================
