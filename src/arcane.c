@@ -30,7 +30,7 @@
      {"sleep", fn_sleep},
      {"input",  fn_input},
      {"is_number", fn_is_number},
-     {"strlen", fn_strlen}
+     {"len", fn_strlen}
  };
  
  /* ============================================================
