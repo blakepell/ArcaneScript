@@ -4,7 +4,7 @@
  *         File: arcane.h
  *       Author: Blake Pell
  * Initial Date: 2025-02-08
- * Last Updated: 2025-02-09
+ * Last Updated: 2025-02-11
  *      License: MIT License
  */
 
@@ -142,7 +142,7 @@
  Value fn_input(Value *args, int arg_count);
  Value fn_is_number(Value *args, int arg_count);
  Value fn_strlen(Value *args, int arg_count);
- 
+
  #ifdef __cplusplus
  }
  #endif

@@ -4,7 +4,7 @@
  *         File: arcane.c
  *       Author: Blake Pell
  * Initial Date: 2025-02-08
- * Last Updated: 2025-02-09
+ * Last Updated: 2025-02-11
  *      License: MIT License
  * 
  * Provides functionality for tokenizing, parsing, and interpreting
