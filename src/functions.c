@@ -129,6 +129,79 @@ Value fn_typeof(Value *args, int arg_count)
 }
 
 /**
+ * Returns the substring of the given string starting at the given index and
+ * continuing for the given length.
+ */
+Value fn_substring(Value *args, int arg_count)
+{
+    if (arg_count != 3)
+    {
+        fprintf(stderr, "Runtime error: substring() expects 3 arguments: a string, a start index, and a length.\n");
+        exit(1);
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        fprintf(stderr, "Runtime error: substring() expects the first argument to be a string.\n");
+        exit(1);
+    }
+
+    if (args[1].type != VAL_INT)
+    {
+        fprintf(stderr, "Runtime error: substring() expects the second argument to be an int.\n");
+        exit(1);
+    }
+
+    if (args[2].type != VAL_INT)
+    {
+        fprintf(stderr, "Runtime error: substring() expects the third argument to be an int.\n");
+        exit(1);
+    }
+
+    char *s = args[0].str_val;
+    int start = args[1].int_val;
+    int len = args[2].int_val;
+
+    if (start < 0)
+    {
+        start = 0;
+    }
+
+    if (len < 0)
+    {
+        len = 0;
+    }
+
+    int s_len = strlen(s);
+    if (start >= s_len)
+    {
+        return make_string("");
+    }
+
+    int end = start + len;
+    if (end > s_len)
+    {
+        end = s_len;
+    }
+
+    int result_len = end - start;
+    char *result = malloc(result_len + 1);
+
+    if (!result)
+    {
+        fprintf(stderr, "Runtime error: Memory allocation failed in substring().\n");
+        exit(1);
+    }
+
+    strncpy(result, s + start, result_len);
+    result[result_len] = '\0';
+
+    Value ret = make_string(result);
+    free(result);
+    return ret;
+}
+
+/**
  * Returns the first n characters of the given string.
  *
  * @param args Expects a string and an int.

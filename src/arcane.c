@@ -21,12 +21,13 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 13
+ #define MAX_INTEROP_FUNCTIONS 14
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
      {"println", fn_println},
      {"typeof", fn_typeof},
+     {"substring", fn_substring},
      {"left", fn_left},
      {"right", fn_right},
      {"sleep", fn_sleep},

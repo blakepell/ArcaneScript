@@ -1,9 +1,9 @@
 i = 0;
 buf = "";
 
-for (i = 0; i < 100000000; i++)
+for (i = 0; i < 1000; i++)
 {
-    if (is_interval(i, 1000000))
+    if (is_interval(i, 100))
     {
         println(i);
     }

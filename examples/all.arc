@@ -100,4 +100,15 @@ if (cbool(name))
     println("${name} was true.");
 }
 
+for (i = 0; i < 1000; i++)
+{
+    if (is_interval(i, 100))
+    {
+        println(i);
+    }
+}
+
+name = "b.pell";
+println(substring(name, 2, 4));
+
 return true;
