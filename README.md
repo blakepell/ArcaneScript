@@ -1,3 +1,5 @@
-# Arcane Script
+# Arcane Script Documentation
 
-Embeddable, simple, interpreted scripting language for C.
+## Documentation
+
+[Documentation Index](/docs/index.md)
