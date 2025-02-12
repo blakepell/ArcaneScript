@@ -508,3 +508,26 @@ Value fn_cbool(Value *args, int arg_count)
         exit(1);
     }
 }
+
+/** 
+ *  Returns true if the given value is an interval (mod), false otherwise.
+ */
+Value fn_is_interval(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        fprintf(stderr, "Runtime error: is_interval() expects two arguments.\n");
+        exit(1);
+    }
+
+    if (args[0].type != VAL_INT || args[1].type != VAL_INT)
+    {
+        return make_bool(0);
+    }
+
+    if (args[1].int_val == 0) {
+        return make_bool(0);
+    }
+
+    return make_bool((args[0].int_val % args[1].int_val) == 0);    
+}

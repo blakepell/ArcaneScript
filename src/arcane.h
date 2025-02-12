@@ -149,6 +149,7 @@ Value fn_cstr(Value *args, int arg_count);
 Value fn_cbool(Value *args, int arg_count);
 Value fn_print(Value *args, int arg_count);
 Value fn_println(Value *args, int arg_count);
+Value fn_is_interval(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
