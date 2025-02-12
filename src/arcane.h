@@ -119,31 +119,32 @@
  /* ============================================================
     Declarations
     ============================================================ */
- Value interpret(const char *src);
- void free_value(Value v);
- void parse_statement(Parser *p);
- Value parse_primary(Parser *p);
- Value parse_factor(Parser *p);
- Value parse_term(Parser *p); // Add this forward declaration
- Value parse_relational(Parser *p);
- Value parse_equality(Parser *p);
- Value parse_assignment(Parser *p);
- Value parse_unary(Parser *p);
- Value parse_logical_and(Parser *p);
- Value parse_logical(Parser *p);
- Value make_int(int x);
- Value make_string(const char *s);
- Value make_null();
- Value make_bool(int b);
- Value fn_typeof(Value *args, int arg_count);
- Value fn_left(Value *args, int arg_count);
- Value fn_right(Value *args, int arg_count);
- Value fn_sleep(Value *args, int arg_count);
- Value fn_input(Value *args, int arg_count);
- Value fn_is_number(Value *args, int arg_count);
- Value fn_strlen(Value *args, int arg_count);
+Value interpret(const char *src);
+void free_value(Value v);
+void parse_statement(Parser *p);
+Value parse_primary(Parser *p);
+Value parse_factor(Parser *p);
+Value parse_term(Parser *p); // Add this forward declaration
+Value parse_relational(Parser *p);
+Value parse_equality(Parser *p);
+Value parse_assignment(Parser *p);
+Value parse_unary(Parser *p);
+Value parse_logical_and(Parser *p);
+Value parse_logical(Parser *p);
+Value make_int(int x);
+Value make_string(const char *s);
+Value make_null();
+Value make_bool(int b);
+Value fn_typeof(Value *args, int arg_count);
+Value fn_left(Value *args, int arg_count);
+Value fn_right(Value *args, int arg_count);
+Value fn_sleep(Value *args, int arg_count);
+Value fn_input(Value *args, int arg_count);
+Value fn_is_number(Value *args, int arg_count);
+Value fn_strlen(Value *args, int arg_count);
 Value fn_cint(Value *args, int arg_count);
 Value fn_cstr(Value *args, int arg_count);
+Value fn_cbool(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }

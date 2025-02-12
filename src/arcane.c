@@ -21,7 +21,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 9
+ #define MAX_INTEROP_FUNCTIONS 10
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"typeof", fn_typeof},
@@ -32,7 +32,8 @@
      {"is_number", fn_is_number},
      {"len", fn_strlen},
      {"cint", fn_cint},
-     {"cstr", fn_cstr}
+     {"cstr", fn_cstr},
+     {"cbool", fn_cbool}
  };
  
  /* ============================================================

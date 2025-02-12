@@ -93,4 +93,11 @@ print(newInt);
 newInt += 5;
 print(newInt);
 
+name = "true";
+
+if (cbool(name))
+{
+    print("${name} was true.");
+}
+
 return true;

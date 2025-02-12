@@ -382,3 +382,59 @@ Value fn_cstr(Value *args, int arg_count)
         exit(1);
     }
 }
+
+/*
+ * Converts an int to a bool (nonzero true) or a string ("true"/"false" case-insensitive) to a bool.
+ */
+Value fn_cbool(Value *args, int arg_count)
+{
+    if (arg_count != 1) 
+    {
+        fprintf(stderr, "fn_cbool error: expected 1 argument.\n");
+        exit(1);
+    }
+
+    Value input = args[0];
+
+    if (input.type == VAL_INT) 
+    {
+        return make_bool(input.int_val != 0);
+    }
+    else if (input.type == VAL_STRING)
+    {
+        char *lower = _strdup(input.str_val);
+
+        if (!lower)
+        {
+            fprintf(stderr, "fn_cbool error: memory allocation failed.\n");
+            exit(1);
+        }
+
+        for (char *p = lower; *p; ++p)
+        {
+            *p = tolower(*p);
+        }
+        
+        if(strcmp(lower, "true") == 0)
+        {
+            free(lower);
+            return make_bool(1);
+        }
+        else if(strcmp(lower, "false") == 0)
+        {
+            free(lower);
+            return make_bool(0);
+        }
+        else 
+        {
+            free(lower);
+            fprintf(stderr, "fn_cbool error: unsupported string value '%s'.\n", input.str_val);
+            exit(1);
+        }
+    }
+    else 
+    {
+        fprintf(stderr, "fn_cbool error: unsupported type.\n");
+        exit(1);
+    }
+}
