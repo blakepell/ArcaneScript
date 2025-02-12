@@ -142,10 +142,11 @@
  Value fn_input(Value *args, int arg_count);
  Value fn_is_number(Value *args, int arg_count);
  Value fn_strlen(Value *args, int arg_count);
+Value fn_cint(Value *args, int arg_count);
+Value fn_cstr(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
  #endif
  
  #endif // ARCANE_H
- 

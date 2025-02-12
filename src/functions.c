@@ -323,3 +323,62 @@ Value fn_strlen(Value *args, int arg_count)
     int len = strlen(args[0].str_val);
     return make_int(len);
 }
+
+/*
+ * Converts a string to an int.
+ */
+Value fn_cint(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        fprintf(stderr, "fn_cint error: expected 1 argument.\n");
+        exit(1);
+    }
+
+    Value input = args[0];
+
+    if (input.type == VAL_STRING) 
+    {
+        int num = atoi(input.str_val);
+        return make_int(num);
+    } 
+    else if(input.type == VAL_BOOL) 
+    {
+        return make_int(input.int_val != 0);
+    } 
+    else 
+    {
+        fprintf(stderr, "fn_cint error: unsupported type.\n");
+        exit(1);
+    }
+}
+
+/*
+ * Converts an int or bool to a string.
+ */
+Value fn_cstr(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        fprintf(stderr, "fn_cstr error: expected 1 argument.\n");
+        exit(1);
+    }
+
+    Value input = args[0];
+    char buffer[64];
+
+    if (input.type == VAL_INT)
+    {
+        snprintf(buffer, sizeof(buffer), "%d", input.int_val);
+        return make_string(buffer);
+    } 
+    else if(input.type == VAL_BOOL) 
+    {
+        return make_string(input.int_val ? "true" : "false");
+    } 
+    else 
+    {
+        fprintf(stderr, "fn_cstr error: unsupported type.\n");
+        exit(1);
+    }
+}

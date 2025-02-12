@@ -82,4 +82,15 @@ print(typeof(is_number(name)));
 if (is_number(name)) { print("You entered a number"); } else { print("You did not enter a number"); }
 b = 5;
 print("You entered ${name} as your name.  The value of x is ${x}");
+
+newVal = cstr(b);
+print(typeof(newVal));
+newVal += "0";
+print(newVal);
+newInt = cint(newVal);
+print(typeof(newInt));
+print(newInt);
+newInt += 5;
+print(newInt);
+
 return true;

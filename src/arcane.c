@@ -21,7 +21,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 7
+ #define MAX_INTEROP_FUNCTIONS 9
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"typeof", fn_typeof},
@@ -30,7 +30,9 @@
      {"sleep", fn_sleep},
      {"input",  fn_input},
      {"is_number", fn_is_number},
-     {"len", fn_strlen}
+     {"len", fn_strlen},
+     {"cint", fn_cint},
+     {"cstr", fn_cstr}
  };
  
  /* ============================================================
