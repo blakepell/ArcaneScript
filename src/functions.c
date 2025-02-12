@@ -23,6 +23,76 @@
  #include <errno.h>
  #endif
 
+
+/*
+ * Prints a value to the screen.
+ */
+Value fn_print(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        fprintf(stderr, "Runtime error: print() expects exactly one argument.\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < arg_count; i++)
+    {
+        Value arg = args[i];
+        if (arg.type == VAL_INT)
+        {
+            printf("%d", arg.int_val);
+        }
+        else if (arg.type == VAL_STRING)
+        {
+            if (!IS_NULLSTR(arg.str_val))
+            {
+                printf("%s", arg.str_val);
+            }
+        }
+        else if (arg.type == VAL_BOOL)
+        {
+            printf(arg.int_val ? "true" : "false");
+        }
+    }
+
+    return make_null();
+}
+
+/*
+ * Prints a value to the screen with a trailing line ending.  Null values do not
+ * print to the sreeen.
+ */
+Value fn_println(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        fprintf(stderr, "Runtime error: print() expects exactly one argument.\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < arg_count; i++)
+    {
+        Value arg = args[i];
+        if (arg.type == VAL_INT)
+        {
+            printf("%d\n", arg.int_val);
+        }
+        else if (arg.type == VAL_STRING)
+        {
+            if (!IS_NULLSTR(arg.str_val))
+            {
+                printf("%s\n", arg.str_val);
+            }
+        }
+        else if (arg.type == VAL_BOOL)
+        {
+            printf(arg.int_val ? "true\n" : "false\n");
+        }
+    }
+
+    return make_null();
+}
+
 /**
  * Returns the type of the given value as a string.
  */

@@ -15,12 +15,14 @@
  extern "C" {
  #endif
  
- //#ifdef _DEBUG
- //#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
- //#endif
- 
  /* ============================================================
-    Values and Variables
+     Helper Macros
+    ============================================================ */
+ 
+ #define IS_NULLSTR(str) ((str)==NULL || (str)[0]=='\0')
+
+ /* ============================================================
+     Values and Variables
     ============================================================ */
  
  /* The 'temp' field indicates that this Value’s string (if any) is owned by the caller
@@ -52,7 +54,7 @@
  } Variable;
  
  /* ============================================================
-    Tokenizer
+     Tokenizer
     ============================================================ */
  
  typedef enum
@@ -94,7 +96,7 @@
  } TokenList;
  
  /* ============================================================
-    Scripting Language Functions (interop with C)
+     Scripting Language Functions (interop with C)
     ============================================================ */
  
  /* --- C Interop functions --- */
@@ -107,7 +109,7 @@
  } Function;
  
  /* ============================================================
-    Parser and Interpreter
+     Parser and Interpreter
     ============================================================ */
  
  typedef struct
@@ -117,7 +119,7 @@
  } Parser;
  
  /* ============================================================
-    Declarations
+     Declarations
     ============================================================ */
 Value interpret(const char *src);
 void free_value(Value v);
@@ -145,6 +147,8 @@ Value fn_strlen(Value *args, int arg_count);
 Value fn_cint(Value *args, int arg_count);
 Value fn_cstr(Value *args, int arg_count);
 Value fn_cbool(Value *args, int arg_count);
+Value fn_print(Value *args, int arg_count);
+Value fn_println(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }

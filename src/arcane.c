@@ -21,9 +21,11 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 10
+ #define MAX_INTEROP_FUNCTIONS 12
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
+     {"print", fn_print},
+     {"println", fn_println},
      {"typeof", fn_typeof},
      {"left", fn_left},
      {"right", fn_right},
@@ -324,10 +326,6 @@
              else if (strcmp(id, "return") == 0)
              {
                  add_token(list, TOKEN_RETURN, id);
-             }
-             else if (strcmp(id, "print") == 0)
-             {
-                 add_token(list, TOKEN_PRINT, id);
              }
              else if (strcmp(id, "continue") == 0)
              {
@@ -1138,34 +1136,8 @@ Value parse_primary(Parser *p)
  void parse_statement(Parser *p)
  {
      Token *tok = current(p);
-     if (tok->type == TOKEN_PRINT)
-     {
-         advance(p); // consume 'print'
-         Value v = parse_assignment(p);
-         expect(p, TOKEN_SEMICOLON, "Expected ';' after print statement");
-         if (v.type == VAL_INT)
-         {
-             printf("%d\n", v.int_val);
-         }
-         else if (v.type == VAL_STRING)
-         {
-             printf("%s\n", v.str_val);
-         }
-         else if (v.type == VAL_BOOL)
-         {
-             printf("%s\n", (v.int_val ? "true" : "false"));
-         }
-         else
-         {
-             printf("null\n");
-         }
- 
-         if (v.type == VAL_STRING && v.temp)
-         {
-             free_value(v);
-         }
-     }
-     else if (tok->type == TOKEN_RETURN)
+
+     if (tok->type == TOKEN_RETURN)
      {
          advance(p); // consume 'return'
          Value v = parse_assignment(p);
