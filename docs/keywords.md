@@ -7,7 +7,6 @@ Arcane supports the following reserved keywords:
 - **for**: Initiates a for-loop with initializer, condition, and post-expression.
 - **while**: Initiates a while-loop that continues based on a condition.
 - **return**: Exits a function with an optional return value.
-- **print**: Outputs a value to the console.
 - **continue**: Skips the remaining code in the current loop iteration.
 - **break**: Exits a loop prematurely.
 

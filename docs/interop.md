@@ -53,7 +53,7 @@ Value fn_typeof(Value *args, int arg_count) {
 ```
 
 ### Step 3: Registration in the Interop Table
-```c
+```C
 static Function interop_functions[] = {
     {"typeof", fn_typeof},
     // ...existing function entries...

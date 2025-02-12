@@ -10,7 +10,7 @@ String templates in Arcane allow you to embed variable references directly insid
 
 ## Example Usage
 
-```arcane
+```C
 user = "Alice";
 age = 30;
 print("Hello, ${user}! You are ${age} years old.");

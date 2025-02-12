@@ -10,15 +10,15 @@ Expressions in Arcane are constructs that evaluate to a value. They are parsed a
 
 - **Literals:** Direct values such as `42`, `"Hello"`, or `true`.
 - **Arithmetic Expressions:** Combine literals and variables with operators:
-  ```arcane
+  ```C
   3 + 4 * 2 - 1;
   ```
 - **Variable References:** Use variable names to retrieve stored values:
-  ```arcane
+  ```C
   x;
   ```
 - **Function Calls (Interop):** Although Arcane does not support user-defined functions, calling interop functions is allowed:
-  ```arcane
+  ```C
   typeof(x);
   ```
 

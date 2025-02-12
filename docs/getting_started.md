@@ -11,7 +11,7 @@ These files provide the scripting language interpreter and the interop functiona
 
 Include the header and call the `interpret` function to execute a script:
 
-```c
+```C
 #include "arcane.h"
 
 int main(void) {
