@@ -1,28 +1,28 @@
 result = true;
 i = 10;
-print(i);
+println(i);
 
 if (i != 10)
 {
-    print("[ Failed ] i != 10");
+    println("[ Failed ] i != 10");
     result = false;
 }
 
 i++;
-print(i);
+println(i);
 
 if (i != 11)
 {
-    print("[ Failed ] i != 11");
+    println("[ Failed ] i != 11");
     result = false;
 }
 
 i--;
-print(i);
+println(i);
 
 if (i != 10)
 {
-    print("[ Failed ] i != 10");
+    println("[ Failed ] i != 10");
     result = false;
 }
 

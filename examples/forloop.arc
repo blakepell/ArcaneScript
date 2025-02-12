@@ -1,16 +1,16 @@
-print("Count 1 to 10");
+println("Count 1 to 10");
 for (i = 1; i <= 10; i++)
 {
-    print(i);
+    println(i);
 }
 
-print ("Count 10 to 1");
+println ("Count 10 to 1");
 for (i = 10; i > 0; i--)
 {
-    print(i);
+    println(i);
 }
 
-print ("Continue test");
+println ("Continue test");
 for (i = 1; i <= 10; i++)
 {
     if (i > 5)
@@ -18,15 +18,15 @@ for (i = 1; i <= 10; i++)
         continue;
     }
 
-    print(i);
+    println(i);
 }
 
 if (i == 10)
 {
-    print("Continue test passed.");
+    println("Continue test passed.");
 }
 
-print ("Continue test");
+println ("Continue test");
 for (i = 1; i <= 10; i++)
 {
     if (i >= 5)
@@ -34,12 +34,12 @@ for (i = 1; i <= 10; i++)
         break;
     }
 
-    print(i);    
+    println(i);    
 }
 
 if (i == 5)
 {
-    print("Break test passed");
+    println("Break test passed");
 }
 
 return true;
