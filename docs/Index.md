@@ -3,10 +3,9 @@
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Getting Started](#getting-started) TODO
-- [Syntax Overview](#syntax-overview) TODO
-- [Language Features](#language-features) TODO
-  - [Keywords](keywords.md)
+- [Getting Started](#getting-started)
+- [Syntax Overview](syntax-overview.md)
+- - [Keywords](keywords.md)
   - [Statements](statements.md)
   - [Expressions](#expressions.md)
   - [Variable Types](types.md)
@@ -41,10 +40,3 @@ Arcane is a lightweight, embeddable scripting language designed to be integrated
 Arcane is perfect for adding scripting support to applications where a full-blown language would be overkill and tight integration with C functions is required.
 
 [Back to Index](index.md)
-
-## Getting Started
-
-## Syntax Overview
-
-## Language Features
-
