@@ -28,7 +28,7 @@
    ============================================================ */
 
 /** 
- *  list_getarg: extract a single argument (with given max length) from
+ *  Extract a single argument (with given max length) from
  *  argument to arg; if arg==NULL, just skip an arg, don't copy it out
  */
 const char* _list_getarg(const char* argument, char* arg, int length)
@@ -78,6 +78,13 @@ const char* _list_getarg(const char* argument, char* arg, int length)
  */
 int _list_contains(const char* list, const char* value)
 {
+    // We don't deal with nulls, but we don't crash either.  Return
+    // false for this case.
+    if (list == NULL || value == NULL)
+    {
+        return 0;
+    }
+
     const char* p;
     char arg[MSL];
 
@@ -96,6 +103,10 @@ int _list_contains(const char* list, const char* value)
     return 0;
 }
 
+/* ============================================================
+    Language Interop Functions
+   ============================================================ */
+
 /**
  * If a string list contains an element.
  */
@@ -113,9 +124,77 @@ Value fn_list_contains(Value *args, int arg_count)
     return make_bool(_list_contains(list.str_val, arg.str_val));
 }
 
-/* ============================================================
-    Language Interop Functions
-   ============================================================ */
+/**
+ * Adds an item to a list if it does not already exist in it.
+ */
+Value fn_list_add(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        fprintf(stderr, "Runtime error: list_add() expects two arguments.\n");
+        exit(1);
+    }
+
+    Value list = args[0];
+    Value arg = args[1];
+
+    if (_list_contains(list.str_val, arg.str_val))
+    {
+        return make_string(list.str_val);
+    }
+
+    char *new_list = malloc(strlen(list.str_val) + strlen(arg.str_val) + 2);
+
+    if (!new_list)
+    {
+        fprintf(stderr, "Runtime error: Memory allocation failed in list_add().\n");
+        exit(1);
+    }
+
+    strcpy(new_list, list.str_val);
+    strcat(new_list, " ");
+    strcat(new_list, arg.str_val);
+
+    return make_string(new_list);
+}
+
+/**
+ * Removes an item from a list.
+ */
+Value fn_list_remove(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        fprintf(stderr, "Runtime error: list_remove() expects two arguments.\n");
+        exit(1);
+    }
+
+    Value list = args[0];
+    Value arg = args[1];
+
+    const char *p;
+    char arg_buf[MSL];
+    char new_list[MSL] = {0};
+
+    p = list.str_val;
+
+    while (*p)
+    {
+        p = _list_getarg(p, arg_buf, MSL);
+
+        if (strcasecmp(arg_buf, arg.str_val))
+        {
+            if (new_list[0])
+            {
+                strcat(new_list, " ");
+            }
+
+            strcat(new_list, arg_buf);
+        }
+    }
+
+    return make_string(new_list);
+}
 
 /*
  * Prints a value to the screen.

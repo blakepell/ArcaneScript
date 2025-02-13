@@ -21,7 +21,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 15
+ #define MAX_INTEROP_FUNCTIONS 17
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -38,7 +38,9 @@
      {"cstr", fn_cstr},
      {"cbool", fn_cbool},
      {"is_interval", fn_is_interval},
-     {"list_contains", fn_list_contains}
+     {"list_contains", fn_list_contains},
+     {"list_add", fn_list_add},
+     {"list_remove", fn_list_remove}
  };
  
  /* ============================================================
