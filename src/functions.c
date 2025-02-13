@@ -23,6 +23,99 @@
  #include <errno.h>
  #endif
 
+/* ============================================================
+    Private Functions: Support for interop script functions.
+   ============================================================ */
+
+/** 
+ *  list_getarg: extract a single argument (with given max length) from
+ *  argument to arg; if arg==NULL, just skip an arg, don't copy it out
+ */
+const char* _list_getarg(const char* argument, char* arg, int length)
+{
+    int len = 0;
+
+    while (*argument && isspace(*argument))
+    {
+        argument++;
+    }
+
+    if (arg)
+    {
+        while (*argument && !isspace(*argument) && len < length - 1)
+        {
+            *arg++ = *argument++, len++;
+        }
+    }
+    else
+    {
+        while (*argument && !isspace(*argument))
+        {
+            argument++;
+        }
+    }
+
+    while (*argument && !isspace(*argument))
+    {
+        argument++;
+    }
+
+    while (*argument && isspace(*argument))
+    {
+        argument++;
+    }
+
+    if (arg)
+    {
+        *arg = 0;
+    }
+
+    return argument;
+}
+
+/**
+ * If a list contains a specified value.
+ */
+int _list_contains(const char* list, const char* value)
+{
+    const char* p;
+    char arg[MSL];
+
+    p = _list_getarg(list, arg, MSL);
+
+    while (arg[0])
+    {
+        if (!strcasecmp(value, arg))
+        {
+            return 1;
+        }
+
+        p = _list_getarg(p, arg, MSL);
+    }
+
+    return 0;
+}
+
+/**
+ * If a string list contains an element.
+ */
+Value fn_list_contains(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        fprintf(stderr, "Runtime error: list_contains() expects two one arguments.\n");
+        exit(1);
+    }
+
+    Value list = args[0];
+    Value arg = args[1];
+
+    return make_bool(_list_contains(list.str_val, arg.str_val));
+}
+
+/* ============================================================
+    Language Interop Functions
+   ============================================================ */
 
 /*
  * Prints a value to the screen.

@@ -20,6 +20,8 @@
     ============================================================ */
  
  #define IS_NULLSTR(str) ((str)==NULL || (str)[0]=='\0')
+ #define MAX_STRING_LENGTH 4608
+ #define MSL MAX_STRING_LENGTH
 
  /* ============================================================
      Values and Variables
@@ -137,6 +139,8 @@ Value make_int(int x);
 Value make_string(const char *s);
 Value make_null();
 Value make_bool(int b);
+const char* _list_getarg(const char* argument, char* arg, int length);
+int _list_contains(const char* list, const char* value);
 Value fn_typeof(Value *args, int arg_count);
 Value fn_left(Value *args, int arg_count);
 Value fn_right(Value *args, int arg_count);
@@ -151,6 +155,7 @@ Value fn_print(Value *args, int arg_count);
 Value fn_println(Value *args, int arg_count);
 Value fn_is_interval(Value *args, int arg_count);
 Value fn_substring(Value *args, int arg_count);
+Value fn_list_contains(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
