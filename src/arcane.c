@@ -1566,6 +1566,8 @@ Value parse_primary(Parser *p)
          free(tokens.tokens[i].text);
      }
 
+    //  printf("Tokens Count: %d\n", tokens.count);
+
      Value ret = return_value;
      free_variables();
      return ret;

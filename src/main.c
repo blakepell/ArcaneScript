@@ -24,14 +24,6 @@
 
 // #define _CRTDBG_MAP_ALLOC
 
-// #ifdef _DEBUG
-// #define malloc(s)         _malloc_dbg(s, _NORMAL_BLOCK, __FILE__, __LINE__)
-// #define calloc(c, s)      _calloc_dbg(c, s, _NORMAL_BLOCK, __FILE__, __LINE__)
-// #define realloc(p, s)     _realloc_dbg(p, s, _NORMAL_BLOCK, __FILE__, __LINE__)
-// #define free(p)           _free_dbg(p, _NORMAL_BLOCK)
-// #endif
-
-
 /**
  * Main entry point to the Arcane scripting language when run from the command line.
  */
@@ -76,17 +68,31 @@ int main(int argc, char *argv[])
     Value ret = interpret(script);
     free(script);
 
-    printf("Script returned: ");
-    if(ret.type == VAL_INT)
-        printf("%d\n", ret.int_val);
-    else if(ret.type == VAL_STRING)
-        printf("%s\n", ret.str_val);
-    else if(ret.type == VAL_BOOL)
-        printf("%d\n", ret.int_val);
-    else
-        printf("null\n");
-    if(ret.type == VAL_STRING && ret.temp)
-        free_value(ret);
+    int exit_code = 0;
     
+    printf("Script returned: ");
+
+    if(ret.type == VAL_INT)
+    {
+        printf("%d\n", ret.int_val);
+    }
+    else if(ret.type == VAL_STRING)
+    {
+        printf("%s\n", ret.str_val);
+    }
+    else if(ret.type == VAL_BOOL)
+    {
+        printf("%d\n", ret.int_val);
+    }
+    else
+    {
+        printf("null\n");
+    }
+
+    if(ret.type == VAL_STRING && ret.temp)
+    {
+        free_value(ret);
+    }
+
     return 0;
 }
