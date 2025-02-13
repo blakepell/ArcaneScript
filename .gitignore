@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Arcane Ignores
+arcane.exe
+src/arcane.exe
+
 # User-specific files
 *.rsuser
 *.suo
