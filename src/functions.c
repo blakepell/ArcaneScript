@@ -1101,3 +1101,59 @@ Value fn_replace(Value *args, int arg_count)
     free(result);
     return ret;    
  }
+
+ /**
+  * Converts a string to lowercase.
+  */
+ Value fn_lcase(Value *args, int arg_count)
+ {
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: lcase() expects exactly one argument.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: lcase() expects a string argument.\n");
+        return return_value;
+    }
+
+    char *s = args[0].str_val;
+    char *p = s;
+    while (*p)
+    {
+        *p = tolower(*p);
+        p++;
+    }
+
+    return make_string(s);    
+ }
+
+ /**
+  * Converts a string to uppercase.
+  */
+ Value fn_ucase(Value *args, int arg_count)
+ {
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: ucase() expects exactly one argument.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: ucase() expects a string argument.\n");
+        return return_value;
+    }
+
+    char *s = args[0].str_val;
+    char *p = s + strlen(s) - 1;
+    while (p >= s)
+    {
+        *p = toupper(*p);
+        p--;
+    }
+
+    return make_string(s);    
+ }

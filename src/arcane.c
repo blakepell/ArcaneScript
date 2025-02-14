@@ -22,7 +22,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 23
+ #define MAX_INTEROP_FUNCTIONS 25
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -47,8 +47,10 @@
      {"replace", fn_replace},
      {"trim", fn_trim },
      {"trim_start", fn_trim_start },
-     {"trim_end", fn_trim_end },     
- };
+     {"trim_end", fn_trim_end },
+     {"lcase", fn_lcase },
+     {"ucase", fn_ucase }, 
+    };
  
  /* ============================================================
      Global Variables
@@ -571,7 +573,7 @@
   */
  char *evaluate_template(const char *tpl)
  {
- // Allocate an initial dynamic buffer.
+    // Allocate an initial dynamic buffer.
      size_t buf_size = strlen(tpl) * 2 + 1;
      char *result = malloc(buf_size);
      if (!result) {

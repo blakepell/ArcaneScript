@@ -141,4 +141,7 @@ before = "  Blake ";
 after = trim_end(before);
 println(after);
 
+println(ucase("blake"));
+println(lcase("BLAKE"));
+
 return true;

@@ -186,6 +186,8 @@ typedef unsigned char bool;
  Value fn_trim(Value *args, int arg_count);
  Value fn_trim_start(Value *args, int arg_count);
  Value fn_trim_end(Value *args, int arg_count);
+ Value fn_lcase(Value *args, int arg_count);
+ Value fn_ucase(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
