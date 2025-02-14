@@ -160,7 +160,8 @@
  Value fn_list_contains(Value *args, int arg_count);
  Value fn_list_add(Value *args, int arg_count);
  Value fn_list_remove(Value *args, int arg_count);
- 
+ Value fn_number_range(Value *args, int arg_count);
+
  #ifdef __cplusplus
  }
  #endif

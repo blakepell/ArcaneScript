@@ -111,4 +111,9 @@ for (i = 0; i < 1000; i++)
 name = "b.pell";
 println(substring(name, 2, 4));
 
+for (i = 1; i < 10; i++)
+{
+    println(rnd(1, 100));
+}
+
 return true;
