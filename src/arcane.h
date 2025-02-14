@@ -184,6 +184,8 @@ typedef unsigned char bool;
  Value fn_chance(Value *args, int arg_count);
  Value fn_replace(Value *args, int arg_count);
  Value fn_trim(Value *args, int arg_count);
+ Value fn_trim_start(Value *args, int arg_count);
+ Value fn_trim_end(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }

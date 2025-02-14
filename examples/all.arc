@@ -127,10 +127,18 @@ println("${name} => ${new_name}");
 
 str = "  This is a string with space at the start and end ";
 println(len(str));
-print(str);
+println(str);
 
 str = trim(str);
 println(len(str));
-print(str);
+println(str);
+
+before = "  Blake ";
+after = trim_start(before);
+println(after);
+
+before = "  Blake ";
+after = trim_end(before);
+println(after);
 
 return true;

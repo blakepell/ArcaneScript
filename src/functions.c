@@ -1015,3 +1015,89 @@ Value fn_replace(Value *args, int arg_count)
     free(result);
     return ret;    
  }
+
+ /**
+  * Trims whitespace from the beginning of a string.
+  */
+ Value fn_trim_start(Value *args, int arg_count)
+ {
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: trim_start() expects exactly one argument.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: trim_start() expects a string argument.\n");
+        return return_value;
+    }
+
+    char *s = args[0].str_val;
+    char *start = s;
+    char *end = s + strlen(s) - 1;
+
+    while (isspace(*start))
+    {
+        start++;
+    }
+
+    int len = end - start + 1;
+    char *result = malloc(len + 1);
+
+    if (!result)
+    {
+        raise_error("Runtime error: Memory allocation failed in trim_start().\n");
+        return return_value;
+    }
+
+    strncpy(result, start, len);
+    result[len] = '\0';
+
+    Value ret = make_string(result);
+    free(result);
+    return ret;    
+ }
+
+ /**
+  * Trims whitespace from the end of a string.
+  */
+ Value fn_trim_end(Value *args, int arg_count)
+ {
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: trim_end() expects exactly one argument.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: trim_end() expects a string argument.\n");
+        return return_value;
+    }
+
+    char *s = args[0].str_val;
+    char *start = s;
+    char *end = s + strlen(s) - 1;
+
+    while (end > start && isspace(*end))
+    {
+        end--;
+    }
+
+    int len = end - start + 1;
+    char *result = malloc(len + 1);
+
+    if (!result)
+    {
+        raise_error("Runtime error: Memory allocation failed in trim_end().\n");
+        return return_value;
+    }
+
+    strncpy(result, start, len);
+    result[len] = '\0';
+
+    Value ret = make_string(result);
+    free(result);
+    return ret;    
+ }

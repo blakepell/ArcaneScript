@@ -22,7 +22,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 21
+ #define MAX_INTEROP_FUNCTIONS 23
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -45,7 +45,9 @@
      {"rnd", fn_number_range},
      {"chance", fn_chance},
      {"replace", fn_replace},
-     {"trim", fn_trim }
+     {"trim", fn_trim },
+     {"trim_start", fn_trim_start },
+     {"trim_end", fn_trim_end },     
  };
  
  /* ============================================================
