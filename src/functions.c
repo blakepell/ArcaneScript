@@ -109,59 +109,113 @@
      Language Interop Functions
     ============================================================ */
 
-    /*
-     * Returns a random number between the two given integers.
-     */
-    Value fn_number_range(Value *args, int arg_count)
+/*
+ * Returns a random number between the two given integers.
+ */
+Value fn_number_range(Value *args, int arg_count)
+{
+    if (arg_count != 2)
     {
-        if (arg_count != 2)
-        {
-            raise_error("Runtime error: number_range() expects two arguments.\n");
-            return return_value;
-        }
-   
-        if (args[0].type != VAL_INT || args[1].type != VAL_INT)
-        {
-            raise_error("Runtime error: number_range() expects two integer arguments.\n");
-            return return_value;
-        }
+        raise_error("Runtime error: number_range() expects two arguments.\n");
+        return return_value;
+    }
 
-        int from = args[0].int_val;
-        int to = args[1].int_val;         
-        static int seeded = 0;
+    if (args[0].type != VAL_INT || args[1].type != VAL_INT)
+    {
+        raise_error("Runtime error: number_range() expects two integer arguments.\n");
+        return return_value;
+    }
 
-        if (!seeded) {
-            srand(time(NULL));
-            seeded = 1;
-        }
+    int from = args[0].int_val;
+    int to = args[1].int_val;         
+    static int seeded = 0;
 
-        long mm = rand() >> 6;
+    if (!seeded) {
+        srand(time(NULL));
+        seeded = 1;
+    }
 
-        register int power;
-        register int number;
-    
-        if (from == 0 && to == 0)
-        {
-            return make_int(0);
-        }
-    
-        if ((to = to - from + 1) <= 1)
-        {
-            return make_int(from);
-        }
-    
-        for (power = 2; power < to; power <<= 1)
-        {
-            ;
-        }
-    
-        while ((number = rand() >> 6 & (power - 1)) >= to)
-        {
-            ;
-        }
-    
-        return make_int(from + number); 
-    }   
+    long mm = rand() >> 6;
+
+    register int power;
+    register int number;
+
+    if (from == 0 && to == 0)
+    {
+        return make_int(0);
+    }
+
+    if ((to = to - from + 1) <= 1)
+    {
+        return make_int(from);
+    }
+
+    for (power = 2; power < to; power <<= 1)
+    {
+        ;
+    }
+
+    while ((number = rand() >> 6 & (power - 1)) >= to)
+    {
+        ;
+    }
+
+    return make_int(from + number); 
+}   
+
+/*
+ * Returns a random number between the two given integers.
+ */
+Value fn_chance(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: chance() expects one argument between 1 and 100.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_INT)
+    {
+        raise_error("Runtime error: chance() expects one argument between 1 and 100.\n");
+        return return_value;
+    }
+
+    int from = 1;
+    int to = 100;
+    static int seeded = 0;
+
+    if (!seeded) {
+        srand(time(NULL));
+        seeded = 1;
+    }
+
+    long mm = rand() >> 6;
+
+    register int power;
+    register int number;
+
+    if (from == 0 && to == 0)
+    {
+        return make_int(0);
+    }
+
+    if ((to = to - from + 1) <= 1)
+    {
+        return make_int(from);
+    }
+
+    for (power = 2; power < to; power <<= 1)
+    {
+        ;
+    }
+
+    while ((number = rand() >> 6 & (power - 1)) >= to)
+    {
+        ;
+    }
+
+    return make_bool(from + number < args[0].int_val);
+}   
 
  /**
   * If a string list contains an element.

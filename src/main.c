@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     size_t bytes_read = fread(script, 1, file_size, file);
     script[bytes_read] = '\0';
     fclose(file);
-
+    
     Value ret = interpret(script);
     free(script);
 

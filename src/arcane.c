@@ -22,7 +22,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 18
+ #define MAX_INTEROP_FUNCTIONS 19
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -42,7 +42,8 @@
      {"list_contains", fn_list_contains},
      {"list_add", fn_list_add},
      {"list_remove", fn_list_remove},
-     {"rnd", fn_number_range}
+     {"rnd", fn_number_range},
+     {"chance", fn_chance}
  };
  
  /* ============================================================
@@ -1617,7 +1618,7 @@
      }
  
     //  printf("Tokens Count: %d\n", tokens.count);
- 
+     
      Value ret = return_value;
      free_variables();
      return ret;

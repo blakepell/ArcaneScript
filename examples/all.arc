@@ -116,4 +116,9 @@ for (i = 1; i < 10; i++)
     println(rnd(1, 100));
 }
 
+for (i = 1; i < 10; i++)
+{
+    println(chance(50));
+}
+
 return true;
