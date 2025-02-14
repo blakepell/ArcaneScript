@@ -17,7 +17,7 @@
  #include <ctype.h>
  #include <stdio.h>
  #ifdef _WIN32
-    #include <sys/time.h>
+    #include <time.h>
     #include <windows.h>
     #define strcasecmp _stricmp
  #else
