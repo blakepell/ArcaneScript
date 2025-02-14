@@ -17,6 +17,12 @@
  #include <ctype.h>
  #include <stdarg.h>
  #include <stdio.h>
+
+ #ifdef _WIN32
+    #include <sys/time.h>
+ #else
+    #include <time.h>
+ #endif
  
  /* ============================================================
      Interop Functions
@@ -800,20 +806,25 @@
          char op[3];
          strcpy(op, current(p)->text);
          advance(p);
+         
          // The next token must be an identifier
          if (current(p)->type != TOKEN_IDENTIFIER)
          {
              raise_error("Parser error: Expected identifier after unary %s\n", op);
              return return_value;
          }
+
          char *id = _strdup(current(p)->text);
          advance(p);
          Value v = get_variable(id);
+
          if (v.type != VAL_INT)
          {
              raise_error("Runtime error: %s operator only valid for ints.\n", op);
+             free(id);
              return return_value;
          }
+
          // For prefix, update before returning.
          if (strcmp(op, "++") == 0)
          {
@@ -827,11 +838,9 @@
          free(id);
          return v;
      }
-     // No prefix operator, so delegate to parse_primary.
-     Value v = parse_primary(p);
- 
-     return v;
- }
+     // No prefix operator, so delegate.
+     return parse_primary(p);
+  }
  
  /*
   * Parse the And operator.
@@ -1599,12 +1608,10 @@
      }
  }
  
- /*
+ /**
   * The main interpreter.  This is the entry point for a script to begin
   * execution.
   */
-#include <time.h>
-
 Value interpret(const char *src)  // Add a timeout parameter (ms)
 {
     TokenList tokens;
