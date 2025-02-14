@@ -121,4 +121,8 @@ for (i = 1; i < 10; i++)
     println(chance(50));
 }
 
+name = "Blake Brandon Pell";
+new_name = replace(name, " Brandon ", " ");
+println("${name} => ${new_name}");
+
 return true;

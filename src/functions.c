@@ -593,6 +593,84 @@ Value fn_chance(Value *args, int arg_count)
      return ret;
  }
  
+/**
+ * Replaces all occurrences of a substring in a string with another substring.
+ */
+Value fn_replace(Value *args, int arg_count)
+{
+    if (arg_count != 3)
+    {
+        raise_error("Runtime error: replace() expects 3 arguments: a string, a substring to replace, and a substring to replace it with.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: replace() expects the first argument to be a string.\n");
+        return return_value;
+    }
+
+    if (args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: replace() expects the second argument to be a string.\n");
+        return return_value;
+    }
+
+    if (args[2].type != VAL_STRING)
+    {
+        raise_error("Runtime error: replace() expects the third argument to be a string.\n");
+        return return_value;
+    }
+
+    char *s = args[0].str_val;
+    char *find = args[1].str_val;
+    char *replace = args[2].str_val;
+
+    // Allocate a new string that is large enough to hold the result.
+    // We'll allocate the maximum size it could be, which is the length of the
+    // original string times the length of the replacement string.  This is
+    // the worst case scenario where every character in the original string
+    // is the substring we are replacing.
+    int find_len = strlen(find);
+    int replace_len = strlen(replace);
+    int s_len = strlen(s);
+    int result_len = s_len;
+    char *result = malloc(result_len + 1);
+
+    if (!result)
+    {
+        raise_error("Runtime error: Memory allocation failed in replace().\n");
+        return return_value;
+    }
+
+    // Loop through the string looking for the substring to replace.
+    char *p = s;
+    char *q = result;
+    while (*p)
+    {
+        // If the substring is found, copy the replacement string.
+        if (strstr(p, find) == p)
+        {
+            strcpy(q, replace);
+            q += replace_len;
+            p += find_len;
+        }
+        else
+        {
+            // Copy the current character and move to the next.
+            *q++ = *p++;
+        }
+    }
+
+    // Null terminate the result string.
+    *q = '\0';
+
+    // Create a Value containing the new string.
+    Value ret = make_string(result);
+    free(result);
+    return ret;
+}
+
  /**
   * Sleeps for the given number of milliseconds.
   * @param args Expects 1 argument, an int.
