@@ -22,7 +22,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 25
+ #define MAX_INTEROP_FUNCTIONS 27
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -50,6 +50,8 @@
      {"trim_end", fn_trim_end },
      {"lcase", fn_lcase },
      {"ucase", fn_ucase }, 
+     {"umin", fn_umin }, 
+     {"umax", fn_umax }
     };
  
  /* ============================================================

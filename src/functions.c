@@ -1157,3 +1157,43 @@ Value fn_replace(Value *args, int arg_count)
 
     return make_string(s);    
  }
+
+ /**
+  * Returns the lower of two int values.
+  */
+Value fn_umin(Value *args, int arg_count) 
+{
+    if (arg_count != 2)
+    {
+        raise_error("Runtime error: umin() expects exactly two arguments.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_INT || args[1].type != VAL_INT)
+    {
+        raise_error("Runtime error: umin() expects two integer arguments.\n");
+        return return_value;
+    }
+
+    return make_int(args[0].int_val < args[1].int_val ? args[0].int_val : args[1].int_val);
+}
+
+/**
+ * Returns the higher of two int values.
+ */
+Value fn_umax(Value *args, int arg_count) 
+{
+    if (arg_count != 2)
+    {
+        raise_error("Runtime error: umax() expects exactly two arguments.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_INT || args[1].type != VAL_INT)
+    {
+        raise_error("Runtime error: umax() expects two integer arguments.\n");
+        return return_value;
+    }
+
+    return make_int(args[0].int_val > args[1].int_val ? args[0].int_val : args[1].int_val);
+}

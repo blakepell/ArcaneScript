@@ -144,4 +144,10 @@ println(after);
 println(ucase("blake"));
 println(lcase("BLAKE"));
 
+max = umax(7, 10);
+println("${max} is the larger of 7 and 10.");
+
+min = umin(7, 10);
+println("${min} is the smaller of 7 and 10.");
+
 return true;
