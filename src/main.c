@@ -72,15 +72,15 @@ int main(int argc, char *argv[])
     
     printf("Script returned: ");
 
-    if(ret.type == VAL_INT)
+    if (ret.type == VAL_INT)
     {
         printf("%d\n", ret.int_val);
     }
-    else if(ret.type == VAL_STRING)
+    else if (ret.type == VAL_STRING)
     {
         printf("%s\n", ret.str_val);
     }
-    else if(ret.type == VAL_BOOL)
+    else if (ret.type == VAL_BOOL)
     {
         printf("%d\n", ret.int_val);
     }
@@ -89,9 +89,14 @@ int main(int argc, char *argv[])
         printf("null\n");
     }
 
-    if(ret.type == VAL_STRING && ret.temp)
+    if (ret.type == VAL_STRING && ret.temp)
     {
         free_value(ret);
+    }
+    else if (ret.type == VAL_ERROR)
+    {
+        free_value(ret);
+        exit_code = 8;
     }
 
     return 0;

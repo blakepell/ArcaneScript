@@ -15,6 +15,7 @@
  #include <stdlib.h>
  #include <string.h>
  #include <ctype.h>
+ #include <stdarg.h>
  #include <stdio.h>
  
  /* ============================================================
@@ -44,13 +45,23 @@
  };
  
  /* ============================================================
+     Global Variables
+    ============================================================ */
+ 
+ static Variable *local_variables = NULL;
+ int return_flag = 0;
+ Value return_value;
+ static int continue_flag = 0;
+ static int break_flag = 0;
+ 
+ /* ============================================================
      Utility functions for Value creation and freeing for the
      in language supported types.
     ============================================================ */
  
-/*
- * Makes an integer value.
- */
+ /*
+  * Makes an integer value.
+  */
  Value make_int(int x)
  {
      Value v;
@@ -96,11 +107,47 @@
  }
  
  /*
-  * Frees a values allocated memory.
+  * Makes an error value.  This should really only be called by raise_error.
   */
+ Value make_error(const char *s)
+ {
+     Value v;
+     v.type = VAL_ERROR;
+     v.str_val = _strdup(s);
+     v.temp = 1;
+     return v;
+ }
+ 
+ /*
+  * Raises an error with the given message.
+  */
+ void raise_error(const char *s, ...)
+ {
+     va_list arg;
+     char str[MAX_STRING_LENGTH];
+ 
+     va_start(arg, s);
+     vsnprintf(str, MAX_STRING_LENGTH, s, arg);
+     va_end(arg);
+ 
+     fprintf(stderr, "%s\n", str);
+ 
+     // Force a return from any code, set the return_value to an error.
+     return_flag = 1;
+     return_value = make_error(str);
+ }
+ 
+  /*
+   * Frees a values allocated memory.
+   */
  void free_value(Value v)
  {
      if (v.type == VAL_STRING && v.str_val)
+     {
+         free(v.str_val);
+         v.str_val = NULL;
+     }
+     else if (v.type == VAL_ERROR && v.str_val)
      {
          free(v.str_val);
          v.str_val = NULL;
@@ -110,7 +157,6 @@
  /* ============================================================
      Symbol Table (for local script–variables)
     ============================================================ */
- static Variable *local_variables = NULL;
  
  /*
   * Finds a variable by name in the local symbol table.
@@ -130,8 +176,8 @@
  }
  
  /*
-  *  Adds or updates a variable.  The passed-in Value’s "temp" flag is cleared (0) to 
-  *  indicate that the variable table now owns it. 
+  *  Adds or updates a variable.  The passed-in Value’s "temp" flag is cleared (0) to
+  *  indicate that the variable table now owns it.
   */
  void set_variable(const char *name, Value v)
  {
@@ -169,8 +215,8 @@
          return var->value;
      }
  
-     fprintf(stderr, "Runtime error: variable \"%s\" not defined.\n", name);
-     exit(1);
+     raise_error("Runtime error: variable \"%s\" not defined.\n", name);
+     return return_value;
  }
  
  /*
@@ -209,8 +255,8 @@
          }
      }
  
-     fprintf(stderr, "Runtime error: Unknown function \"%s\".\n", name);
-     exit(1);
+     raise_error("Runtime error: Unknown function \"%s\".\n", name);
+     return return_value;
  }
  
  /* ============================================================
@@ -224,9 +270,10 @@
  {
      if (list->count >= MAX_TOKENS)
      {
-         fprintf(stderr, "Tokenizer error: too many tokens.\n");
-         exit(1);
+         raise_error("Tokenizer error: too many tokens. %d/%d", list->count, MAX_TOKENS);
+         return;
      }
+ 
      list->tokens[list->count].type = type;
      list->tokens[list->count].text = _strdup(text);
      list->count++;
@@ -287,8 +334,8 @@
              }
              if (*p != '"')
              {
-                 fprintf(stderr, "Tokenizer error: Unterminated string literal.\n");
-                 exit(1);
+                 raise_error("Tokenizer error: Unterminated string literal.");
+                 return;
              }
              int len = p - start;
              char *str_val = malloc(len + 1);
@@ -452,8 +499,8 @@
                  break;
              }
              default:
-                 fprintf(stderr, "Tokenizer error: Unexpected character '%c'\n", *p);
-                 exit(1);
+                 raise_error("Tokenizer error: Unexpected character '%c'\n", *p);
+                 return;
          }
      }
      add_token(list, TOKEN_EOF, "EOF");
@@ -462,171 +509,177 @@
  /* ============================================================
      Parser and Interpreter
     ============================================================ */
-
-/*
- * The current position in the token list.
- */
-Token *current(Parser *p)
-{
-    if (p->pos >= p->tokens->count) {
-        // Return the EOF token which should be the last token.
-        return &p->tokens->tokens[p->tokens->count - 1];
-    }
-
-    return &p->tokens->tokens[p->pos];
-}
-
-/*
- * The next token in the token list.
- */
-Token *peek(Parser *p)
-{
-    if (p->pos + 1 < p->tokens->count)
-    {
-        return &p->tokens->tokens[p->pos + 1];
-    }
-    return NULL;
-}
-
-/*
- * Advances the current position in the token list.
- */
-void advance(Parser *p)
-{
-    if (p->pos < p->tokens->count)
-    {
-        p->pos++;
-    }
-}
-
-/*
- * Expects the current token to be of the given type and advances to the next token.
- */
-void expect(Parser *p, AstTokenType type, const char *msg)
-{
-    if (p->pos >= p->tokens->count || current(p)->type != type)
-    {
-        fprintf(stderr, "Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
-        exit(1);
-    }
-
-    advance(p);
-}
  
-/*
- * Evaluates a template string by replacing variables with their values.
- */
-char *evaluate_template(const char *tpl) {
-    // Allocate an initial dynamic buffer.
-    size_t buf_size = strlen(tpl) * 2 + 1;
-    char *result = malloc(buf_size);
-    if (!result) {
-        fprintf(stderr, "Memory allocation error in evaluate_template.\n");
-        exit(1);
-    }
-    result[0] = '\0';
-    
-    const char *p = tpl;
-    while (*p) {
-        if (p[0] == '$' && p[1] == '{') {
-            p += 2; // Skip "${"
-            const char *var_start = p;
-            while (*p && *p != '}')
-                p++;
-            if (*p != '}') {
-                fprintf(stderr, "Template error: missing '}'\n");
-                exit(1);
-            }
-            size_t var_len = p - var_start;
-            char *varName = malloc(var_len + 1);
-            strncpy(varName, var_start, var_len);
-            varName[var_len] = '\0';
-            p++; // Skip "}"
-            
-            // Look up the variable and convert it to a string.
-            Value val = get_variable(varName);
-            free(varName);
-            char temp[128];
-            const char *valStr;
-            if (val.type == VAL_INT) {
-                sprintf(temp, "%d", val.int_val);
-                valStr = temp;
-            } else if (val.type == VAL_BOOL) {
-                valStr = (val.int_val ? "true" : "false");
-            } else if (val.type == VAL_STRING) {
-                valStr = val.str_val;
-            } else {
-                valStr = "null";
-            }
-            
-            // Ensure buffer is large enough.
-            if (strlen(result) + strlen(valStr) + 1 > buf_size) {
-                buf_size = (strlen(result) + strlen(valStr)) * 2 + 1;
-                result = realloc(result, buf_size);
-                if (!result) {
-                    fprintf(stderr, "Memory reallocation error in evaluate_template.\n");
-                    exit(1);
-                }
-            }
-            strcat(result, valStr);
-        } else {
-            // Append regular character.
-            size_t len = strlen(result);
-            if (len + 2 > buf_size) {
-                buf_size *= 2;
-                result = realloc(result, buf_size);
-                if (!result) {
-                    fprintf(stderr, "Memory reallocation error in evaluate_template.\n");
-                    exit(1);
-                }
-            }
-            result[len] = *p;
-            result[len + 1] = '\0';
-            p++;
-        }
-    }
-    return result;
-}
-
-/*
- * Parse a primary expression.
- */
-Value parse_primary(Parser *p)
-{
-    Token *tok = current(p);
-    if (tok->type == TOKEN_INT)
-    {
-        int num = atoi(tok->text);
-        advance(p);
-        return make_int(num);
-    }
-    
-    if (tok->type == TOKEN_STRING)
-    {
-        char *processed;
-        // Check if the string literal contains a template pattern.
-        if (strstr(tok->text, "${") != NULL)
-        {
-            processed = evaluate_template(tok->text);
-        }
-        else
-        {
-            processed = _strdup(tok->text);
-        }
-        Value v = make_string(processed);
-        free(processed);
-        advance(p);
-        return v;
-    }
-    
-    if (tok->type == TOKEN_BOOL)
-    {
-        // Create a boolean value based on the literal text.
-        int b = (strcmp(tok->text, "true") == 0) ? 1 : 0;
-        Value v = make_bool(b);
-        advance(p);
-        return v;
-    }
+ /*
+  * The current position in the token list.
+  */
+ Token *current(Parser *p)
+ {
+     if (p->pos >= p->tokens->count) {
+         // Return the EOF token which should be the last token.
+         return &p->tokens->tokens[p->tokens->count - 1];
+     }
+ 
+     return &p->tokens->tokens[p->pos];
+ }
+ 
+ /*
+  * The next token in the token list.
+  */
+ Token *peek(Parser *p)
+ {
+     if (p->pos + 1 < p->tokens->count)
+     {
+         return &p->tokens->tokens[p->pos + 1];
+     }
+     return NULL;
+ }
+ 
+ /*
+  * Advances the current position in the token list.
+  */
+ void advance(Parser *p)
+ {
+     if (p->pos < p->tokens->count)
+     {
+         p->pos++;
+     }
+ }
+ 
+ /*
+  * Expects the current token to be of the given type and advances to the next token.
+  */
+ void expect(Parser *p, AstTokenType type, const char *msg)
+ {
+     if (p->pos >= p->tokens->count || current(p)->type != type)
+     {
+         raise_error("Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
+         return;
+     }
+ 
+     advance(p);
+ }
+ 
+ /*
+  * Evaluates a template string by replacing variables with their values.
+  */
+ char *evaluate_template(const char *tpl)
+ {
+ // Allocate an initial dynamic buffer.
+     size_t buf_size = strlen(tpl) * 2 + 1;
+     char *result = malloc(buf_size);
+     if (!result) {
+         raise_error("Memory allocation error in evaluate_template.\n");
+         return NULL;
+     }
+ 
+     result[0] = '\0';
+ 
+     const char *p = tpl;
+     while (*p) {
+         if (p[0] == '$' && p[1] == '{') {
+             p += 2; // Skip "${"
+             const char *var_start = p;
+             while (*p && *p != '}')
+                 p++;
+             if (*p != '}') {
+                 raise_error("Template error: missing '}'\n");
+                 return NULL;
+             }
+             size_t var_len = p - var_start;
+             char *varName = malloc(var_len + 1);
+             strncpy(varName, var_start, var_len);
+             varName[var_len] = '\0';
+             p++; // Skip "}"
+ 
+             // Look up the variable and convert it to a string.
+             Value val = get_variable(varName);
+             free(varName);
+             char temp[128];
+             const char *valStr;
+             if (val.type == VAL_INT) {
+                 sprintf(temp, "%d", val.int_val);
+                 valStr = temp;
+             }
+             else if (val.type == VAL_BOOL) {
+                 valStr = (val.int_val ? "true" : "false");
+             }
+             else if (val.type == VAL_STRING) {
+                 valStr = val.str_val;
+             }
+             else {
+                 valStr = "null";
+             }
+ 
+             // Ensure buffer is large enough.
+             if (strlen(result) + strlen(valStr) + 1 > buf_size) {
+                 buf_size = (strlen(result) + strlen(valStr)) * 2 + 1;
+                 result = realloc(result, buf_size);
+                 if (!result) {
+                     raise_error("Memory reallocation error in evaluate_template.\n");
+                     return NULL;
+                 }
+             }
+             strcat(result, valStr);
+         }
+         else {
+          // Append regular character.
+             size_t len = strlen(result);
+             if (len + 2 > buf_size) {
+                 buf_size *= 2;
+                 result = realloc(result, buf_size);
+                 if (!result) {
+                     raise_error("Memory reallocation error in evaluate_template.\n");
+                     return NULL;
+                 }
+             }
+             result[len] = *p;
+             result[len + 1] = '\0';
+             p++;
+         }
+     }
+     return result;
+ }
+ 
+ /*
+  * Parse a primary expression.
+  */
+ Value parse_primary(Parser *p)
+ {
+     Token *tok = current(p);
+     if (tok->type == TOKEN_INT)
+     {
+         int num = atoi(tok->text);
+         advance(p);
+         return make_int(num);
+     }
+ 
+     if (tok->type == TOKEN_STRING)
+     {
+         char *processed;
+         // Check if the string literal contains a template pattern.
+         if (strstr(tok->text, "${") != NULL)
+         {
+             processed = evaluate_template(tok->text);
+         }
+         else
+         {
+             processed = _strdup(tok->text);
+         }
+         Value v = make_string(processed);
+         free(processed);
+         advance(p);
+         return v;
+     }
+ 
+     if (tok->type == TOKEN_BOOL)
+     {
+         // Create a boolean value based on the literal text.
+         int b = (strcmp(tok->text, "true") == 0) ? 1 : 0;
+         Value v = make_bool(b);
+         advance(p);
+         return v;
+     }
  
      if (tok->type == TOKEN_IDENTIFIER)
      {
@@ -679,8 +732,8 @@ Value parse_primary(Parser *p)
              Value orig = get_variable(id);
              if (orig.type != VAL_INT)
              {
-                 fprintf(stderr, "Runtime error: %s operator only valid for ints.\n", op);
-                 exit(1);
+                 raise_error("Runtime error: %s operator only valid for ints.\n", op);
+                 return return_value;
              }
              int oldVal = orig.int_val;
              if (strcmp(op, "++") == 0)
@@ -707,8 +760,9 @@ Value parse_primary(Parser *p)
          expect(p, TOKEN_RPAREN, "Expected ')' after expression");
          return v;
      }
-     fprintf(stderr, "Parser error: Unexpected token '%s'\n", tok->text);
-     exit(1);
+ 
+     raise_error("Parser error: Unexpected token '%s'\n", tok->text);
+     return return_value;
  }
  
  /*
@@ -723,8 +777,8 @@ Value parse_primary(Parser *p)
          Value operand = parse_unary(p);
          if (operand.type != VAL_BOOL && operand.type != VAL_INT)
          {
-             fprintf(stderr, "Runtime error: ! operator only works on bools or ints.\n");
-             exit(1);
+             raise_error("Runtime error: ! operator only works on bools or ints.\n");
+             return return_value;
          }
          int result = !(operand.int_val); // works for both VAL_INT and VAL_BOOL
          return make_bool(result);
@@ -739,16 +793,16 @@ Value parse_primary(Parser *p)
          // The next token must be an identifier
          if (current(p)->type != TOKEN_IDENTIFIER)
          {
-             fprintf(stderr, "Parser error: Expected identifier after unary %s\n", op);
-             exit(1);
+             raise_error("Parser error: Expected identifier after unary %s\n", op);
+             return return_value;
          }
          char *id = _strdup(current(p)->text);
          advance(p);
          Value v = get_variable(id);
          if (v.type != VAL_INT)
          {
-             fprintf(stderr, "Runtime error: %s operator only valid for ints.\n", op);
-             exit(1);
+             raise_error("Runtime error: %s operator only valid for ints.\n", op);
+             return return_value;
          }
          // For prefix, update before returning.
          if (strcmp(op, "++") == 0)
@@ -821,8 +875,8 @@ Value parse_primary(Parser *p)
          Value right = parse_term(p);
          if (left.type != VAL_INT || right.type != VAL_INT)
          {
-             fprintf(stderr, "Runtime error: Relational operators only support ints.\n");
-             exit(1);
+             raise_error("Runtime error: Relational operators only support ints.\n");
+             return return_value;
          }
          int result = 0;
          if (strcmp(op, ">") == 0)
@@ -867,8 +921,8 @@ Value parse_primary(Parser *p)
          {
              if (left.type != VAL_INT || right.type != VAL_INT)
              {
-                 fprintf(stderr, "Runtime error: '*' supports only ints.\n");
-                 exit(1);
+                 raise_error("Runtime error: '*' supports only ints.\n");
+                 return return_value;
              }
              int res = left.int_val * right.int_val;
              left = make_int(res);
@@ -877,13 +931,13 @@ Value parse_primary(Parser *p)
          {
              if (left.type != VAL_INT || right.type != VAL_INT)
              {
-                 fprintf(stderr, "Runtime error: '/' supports only ints.\n");
-                 exit(1);
+                 raise_error("Runtime error: '/' supports only ints.\n");
+                 return return_value;
              }
              if (right.int_val == 0)
              {
-                 fprintf(stderr, "Runtime error: Division by zero.\n");
-                 exit(1);
+                 raise_error("Runtime error: Division by zero.\n");
+                 return return_value;
              }
              int res = left.int_val / right.int_val;
              left = make_int(res);
@@ -955,8 +1009,8 @@ Value parse_primary(Parser *p)
          {
              if (left.type != VAL_INT || right.type != VAL_INT)
              {
-                 fprintf(stderr, "Runtime error: '-' supports only ints.\n");
-                 exit(1);
+                 raise_error("Runtime error: '-' supports only ints.\n");
+                 return return_value;
              }
              left = make_int(left.int_val - right.int_val);
          }
@@ -1111,18 +1165,13 @@ Value parse_primary(Parser *p)
      return parse_logical(p);
  }
  
-  /* ============================================================
+ /* ============================================================
       Statements
-     ============================================================ */
-
- static int return_flag = 0;
- static Value return_value;
- static int continue_flag = 0;
- static int break_flag = 0;
+    ============================================================ */
  
- /*
-  * Parses a block of statements.
-  */
+  /*
+   * Parses a block of statements.
+   */
  void parse_block(Parser *p)
  {
      expect(p, TOKEN_LBRACE, "Expected '{' to start block");
@@ -1141,7 +1190,7 @@ Value parse_primary(Parser *p)
  void parse_statement(Parser *p)
  {
      Token *tok = current(p);
-
+ 
      if (tok->type == TOKEN_RETURN)
      {
          advance(p); // consume 'return'
@@ -1164,8 +1213,8 @@ Value parse_primary(Parser *p)
          }
          else
          {
-             fprintf(stderr, "Runtime error: if condition must be int or bool.\n");
-             exit(1);
+             raise_error("Runtime error: if condition must be int or bool.\n");
+             return;
          }
  
          if (condition_true)
@@ -1240,8 +1289,8 @@ Value parse_primary(Parser *p)
                      }
                      else
                      {
-                         fprintf(stderr, "Runtime error: else if condition must be int or bool.\n");
-                         exit(1);
+                         raise_error("Runtime error: else if condition must be int or bool.\n");
+                         return;
                      }
  
                      if (condition_true2)
@@ -1468,8 +1517,8 @@ Value parse_primary(Parser *p)
              }
              else
              {
-                 fprintf(stderr, "Runtime error: while condition must be int or bool.\n");
-                 exit(1);
+                 raise_error("Runtime error: while condition must be int or bool.\n");
+                 return;
              }
              if (cond_val.type == VAL_STRING && cond_val.temp)
              {
@@ -1565,9 +1614,9 @@ Value parse_primary(Parser *p)
      {
          free(tokens.tokens[i].text);
      }
-
+ 
     //  printf("Tokens Count: %d\n", tokens.count);
-
+ 
      Value ret = return_value;
      free_variables();
      return ret;

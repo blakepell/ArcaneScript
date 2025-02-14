@@ -34,3 +34,5 @@ if (list_contains(list, "Blake") && !list_contains(list, "Pell"))
 }
 
 println("The final list is: ${list}");
+
+return true;
