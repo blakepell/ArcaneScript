@@ -150,4 +150,7 @@ println("${max} is the larger of 7 and 10.");
 min = umin(7, 10);
 println("${min} is the smaller of 7 and 10.");
 
+t = timestr();
+println("The current date/time is: ${t}");
+
 return true;

@@ -161,6 +161,7 @@ typedef unsigned char bool;
  Value make_null();
  Value make_bool(int b);
  Value make_error(const char *s);
+ int get_time(struct timeval *tp, void *tzp);
  const char *_list_getarg(const char *argument, char *arg, int length);
  int _list_contains(const char *list, const char *value);
  Value fn_typeof(Value *args, int arg_count);
@@ -190,6 +191,7 @@ typedef unsigned char bool;
  Value fn_ucase(Value *args, int arg_count);
  Value fn_umin(Value *args, int arg_count);
  Value fn_umax(Value *args, int arg_count);
+ Value fn_timestr(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }

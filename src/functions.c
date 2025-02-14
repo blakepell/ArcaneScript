@@ -105,6 +105,15 @@
      return 0;
  }
  
+ /**
+  * Populates a timeval structure with the current time.
+  */
+ int get_datetime_string(struct timeval *tp, void *tzp)
+ {
+     tp->tv_sec = time(NULL);
+     tp->tv_usec = 0;
+ }
+
  /* ============================================================
      Language Interop Functions
     ============================================================ */
@@ -1196,4 +1205,19 @@ Value fn_umax(Value *args, int arg_count)
     }
 
     return make_int(args[0].int_val > args[1].int_val ? args[0].int_val : args[1].int_val);
+}
+
+/**
+ * Returns the current date/time as a string.
+ */
+Value fn_timestr(Value *args, int arg_count) 
+{
+    char buf[256];
+    struct timeval now_time;
+
+    get_datetime_string(&now_time, NULL);
+    time_t current_time = (time_t) now_time.tv_sec;
+    strcpy(buf, ctime( &current_time ));
+
+    return make_string(buf);
 }
