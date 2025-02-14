@@ -69,24 +69,32 @@ int main(int argc, char *argv[])
     free(script);
 
     int exit_code = 0;
-    
-    printf("Script returned: ");
 
-    if (ret.type == VAL_INT)
+    if (DEBUG)
     {
-        printf("%d\n", ret.int_val);
-    }
-    else if (ret.type == VAL_STRING)
-    {
-        printf("%s\n", ret.str_val);
-    }
-    else if (ret.type == VAL_BOOL)
-    {
-        printf("%d\n", ret.int_val);
-    }
-    else
-    {
-        printf("null\n");
+        printf("Script returned: ");
+    
+        if (ret.type == VAL_INT)
+        {
+            printf("%d\n", ret.int_val);
+        }
+        else if (ret.type == VAL_STRING)
+        {
+            printf("%s\n", ret.str_val);
+        }
+        else if (ret.type == VAL_BOOL)
+        {
+            printf("%d\n", ret.int_val);
+        }
+        else if (ret.type == VAL_ERROR)
+        {
+            printf("ERROR: %s\n", ret.str_val);
+            exit_code = 8;
+        }
+        else
+        {
+            printf("null\n");
+        }
     }
 
     if (ret.type == VAL_STRING && ret.temp)

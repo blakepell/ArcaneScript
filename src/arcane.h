@@ -14,7 +14,25 @@
  #ifdef __cplusplus
  extern "C" {
  #endif
- 
+
+/* ============================================================
+    Bool type
+   ============================================================ */
+
+typedef unsigned char bool;
+
+#if !defined(FALSE)
+#define FALSE 0
+#endif
+
+#if !defined(false)
+#define false 0
+#endif
+
+#if !defined(true)
+#define true 1
+#endif
+
  /* ============================================================
      Helper Macros and Constants
     ============================================================ */
@@ -23,11 +41,13 @@
  #define MAX_STRING_LENGTH 4608
  #define MSL MAX_STRING_LENGTH
  #define MAX_TOKENS 1024
- 
+ #define HEADER "+------------------------------------------------------------------------------+\n\r"
+ #define DEBUG "false"
+
  /* ============================================================
      Values and Variables
     ============================================================ */
- 
+
  /* The 'temp' field indicates that this Value’s string (if any) is owned by the caller
     and should be freed when no longer needed. If temp==0 the value is stored in the symbol table. */
  typedef enum
@@ -163,7 +183,7 @@
  Value fn_number_range(Value *args, int arg_count);
  Value fn_chance(Value *args, int arg_count);
  Value fn_replace(Value *args, int arg_count);
- 
+
  #ifdef __cplusplus
  }
  #endif

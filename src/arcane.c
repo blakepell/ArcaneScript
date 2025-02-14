@@ -1596,31 +1596,58 @@
   * The main interpreter.  This is the entry point for a script to begin
   * execution.
   */
- Value interpret(const char *src)
- {
-     TokenList tokens;
-     tokens.count = 0;
-     tokenize(src, &tokens);
-     Parser parser;
-     parser.tokens = &tokens;
-     parser.pos = 0;
-     return_flag = 0;
-     return_value = make_null();
- 
-     while (current(&parser)->type != TOKEN_EOF && !return_flag)
-     {
-         parse_statement(&parser);
-     }
- 
-     /* Free all tokens */
-     for (int i = 0; i < tokens.count; i++)
-     {
+#include <time.h>
+
+Value interpret(const char *src)  // Add a timeout parameter (ms)
+{
+    TokenList tokens;
+    tokens.count = 0;
+    tokenize(src, &tokens);
+    Parser parser;
+    parser.tokens = &tokens;
+    parser.pos = 0;
+    return_flag = 0;
+    return_value = make_null();
+    int timeout_ms = 0;  // Timeout in milliseconds, 0 means no timeout    
+    clock_t start_time = clock();
+    clock_t current_time;
+    double elapsed_ms;
+
+    while (current(&parser)->type != TOKEN_EOF && !return_flag)
+    {
+        if (timeout_ms > 0)
+        {
+            current_time = clock();
+            elapsed_ms = (double)(current_time - start_time) * 1000.0 / CLOCKS_PER_SEC;
+
+            if (elapsed_ms >= timeout_ms)
+            {
+                raise_error("Runtime error: Execution timed out after %d milliseconds.\n", timeout_ms);
+                break;
+            }
+        }
+
+        parse_statement(&parser);
+    }
+
+    /* Free all tokens */
+    for (int i = 0; i < tokens.count; i++)
+    {
          free(tokens.tokens[i].text);
-     }
- 
-    //  printf("Tokens Count: %d\n", tokens.count);
-     
-     Value ret = return_value;
-     free_variables();
-     return ret;
- }
+    }
+
+    current_time = clock();
+    elapsed_ms = (double)(current_time - start_time) * 1000.0 / CLOCKS_PER_SEC;
+
+    if (DEBUG)
+    {
+        printf("\n%s", HEADER);
+        printf("| Script execution time: %.0fms\n", elapsed_ms);
+        printf("| %d/%d tokens used.\n", tokens.count, MAX_TOKENS);
+        printf("%s\n", HEADER);    
+    }
+
+    Value ret = return_value;
+    free_variables();
+    return ret;
+}
