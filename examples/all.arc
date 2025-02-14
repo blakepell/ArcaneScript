@@ -75,7 +75,7 @@ for ( i = 100; i < 150; i++ ) {
 while ( i > 0 ) { 
     i--; if (i < 100) { break; } println(i);
 }
-name = input("Enter your name: ");
+name = "250";
 println("You entered " + name);
 println(is_number(name));
 println(typeof(is_number(name)));
