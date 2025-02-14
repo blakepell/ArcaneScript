@@ -4,7 +4,7 @@
  *         File: main.c
  *       Author: Blake Pell
  * Initial Date: 2025-02-08
- * Last Updated: 2025-02-09
+ * Last Updated: 2025-02-13
  *      License: MIT License
  * 
  * This is the main entry point for the Arcane scripting language when

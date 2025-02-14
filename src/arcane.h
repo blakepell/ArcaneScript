@@ -4,7 +4,7 @@
  *         File: arcane.h
  *       Author: Blake Pell
  * Initial Date: 2025-02-08
- * Last Updated: 2025-02-11
+ * Last Updated: 2025-02-13
  *      License: MIT License
  */
 
