@@ -967,3 +967,51 @@ Value fn_replace(Value *args, int arg_count)
  
      return make_bool((args[0].int_val % args[1].int_val) == 0);
  }
+
+ /**
+  * Trims whitespace from the beginning and end of a string.
+  */
+ Value fn_trim(Value *args, int arg_count)
+ {
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: trim() expects exactly one argument.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: trim() expects a string argument.\n");
+        return return_value;
+    }
+
+    char *s = args[0].str_val;
+    char *start = s;
+    char *end = s + strlen(s) - 1;
+
+    while (isspace(*start))
+    {
+        start++;
+    }
+
+    while (end > start && isspace(*end))
+    {
+        end--;
+    }
+
+    int len = end - start + 1;
+    char *result = malloc(len + 1);
+
+    if (!result)
+    {
+        raise_error("Runtime error: Memory allocation failed in trim().\n");
+        return return_value;
+    }
+
+    strncpy(result, start, len);
+    result[len] = '\0';
+
+    Value ret = make_string(result);
+    free(result);
+    return ret;    
+ }

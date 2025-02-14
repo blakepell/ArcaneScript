@@ -125,4 +125,12 @@ name = "Blake Brandon Pell";
 new_name = replace(name, " Brandon ", " ");
 println("${name} => ${new_name}");
 
+str = "  This is a string with space at the start and end ";
+println(len(str));
+print(str);
+
+str = trim(str);
+println(len(str));
+print(str);
+
 return true;
