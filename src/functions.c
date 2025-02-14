@@ -4,7 +4,7 @@
  *         File: arcane.c
  *       Author: Blake Pell
  * Initial Date: 2025-02-08
- * Last Updated: 2025-02-13
+ * Last Updated: 2025-02-14
  *      License: MIT License
  *
  * Provides functionality for tokenizing, parsing, and interpreting
@@ -17,12 +17,12 @@
  #include <ctype.h>
  #include <stdio.h>
  #ifdef _WIN32
- #include <sys/time.h>
- #include <windows.h>
- #define strcasecmp _stricmp
+    #include <sys/time.h>
+    #include <windows.h>
+    #define strcasecmp _stricmp
  #else
- #include <time.h>
- #include <errno.h>
+    #include <time.h>
+    #include <errno.h>
  #endif
  
  extern Value return_value;

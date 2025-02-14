@@ -4,7 +4,7 @@
  *         File: arcane.h
  *       Author: Blake Pell
  * Initial Date: 2025-02-08
- * Last Updated: 2025-02-13
+ * Last Updated: 2025-02-14
  *      License: MIT License
  */
 
@@ -22,15 +22,19 @@
 typedef unsigned char bool;
 
 #if !defined(FALSE)
-#define FALSE 0
+    #define FALSE 0
 #endif
 
 #if !defined(false)
-#define false 0
+    #define false 0
+#endif
+
+#if !defined(TRUE)
+    #define TRUE 1
 #endif
 
 #if !defined(true)
-#define true 1
+    #define true 1
 #endif
 
  /* ============================================================
