@@ -40,4 +40,4 @@ Arcane is an embeddable scripting language designed to be integrated into existi
 
 Arcane is perfect for adding scripting support to applications where a full-blown language would be overkill and extension with C functions is required.
 
-[Back to Index](index.md)
+[Back to Top](#arcane-script-documentation)
