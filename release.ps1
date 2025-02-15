@@ -11,9 +11,9 @@ $releasePath = Join-Path (Split-Path -Parent $PSCommandPath) "release"
 Push-Location "src"
 $tccOutput = tcc -o (Join-Path $releasePath "arcane.exe") *.c -lws2_32 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Build succeeded" -ForegroundColor Green
+    Write-Host "EXE Build succeeded" -ForegroundColor Green
 } else {
-    Write-Host "Build failed (exit code: $LASTEXITCODE)" -ForegroundColor Red
+    Write-Host "EXE Build failed (exit code: $LASTEXITCODE)" -ForegroundColor Red
 }
 if ($tccOutput) {
     Write-Host $tccOutput
@@ -34,3 +34,21 @@ if ($tccOutputDll) {
 }
 Pop-Location
 
+# Build an amalgamation file.
+# Build the amalgamation C file.
+$amalgamationFile = Join-Path $releasePath "arcane.c"
+$filesToCombine = @("arcane.h", "functions.c", "arcane.c")
+
+# Create or clear the amalgamation file.
+Set-Content -Path $amalgamationFile -Value ""
+
+foreach ($file in $filesToCombine) {
+    $filePath = Join-Path "src" $file
+    if (Test-Path $filePath) {
+        Get-Content $filePath | Where-Object { $_ -notmatch '#include\s+["'']arcane\.h["'']' } | Add-Content -Path $amalgamationFile
+    } else {
+        Write-Host "File $file not found in src folder." -ForegroundColor Yellow
+    }
+}
+
+Write-Host "Amalgamation file created at $amalgamationFile" -ForegroundColor Green
