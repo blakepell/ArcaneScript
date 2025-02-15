@@ -1,1 +1,0 @@
-tcc -o arcane.exe functions.c arcane.c main.c -lws2_32
