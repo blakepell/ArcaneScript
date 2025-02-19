@@ -665,6 +665,23 @@
  Value parse_primary(Parser *p)
  {
      Token *tok = current(p);
+
+     // Handle unary minus for negative integers
+     if (tok->type == TOKEN_OPERATOR && strcmp(tok->text, "-") == 0)
+     {
+         advance(p); // consume '-'
+         Value v = parse_primary(p);
+         if (v.type == VAL_INT)
+         {
+             v.int_val = -v.int_val;
+         }
+         else
+         {
+             raise_error("Runtime error: Unary '-' operator only supports ints.\n");
+         }
+         return v;
+     }
+
      if (tok->type == TOKEN_INT)
      {
          int num = atoi(tok->text);
