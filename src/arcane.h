@@ -44,7 +44,7 @@ typedef unsigned char bool;
  #define IS_NULLSTR(str) ((str)==NULL || (str)[0]=='\0')
  #define MAX_STRING_LENGTH 4608
  #define MSL MAX_STRING_LENGTH
- #define MAX_TOKENS 1024
+ #define MAX_TOKENS 2048
  #define HEADER "+------------------------------------------------------------------------------+\n\r"
  #define DEBUG "false"
 
