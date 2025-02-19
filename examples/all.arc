@@ -153,4 +153,11 @@ println("${min} is the smaller of 7 and 10.");
 t = timestr();
 println("The current date/time is: ${t}");
 
+z = 0 - 15;
+z = abs(z);
+
+println("The absolute value of -15 is ${z}");
+
+z = -15;
+
 return true;

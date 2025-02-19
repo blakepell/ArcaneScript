@@ -1221,3 +1221,25 @@ Value fn_timestr(Value *args, int arg_count)
 
     return make_string(buf);
 }
+
+/**
+ * Returns the absolute value of a number.
+ */
+Value fn_abs(Value *args, int arg_count) 
+{
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: abs() expects exactly one argument.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_INT)
+    {
+        raise_error("Runtime error: abs() expects an integer argument.\n");
+        return return_value;
+    }
+
+    int num = args[0].int_val;
+    int abs_val = num < 0 ? -num : num;
+    return make_int(abs_val);
+}

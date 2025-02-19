@@ -196,6 +196,7 @@ typedef unsigned char bool;
  Value fn_umin(Value *args, int arg_count);
  Value fn_umax(Value *args, int arg_count);
  Value fn_timestr(Value *args, int arg_count);
+ Value fn_abs(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
