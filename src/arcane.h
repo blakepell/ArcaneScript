@@ -197,10 +197,12 @@ typedef unsigned char bool;
  Value fn_umax(Value *args, int arg_count);
  Value fn_timestr(Value *args, int arg_count);
  Value fn_abs(Value *args, int arg_count);
+ Value fn_get_terminal_size(Value *args, int arg_count);
+ Value fn_set_cursor_position(Value *args, int arg_count);
+ Value fn_clear_screen(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
  #endif
  
  #endif // ARCANE_H
- 

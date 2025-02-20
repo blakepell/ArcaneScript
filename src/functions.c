@@ -1243,3 +1243,38 @@ Value fn_abs(Value *args, int arg_count)
     int abs_val = num < 0 ? -num : num;
     return make_int(abs_val);
 }
+
+/**
+ * Sets the cursor position in the terminal.
+ */
+Value fn_set_cursor_position(Value *args, int arg_count)
+{
+    if (arg_count != 2 || args[0].type != VAL_INT || args[1].type != VAL_INT)
+    {
+        raise_error("Runtime error: set_cursor_position expects two integer arguments.\n");
+        return make_null();
+    }
+    int x = args[0].int_val;
+    int y = args[1].int_val;
+    printf("\033[%d;%dH", x, y);
+
+    return make_null();
+}
+
+/**
+ * Clears the terminal screen using ANSI escape codes.
+ */
+Value fn_clear_screen(Value *args, int arg_count)
+{
+    if (arg_count != 0)
+    {
+        raise_error("Runtime error: clear() expects no arguments.\n");
+        return return_value;
+    }
+
+    // ANSI escape codes to clear the screen and reset the cursor position.
+    printf("\033[2J\033[H");
+    fflush(stdout);
+
+    return make_null();
+}
