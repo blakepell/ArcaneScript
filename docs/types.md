@@ -14,6 +14,9 @@ Arcane supports a limited set of types as defined in the interpreter:
 - **Double (VAL_DOUBLE)**  
   Represents a double-precision floating-point.
 
+- **Double (VAL_DATE)**  
+  Represents a date only format: `YYYY/MM/DD` or `MM/DD/YYYY`
+
 - **Null (VAL_NULL)**  
   Represents an absence of value. Often used as a default or error indicator.
 
