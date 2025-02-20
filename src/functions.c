@@ -429,6 +429,12 @@ Value fn_chance(Value *args, int arg_count)
          case VAL_BOOL:
              type_str = "bool";
              break;
+         case VAL_DOUBLE:
+            type_str = "double";
+            break;             
+         case VAL_DATE:
+            type_str = "date";
+            break;            
          case VAL_NULL:
              type_str = "null";
              break;
