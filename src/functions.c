@@ -950,13 +950,23 @@ Value fn_replace(Value *args, int arg_count)
          snprintf(buffer, sizeof(buffer), "%d", input.int_val);
          return make_string(buffer);
      }
+     else if (input.type == VAL_DOUBLE)
+     {
+         snprintf(buffer, sizeof(buffer), "%f", input.double_val);
+         return make_string(buffer);
+     }
      else if (input.type == VAL_BOOL)
      {
          return make_string(input.int_val ? "true" : "false");
      }
+     else if (input.type == VAL_DATE)
+     {
+        snprintf(buffer, sizeof(buffer), "%02d/%02d/%04d", input.date_val.month, input.date_val.day, input.date_val.year);
+        return make_string(buffer);
+     }
      else
      {
-         raise_error("Runtime error: cstr() expects an int or bool argument.\n");
+         raise_error("Runtime error: cstr() expects an int, double, bool or date argument.\n");
          return return_value;
      }
  }
