@@ -46,7 +46,7 @@ typedef unsigned char bool;
  #define MSL MAX_STRING_LENGTH
  #define MAX_TOKENS 2048
  #define HEADER "+------------------------------------------------------------------------------+\n\r"
- #define DEBUG "false"
+ #define DEBUG FALSE
 
  /* ============================================================
      Values and Variables
