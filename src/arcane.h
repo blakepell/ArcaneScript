@@ -231,6 +231,7 @@ typedef struct {
  Value fn_add_days(Value *args, int arg_count);
  Value fn_add_months(Value *args, int arg_count);
  Value fn_add_years(Value *args, int arg_count);
+ Value fn_cepoch(Value *args, int arg_count);
  
  #ifdef __cplusplus
  }

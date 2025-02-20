@@ -390,7 +390,7 @@ Value fn_chance(Value *args, int arg_count)
          }
          else if (arg.type == VAL_DOUBLE) 
          {
-            printf("%f", arg.double_val);
+            printf("%f\n", arg.double_val);
          }
          else if (arg.type == VAL_BOOL)
          {
@@ -398,7 +398,7 @@ Value fn_chance(Value *args, int arg_count)
          }
          else if (arg.type == VAL_DATE)
          {
-             printf("%02d/%02d/%04d", arg.date_val.month, arg.date_val.day, arg.date_val.year);
+             printf("%02d/%02d/%04d\n", arg.date_val.month, arg.date_val.day, arg.date_val.year);
          }
      }
  
@@ -1673,35 +1673,54 @@ Value fn_year(Value *args, int arg_count)
 }
 
 /**
- * Returns the current date as a Date value.
+ * Converts a string or an int (as an epoch) to a Date value.
  */
 Value fn_cdate(Value *args, int arg_count)
 {
-    if (arg_count != 1 || args[0].type != VAL_STRING)
+    if (arg_count != 1)
     {
-        raise_error("cdate() requires one string argument.\n");
+        raise_error("cdate() requires one argument.\n");
         return make_null();
     }
-    
-    // Supported formats: MM/DD/YYYY or YYYY/MM/DD
-    int m, d, y;
-    if (sscanf(args[0].str_val, "%d/%d/%d", &m, &d, &y) == 3)
+
+    if (args[0].type == VAL_STRING)
     {
-        // Determine if first number is month or year.
-        if (m > 12) {
-            // If first part > 12, assume YYYY/MM/DD:
-            y = m;
-            m = d;
-            d = y; // note: adjust order if needed or use another pattern
-            // A better approach is to check string length or delimiters.
-            // For clarity, you can use separate if-else branches.
+        // Supported formats: MM/DD/YYYY or YYYY/MM/DD
+        int m, d, y;
+        if (sscanf(args[0].str_val, "%d/%d/%d", &m, &d, &y) == 3)
+        {
+            // If the first number is greater than 12, assume format is YYYY/MM/DD.
+            if (m > 12)
+            {
+                int temp = m;
+                m = d;
+                d = y;
+                y = temp;
+            }
+            Date date = { m, d, y };
+            return make_date(date);
         }
-        Date date = { m, d, y };
+        else
+        {
+            raise_error("cdate() could not parse date from string: %s\n", args[0].str_val);
+            return make_null();
+        }
+    }
+    else if (args[0].type == VAL_INT)
+    {
+        time_t epoch = args[0].int_val;
+        struct tm *tm_date = localtime(&epoch);
+        if (!tm_date)
+        {
+            raise_error("cdate() failed to convert epoch %d to date.\n", args[0].int_val);
+            return make_null();
+        }
+        Date date = { tm_date->tm_mon + 1, tm_date->tm_mday, tm_date->tm_year + 1900 };
         return make_date(date);
     }
     else
     {
-        raise_error("cdate() could not parse date from string: %s\n", args[0].str_val);
+        raise_error("cdate() expects a string or integer argument.\n");
         return make_null();
     }
 }
@@ -1852,4 +1871,35 @@ Value fn_add_years(Value *args, int arg_count)
 
     Date result = { new_month, new_day, new_year };
     return make_date(result);
+}
+
+/**
+ * Converts a date to its Unix epoch equivalent.
+ */
+Value fn_cepoch(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DATE)
+    {
+        raise_error("cepoch() expects a single date argument.\n");
+        return make_null();
+    }
+    
+    Date date = args[0].date_val;
+    struct tm tm_date = {0};
+    tm_date.tm_year = date.year - 1900;
+    tm_date.tm_mon  = date.month - 1;
+    tm_date.tm_mday = date.day;
+    tm_date.tm_hour = 0;
+    tm_date.tm_min  = 0;
+    tm_date.tm_sec  = 0;
+    tm_date.tm_isdst = -1;
+
+    time_t epoch = mktime(&tm_date);
+    if (epoch == -1)
+    {
+        raise_error("cepoch() failed to convert date to epoch.\n");
+        return make_null();
+    }
+    
+    return make_int((int)epoch);
 }

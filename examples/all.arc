@@ -237,12 +237,19 @@ if (bday < d)
 dt = today();
 println("${dt}");
 println(dt);
+println(" ");
+
+println(cepoch(bday));
 
 bday = add_years(bday, 1);
 bday = add_months(bday, 4);
 bday = add_days(bday, -9);
 
 println("New date: ${bday}");
+
+num = cepoch(bday);
+newDt = cdate(num);
+println(newDt);
 
 println("END");
 return true;
