@@ -181,6 +181,7 @@ typedef unsigned char bool;
  Value fn_strlen(Value *args, int arg_count);
  Value fn_cint(Value *args, int arg_count);
  Value fn_cstr(Value *args, int arg_count);
+ Value fn_cdbl(Value *args, int arg_count);
  Value fn_cbool(Value *args, int arg_count);
  Value fn_print(Value *args, int arg_count);
  Value fn_println(Value *args, int arg_count);

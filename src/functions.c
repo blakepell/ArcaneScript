@@ -878,6 +878,43 @@ Value fn_replace(Value *args, int arg_count)
      }
  }
  
+ /**
+  * Converts a string, int, or bool to a double.
+  */
+ Value fn_cdbl(Value *args, int arg_count)
+ {
+     if (arg_count != 1)
+     {
+         raise_error("Runtime error: cdbl() expects 1 argument.\n");
+         return return_value;
+     }
+ 
+     Value input = args[0];
+ 
+     if (input.type == VAL_DOUBLE)
+     {
+         return input;
+     }
+     else if (input.type == VAL_INT)
+     {
+         return make_double((double) input.int_val);
+     }
+     else if (input.type == VAL_BOOL)
+     {
+         return make_double(input.int_val ? 1.0 : 0.0);
+     }
+     else if (input.type == VAL_STRING)
+     {
+         double num = atof(input.str_val);
+         return make_double(num);
+     }
+     else
+     {
+         raise_error("Runtime error: cdbl() expects a string, int, bool, or double argument.\n");
+         return return_value;
+     }
+ }
+
  /*
   * Converts an int or bool to a string.
   */

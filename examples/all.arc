@@ -208,11 +208,17 @@ else
     println("The string did not start with Blake");
 }
 
-//println(index_of(buf, "Blake", 0));
-//println(index_of(buf, "Bill", 0));
+println(index_of(buf, "Blake", 0));
+println(index_of(buf, "Bill", 0));
 println(buf);
 
 println(last_index_of(buf, "Blake", len(buf)));
 println(last_index_of(buf, "Bill", 0));
+
+str_val = "4.45";
+d = cdbl(str_val);
+d = round_down(d);
+
+println(d);
 
 return true;
