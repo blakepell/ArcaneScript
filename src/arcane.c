@@ -29,7 +29,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 34
+ #define MAX_INTEROP_FUNCTIONS 35
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -65,7 +65,8 @@
      {"cls", fn_clear_screen},
      {"round", fn_round},
      {"round_up", fn_round_up},
-     {"round_down", fn_round_down}
+     {"round_down", fn_round_down},
+     {"sqrt", fn_sqrt}
     };
  
  /* ============================================================

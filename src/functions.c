@@ -17,7 +17,7 @@
  #include <ctype.h>
  #include <stdio.h>
  #include <math.h>
- 
+
  #ifdef _WIN32
     #include <time.h>
     #include <windows.h>
@@ -1326,4 +1326,25 @@ Value fn_round_down(Value *args, int arg_count)
     double d = args[0].double_val;
     // floor() returns the largest integer value not greater than d.
     return make_int((int) floor(d));
+}
+
+/**
+ *  Finds the square root of a number.
+ */
+Value fn_sqrt(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DOUBLE)
+    {
+        raise_error("Runtime error: sqrt() expects one double argument.\n");
+        return return_value;
+    }
+
+    double d = args[0].double_val;
+    if (d < 0)
+    {
+        raise_error("Runtime error: sqrt() domain error, negative value.\n");
+        return return_value;
+    }
+
+    return make_double(sqrt(d));
 }

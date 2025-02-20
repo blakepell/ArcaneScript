@@ -178,4 +178,8 @@ dbl = 0.75;
 dbl = round(dbl);
 println("${dbl} (should be 1");
 
+x = 64.0;
+x = sqrt(64.0);
+println("Square root of 64 is ${x}");
+
 return true;

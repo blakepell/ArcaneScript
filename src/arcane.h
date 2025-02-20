@@ -167,6 +167,7 @@ typedef unsigned char bool;
  Value make_string(const char *s);
  Value make_null();
  Value make_bool(int b);
+ Value make_double(double d);
  Value make_error(const char *s);
  int get_time(struct timeval *tp, void *tzp);
  const char *_list_getarg(const char *argument, char *arg, int length);
@@ -206,6 +207,7 @@ typedef unsigned char bool;
  Value fn_round(Value *args, int arg_count);
  Value fn_round_up(Value *args, int arg_count);
  Value fn_round_down(Value *args, int arg_count);
+ Value fn_sqrt(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
