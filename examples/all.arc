@@ -251,5 +251,15 @@ num = cepoch(bday);
 newDt = cdate(num);
 println(newDt);
 
+println(terminal_height());
+println(terminal_width());
+
+print(chr(13));
+print(chr(10));
+print(chr(13));
+print(chr(10));
+
+print(asc(" "));
+
 println("END");
 return true;

@@ -232,6 +232,10 @@ typedef struct {
  Value fn_add_months(Value *args, int arg_count);
  Value fn_add_years(Value *args, int arg_count);
  Value fn_cepoch(Value *args, int arg_count);
+ Value fn_terminal_width(Value *args, int arg_count);
+ Value fn_terminal_height(Value *args, int arg_count);
+ Value fn_chr(Value *args, int arg_count);
+ Value fn_asc(Value *args, int arg_count);
  
  #ifdef __cplusplus
  }

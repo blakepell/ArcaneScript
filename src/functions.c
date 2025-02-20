@@ -25,6 +25,8 @@
  #else
     #include <time.h>
     #include <errno.h>
+    #include <sys/ioctl.h>
+    #include <unistd.h>
  #endif
  
  extern Value return_value;
@@ -1902,4 +1904,97 @@ Value fn_cepoch(Value *args, int arg_count)
     }
     
     return make_int((int)epoch);
+}
+
+/**
+ * Returns the width of the terminal window.
+ */
+Value fn_terminal_width(Value *args, int arg_count)
+{
+    int width;
+
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetConsoleScreenBufferInfo(hStdout, &csbi)) {
+        width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    } else {
+        // Handle error: default to a safe size or exit.
+        width = 80;
+    }
+#else
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1) {
+        width = w.ws_col;
+        height = w.ws_row;
+    } else {
+        // Handle error: default to a safe size or exit.
+        width = 80;
+    }
+#endif
+
+    return make_int(width);
+}
+
+/**
+ * Returns the height of the terminal window.
+ */
+Value fn_terminal_height(Value *args, int arg_count)
+{
+    int height;
+
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetConsoleScreenBufferInfo(hStdout, &csbi)) {
+        height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    } else {
+        // Handle error: default to a safe size or exit.
+        height = 25;
+    }
+#else
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1) {
+        height = w.ws_row;
+    } else {
+        // Handle error: default to a safe size or exit.
+        height = 25;
+    }
+#endif
+
+    return make_int(height);
+}
+
+/**
+ * Returns the ASCII character for a given code.
+ */
+Value fn_chr(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_INT)
+    {
+        raise_error("asc() expects a single integer argument.\n");
+        return make_null();
+    }
+
+    int code = args[0].int_val;
+    char result[2];
+    result[0] = (char) code;
+    result[1] = '\0';
+
+    return make_string(result);
+}
+
+/**
+ * Returns the ASCII code for a given character.
+ */
+Value fn_asc(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_STRING)
+    {
+        raise_error("asc() expects a single character argument.\n");
+        return make_null();
+    }
+
+    char *str = args[0].str_val;
+    return make_int((int) str[0]);
 }
