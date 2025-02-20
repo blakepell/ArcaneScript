@@ -29,7 +29,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 45
+ #define MAX_INTEROP_FUNCTIONS 46
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -76,7 +76,8 @@
      {"month", fn_month},
      {"day", fn_day},
      {"year", fn_year},
-     {"cdate", fn_cdate}
+     {"cdate", fn_cdate},
+     {"today", fn_today}
     };
  
  /* ============================================================

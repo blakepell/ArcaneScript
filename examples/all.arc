@@ -234,4 +234,9 @@ if (bday < d)
     println("You're old!");
 }
 
+dt = today();
+println("${dt}");
+println(dt);
+
+println("END");
 return true;

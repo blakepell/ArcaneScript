@@ -353,6 +353,10 @@ Value fn_chance(Value *args, int arg_count)
          {
              printf(arg.int_val ? "true" : "false");
          }
+         else if (arg.type == VAL_DATE)
+         {
+            printf("%02d/%02d/%04d", arg.date_val.month, arg.date_val.day, arg.date_val.year);
+         }
      }
  
      return make_null();
@@ -391,6 +395,10 @@ Value fn_chance(Value *args, int arg_count)
          else if (arg.type == VAL_BOOL)
          {
              printf(arg.int_val ? "true\n" : "false\n");
+         }
+         else if (arg.type == VAL_DATE)
+         {
+             printf("%02d/%02d/%04d", arg.date_val.month, arg.date_val.day, arg.date_val.year);
          }
      }
  
@@ -1690,4 +1698,28 @@ Value fn_cdate(Value *args, int arg_count)
         raise_error("cdate() could not parse date from string: %s\n", args[0].str_val);
         return make_null();
     }
+}
+
+/**
+ * Returns today's date as a Date value.
+ */
+Value fn_today(Value *args, int arg_count)
+{
+    if (arg_count != 0)
+    {
+        raise_error("today() expects no arguments.\n");
+        return make_null();
+    }
+
+    time_t now = time(NULL);
+    struct tm *local = localtime(&now);
+    if (!local)
+    {
+        raise_error("today() failed to retrieve local time.\n");
+        return make_null();
+    }
+
+    // struct tm: tm_mon is 0-indexed and tm_year is years since 1900.
+    Date date = { local->tm_mon + 1, local->tm_mday, local->tm_year + 1900 };
+    return make_date(date);
 }
