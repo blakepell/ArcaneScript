@@ -59,6 +59,7 @@ typedef unsigned char bool;
      VAL_INT,
      VAL_STRING,
      VAL_BOOL,
+     VAL_DOUBLE,
      VAL_NULL,
      VAL_ERROR
  } ValueType;
@@ -70,6 +71,7 @@ typedef unsigned char bool;
      union
      {
          int int_val;
+         double double_val;
          char *str_val;
      };
  } Value;
@@ -90,6 +92,7 @@ typedef unsigned char bool;
      TOKEN_INT,
      TOKEN_STRING,
      TOKEN_BOOL,
+     TOKEN_DOUBLE,
      TOKEN_IDENTIFIER,
      TOKEN_OPERATOR,
      TOKEN_SEMICOLON,
@@ -200,6 +203,9 @@ typedef unsigned char bool;
  Value fn_get_terminal_size(Value *args, int arg_count);
  Value fn_set_cursor_position(Value *args, int arg_count);
  Value fn_clear_screen(Value *args, int arg_count);
+ Value fn_round(Value *args, int arg_count);
+ Value fn_round_up(Value *args, int arg_count);
+ Value fn_round_down(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }

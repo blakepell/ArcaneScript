@@ -17,7 +17,8 @@
  #include <ctype.h>
  #include <stdarg.h>
  #include <stdio.h>
-
+ #include <math.h>
+ 
  #ifdef _WIN32
     #include <time.h>
  #else
@@ -28,7 +29,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 31
+ #define MAX_INTEROP_FUNCTIONS 34
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -61,7 +62,10 @@
      {"timestr", fn_timestr },
      {"abs", fn_abs },
      {"pos", fn_set_cursor_position},
-     {"cls", fn_clear_screen}
+     {"cls", fn_clear_screen},
+     {"round", fn_round},
+     {"round_up", fn_round_up},
+     {"round_down", fn_round_down}
     };
  
  /* ============================================================
@@ -79,7 +83,7 @@
      in language supported types.
     ============================================================ */
  
- /*
+ /**
   * Makes an integer value.
   */
  Value make_int(int x)
@@ -91,7 +95,7 @@
      return v;
  }
  
- /*
+ /**
   * Makes a string value.
   */
  Value make_string(const char *s)
@@ -103,7 +107,7 @@
      return v;
  }
  
- /*
+ /**
   * Makes a null value.
   */
  Value make_null()
@@ -114,7 +118,7 @@
      return v;
  }
  
- /*
+ /**
   * Makes a boolean value.
   */
  Value make_bool(int b)
@@ -126,7 +130,7 @@
      return v;
  }
  
- /*
+ /**
   * Makes an error value.  This should really only be called by raise_error.
   */
  Value make_error(const char *s)
@@ -137,6 +141,18 @@
      v.temp = 1;
      return v;
  }
+
+/**
+ * Makes a double value.
+ */
+Value make_double(double d)
+{
+    Value v;
+    v.type = VAL_DOUBLE;
+    v.double_val = d;
+    v.temp = 1;
+    return v;
+}
  
  /*
   * Raises an error with the given message.
@@ -330,15 +346,21 @@
          if (isdigit(*p))
          {
              const char *start = p;
-             while (isdigit(*p))
+             int hasDot = 0;
+             while (isdigit(*p) || (*p == '.' && !hasDot))
              {
+                 if (*p == '.')
+                     hasDot = 1;
                  p++;
              }
              int len = p - start;
              char *num_str = malloc(len + 1);
              strncpy(num_str, start, len);
              num_str[len] = '\0';
-             add_token(list, TOKEN_INT, num_str);
+             if (hasDot)
+                 add_token(list, TOKEN_DOUBLE, num_str);
+             else
+                 add_token(list, TOKEN_INT, num_str);
              free(num_str);
              continue;
          }
@@ -627,6 +649,10 @@
              else if (val.type == VAL_STRING) {
                  valStr = val.str_val;
              }
+             else if (val.type == VAL_DOUBLE) {
+                 sprintf(temp, "%f", val.double_val);
+                 valStr = temp;
+             }
              else {
                  valStr = "null";
              }
@@ -689,6 +715,12 @@
          int num = atoi(tok->text);
          advance(p);
          return make_int(num);
+     }
+     else if (tok->type == TOKEN_DOUBLE)
+     {
+         double num = atof(tok->text);
+         advance(p);
+         return make_double(num);
      }
  
      if (tok->type == TOKEN_STRING)
@@ -959,28 +991,34 @@
          Value right = parse_primary(p);
          if (strcmp(op, "*") == 0)
          {
-             if (left.type != VAL_INT || right.type != VAL_INT)
+             if (left.type == VAL_DOUBLE || right.type == VAL_DOUBLE)
              {
-                 raise_error("Runtime error: '*' supports only ints.\n");
-                 return return_value;
+                 double l = (left.type == VAL_DOUBLE) ? left.double_val : left.int_val;
+                 double r = (right.type == VAL_DOUBLE) ? right.double_val : right.int_val;
+                 left = make_double(l * r);
              }
-             int res = left.int_val * right.int_val;
-             left = make_int(res);
+             else
+             {
+                 left = make_int(left.int_val * right.int_val);
+             }
          }
          else if (strcmp(op, "/") == 0)
          {
-             if (left.type != VAL_INT || right.type != VAL_INT)
-             {
-                 raise_error("Runtime error: '/' supports only ints.\n");
-                 return return_value;
-             }
-             if (right.int_val == 0)
+             double r = (right.type == VAL_DOUBLE) ? right.double_val : right.int_val;
+             if (r == 0.0)
              {
                  raise_error("Runtime error: Division by zero.\n");
                  return return_value;
              }
-             int res = left.int_val / right.int_val;
-             left = make_int(res);
+             if (left.type == VAL_DOUBLE || right.type == VAL_DOUBLE)
+             {
+                 double l = (left.type == VAL_DOUBLE) ? left.double_val : left.int_val;
+                 left = make_double(l / r);
+             }
+             else
+             {
+                 left = make_int(left.int_val / (int)r);
+             }
          }
          /* (Integers do not need freeing.) */
      }
@@ -1004,31 +1042,39 @@
          {
              if (left.type == VAL_STRING || right.type == VAL_STRING)
              {
-                 /* String concatenation (convert ints to strings if needed) */
                  char *s1, *s2;
- 
+                 char buffer1[64], buffer2[64];
+
                  if (left.type == VAL_STRING)
                  {
                      s1 = left.str_val;
                  }
-                 else
+                 else if (left.type == VAL_INT)
                  {
-                     char buffer1[64];
                      sprintf(buffer1, "%d", left.int_val);
                      s1 = buffer1;
                  }
- 
+                 else if (left.type == VAL_DOUBLE)
+                 {
+                     sprintf(buffer1, "%f", left.double_val);
+                     s1 = buffer1;
+                 }
+                 // Process right value
                  if (right.type == VAL_STRING)
                  {
                      s2 = right.str_val;
                  }
-                 else
+                 else if (right.type == VAL_INT)
                  {
-                     char buffer2[64];
                      sprintf(buffer2, "%d", right.int_val);
                      s2 = buffer2;
                  }
- 
+                 else if (right.type == VAL_DOUBLE)
+                 {
+                     sprintf(buffer2, "%f", right.double_val);
+                     s2 = buffer2;
+                 }
+                 
                  char *concat = malloc(strlen(s1) + strlen(s2) + 1);
                  strcpy(concat, s1);
                  strcat(concat, s2);
@@ -1040,6 +1086,12 @@
                  }
                  left = temp;
              }
+             else if (left.type == VAL_DOUBLE || right.type == VAL_DOUBLE)
+             {
+                 double l = (left.type == VAL_DOUBLE) ? left.double_val : left.int_val;
+                 double r = (right.type == VAL_DOUBLE) ? right.double_val : right.int_val;
+                 left = make_double(l + r);
+             }
              else
              {
                  left = make_int(left.int_val + right.int_val);
@@ -1047,12 +1099,16 @@
          }
          else if (strcmp(op, "-") == 0)
          {
-             if (left.type != VAL_INT || right.type != VAL_INT)
+             if (left.type == VAL_DOUBLE || right.type == VAL_DOUBLE)
              {
-                 raise_error("Runtime error: '-' supports only ints.\n");
-                 return return_value;
+                 double l = (left.type == VAL_DOUBLE) ? left.double_val : left.int_val;
+                 double r = (right.type == VAL_DOUBLE) ? right.double_val : right.int_val;
+                 left = make_double(l - r);
              }
-             left = make_int(left.int_val - right.int_val);
+             else
+             {
+                 left = make_int(left.int_val - right.int_val);
+             }
          }
  
          if (right.type == VAL_STRING && right.temp)
@@ -1073,6 +1129,11 @@
          return 0;
      }
  
+     if (a.type == VAL_DOUBLE && b.type == VAL_DOUBLE)
+     {
+         return fabs(a.double_val - b.double_val) < 1e-9;
+     }
+
      if (a.type == VAL_INT)
      {
          return a.int_val == b.int_val;
@@ -1187,6 +1248,12 @@
                  {
                      free_value(right);
                  }
+             }
+             else if (currentVal.type == VAL_DOUBLE || right.type == VAL_DOUBLE)
+             {
+                 double l = (currentVal.type == VAL_DOUBLE) ? currentVal.double_val : currentVal.int_val;
+                 double r = (right.type == VAL_DOUBLE) ? right.double_val : right.int_val;
+                 newVal = make_double(l + r);
              }
              else
              {

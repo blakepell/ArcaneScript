@@ -158,4 +158,24 @@ z = abs(z);
 
 println("The absolute value of -15 is ${z}");
 
+dbl = 0.5;
+dbl = dbl + 0.25;
+
+// Doesn't work
+println("Double + " + dbl);
+
+// Works
+println("Double = ${dbl}");
+
+dbl = round_up(dbl);
+println("${dbl} should be 1");
+
+dbl = 0.75;
+dbl = round_down(dbl);
+println("${dbl} (should be 0)");
+
+dbl = 0.75;
+dbl = round(dbl);
+println("${dbl} (should be 1");
+
 return true;

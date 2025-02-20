@@ -16,6 +16,8 @@
  #include <string.h>
  #include <ctype.h>
  #include <stdio.h>
+ #include <math.h>
+ 
  #ifdef _WIN32
     #include <time.h>
     #include <windows.h>
@@ -343,6 +345,10 @@ Value fn_chance(Value *args, int arg_count)
                  printf("%s", arg.str_val);
              }
          }
+         else if (arg.type == VAL_DOUBLE) 
+         {
+            printf("%f", arg.double_val);
+         }
          else if (arg.type == VAL_BOOL)
          {
              printf(arg.int_val ? "true" : "false");
@@ -377,6 +383,10 @@ Value fn_chance(Value *args, int arg_count)
              {
                  printf("%s\n", arg.str_val);
              }
+         }
+         else if (arg.type == VAL_DOUBLE) 
+         {
+            printf("%f", arg.double_val);
          }
          else if (arg.type == VAL_BOOL)
          {
@@ -1277,4 +1287,43 @@ Value fn_clear_screen(Value *args, int arg_count)
     fflush(stdout);
 
     return make_null();
+}
+
+Value fn_round(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DOUBLE)
+    {
+        raise_error("Runtime error: round() expects one double argument.\n");
+        return return_value;
+    }
+
+    double d = args[0].double_val;
+    // round() rounds to the nearest integer.
+    return make_int((int) round(d));
+}
+
+Value fn_round_up(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DOUBLE)
+    {
+        raise_error("Runtime error: roundup() expects one double argument.\n");
+        return return_value;
+    }
+
+    double d = args[0].double_val;
+    // ceil() returns the smallest integer value not less than d.
+    return make_int((int) ceil(d));
+}
+
+Value fn_round_down(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DOUBLE)
+    {
+        raise_error("Runtime error: roundown() expects one double argument.\n");
+        return return_value;
+    }
+
+    double d = args[0].double_val;
+    // floor() returns the largest integer value not greater than d.
+    return make_int((int) floor(d));
 }

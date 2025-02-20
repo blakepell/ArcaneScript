@@ -11,6 +11,9 @@ Arcane supports a limited set of types as defined in the interpreter:
 - **Boolean (VAL_BOOL)**  
   Represents truth values (`true` and `false`). Used in logical expressions and conditions.
 
+- **Double (VAL_DOUBLE)**  
+  Represents a double-precision floating-point.
+
 - **Null (VAL_NULL)**  
   Represents an absence of value. Often used as a default or error indicator.
 
