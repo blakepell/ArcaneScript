@@ -1456,3 +1456,128 @@ Value fn_ends_with(Value *args, int arg_count)
     
     return make_bool(false);
 }
+
+/*
+ * Searchs for the first occurrence of a substring in a string.  Returns -1
+ * if no matches are found.
+ */
+Value fn_index_of(Value *args, int arg_count)
+{
+    if (arg_count != 3)
+    {
+        raise_error("Runtime error: index_of() expects 3 arguments: a string, a substring, and a starting index.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: index_of() expects the first argument to be a string.\n");
+        return return_value;
+    }
+
+    if (args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: index_of() expects the second argument to be a string.\n");
+        return return_value;
+    }
+
+    if (args[2].type != VAL_INT)
+    {
+        raise_error("Runtime error: index_of() expects the third argument to be an int.\n");
+        return return_value;
+    }
+
+    const char *str = args[0].str_val;
+    const char *substr = args[1].str_val;
+    int start = args[2].int_val;
+    size_t str_len = strlen(str);
+
+    if (start < 0 || (size_t)start >= str_len)
+    {
+        return make_int(-1);
+    }
+
+    const char *found = strstr(str + start, substr);
+    if (found)
+    {
+        int index = found - str;
+        return make_int(index);
+    }
+
+    return make_int(-1);
+}
+
+/**
+ * Searchs for the last occurrence of a substring in a string.  Returns -1
+ * if no matches are found.
+ */
+Value fn_last_index_of(Value *args, int arg_count)
+{
+    if (arg_count < 2 || arg_count > 3)
+    {
+        raise_error("Runtime error: last_index_of() expects 2 or 3 arguments: a string, a substring, and an optional starting index.\n");
+        return return_value;
+    }
+    
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: last_index_of() expects the first argument to be a string.\n");
+        return return_value;
+    }
+    
+    if (args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: last_index_of() expects the second argument to be a string.\n");
+        return return_value;
+    }
+    
+    const char *str = args[0].str_val;
+    const char *substr = args[1].str_val;
+    size_t str_len = strlen(str);
+    size_t substr_len = strlen(substr);
+    int start;
+    
+    if (arg_count == 3)
+    {
+        if (args[2].type != VAL_INT)
+        {
+            raise_error("Runtime error: last_index_of() expects the third argument to be an int.\n");
+            return return_value;
+        }
+        start = args[2].int_val;
+    }
+    else
+    {
+        // Default starting index: from the end of the string.
+        start = (int)str_len - 1;
+    }
+    
+    // If start is negative, return -1.
+    if (start < 0)
+    {
+        return make_int(-1);
+    }
+    
+    // Clamp start to the last valid index.
+    if ((size_t)start >= str_len)
+    {
+        start = (int)str_len - 1;
+    }
+    
+    // Search backwards from the start position.
+    for (int i = start; i >= 0; i--)
+    {
+        // Ensure there is enough room for substr to match.
+        if ((size_t)(i + substr_len) > str_len)
+        {
+            continue;
+        }
+        
+        if (strncmp(str + i, substr, substr_len) == 0)
+        {
+            return make_int(i);
+        }
+    }
+    
+    return make_int(-1);
+}

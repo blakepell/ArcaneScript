@@ -29,7 +29,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 38
+ #define MAX_INTEROP_FUNCTIONS 40
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -69,7 +69,9 @@
      {"sqrt", fn_sqrt},
      {"contains", fn_contains},
      {"starts_with", fn_starts_with},
-     {"ends_with", fn_ends_with}
+     {"ends_with", fn_ends_with},
+     {"index_of", fn_index_of},
+     {"last_index_of", fn_last_index_of}
     };
  
  /* ============================================================

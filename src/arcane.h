@@ -211,7 +211,9 @@ typedef unsigned char bool;
  Value fn_contains(Value *args, int arg_count);
  Value fn_starts_with(Value *args, int arg_count);
  Value fn_ends_with(Value *args, int arg_count);
-
+ Value fn_index_of(Value *args, int arg_count);
+ Value fn_last_index_of(Value *args, int arg_count);
+ 
  #ifdef __cplusplus
  }
  #endif

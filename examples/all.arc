@@ -182,7 +182,7 @@ x = 64.0;
 x = sqrt(64.0);
 println("Square root of 64 is ${x}");
 
-buf = "My name is Blake";
+buf = "My name is Blake!!!";
 
 if (contains(buf, "Blake"))
 {
@@ -207,5 +207,12 @@ else
 {
     println("The string did not start with Blake");
 }
+
+//println(index_of(buf, "Blake", 0));
+//println(index_of(buf, "Bill", 0));
+println(buf);
+
+println(last_index_of(buf, "Blake", len(buf)));
+println(last_index_of(buf, "Bill", 0));
 
 return true;
