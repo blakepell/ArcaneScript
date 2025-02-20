@@ -238,5 +238,11 @@ dt = today();
 println("${dt}");
 println(dt);
 
+bday = add_years(bday, 1);
+bday = add_months(bday, 4);
+bday = add_days(bday, -9);
+
+println("New date: ${bday}");
+
 println("END");
 return true;

@@ -228,6 +228,9 @@ typedef struct {
  Value fn_year(Value *args, int arg_count);
  Value fn_cdate(Value *args, int arg_count);
  Value fn_today(Value *args, int arg_count);
+ Value fn_add_days(Value *args, int arg_count);
+ Value fn_add_months(Value *args, int arg_count);
+ Value fn_add_years(Value *args, int arg_count);
  
  #ifdef __cplusplus
  }

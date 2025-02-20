@@ -1729,3 +1729,127 @@ Value fn_today(Value *args, int arg_count)
     Date date = { local->tm_mon + 1, local->tm_mday, local->tm_year + 1900 };
     return make_date(date);
 }
+
+/**
+ * Adds a given number of days to a date.
+ */
+Value fn_add_days(Value *args, int arg_count)
+{
+    if (arg_count != 2 || args[0].type != VAL_DATE || args[1].type != VAL_INT)
+    {
+        raise_error("add_days() expects a date and an integer.\n");
+        return make_null();
+    }
+
+    Date old = args[0].date_val;
+    int days = args[1].int_val;
+
+    struct tm tm_date = {0};
+    tm_date.tm_year = old.year - 1900;
+    tm_date.tm_mon  = old.month - 1;
+    tm_date.tm_mday = old.day;
+    tm_date.tm_isdst = -1;
+
+    time_t t = mktime(&tm_date);
+    if (t == -1)
+    {
+        raise_error("add_days() failed to convert date.\n");
+        return make_null();
+    }
+
+    t += days * 86400; // 86400 seconds in a day
+    struct tm *new_tm = localtime(&t);
+    if (!new_tm)
+    {
+        raise_error("add_days() failed to compute new date.\n");
+        return make_null();
+    }
+
+    Date result = { new_tm->tm_mon + 1, new_tm->tm_mday, new_tm->tm_year + 1900 };
+    return make_date(result);
+}
+
+/**
+ * Adds a given number of months to a date.
+ */
+Value fn_add_months(Value *args, int arg_count)
+{
+    if (arg_count != 2 || args[0].type != VAL_DATE || args[1].type != VAL_INT)
+    {
+        raise_error("add_months() expects a date and an integer.\n");
+        return make_null();
+    }
+
+    Date old = args[0].date_val;
+    int months_to_add = args[1].int_val;
+    int new_month = old.month + months_to_add;
+    int new_year = old.year;
+
+    // Normalize month and adjust year accordingly.
+    while (new_month > 12)
+    {
+        new_month -= 12;
+        new_year++;
+    }
+    while (new_month < 1)
+    {
+        new_month += 12;
+        new_year--;
+    }
+
+    int new_day = old.day;
+    int days_in_month;
+    switch(new_month)
+    {
+        case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+            days_in_month = 31; break;
+        case 4: case 6: case 9: case 11:
+            days_in_month = 30; break;
+        case 2:
+            // Leap year check.
+            if ((new_year % 4 == 0 && new_year % 100 != 0) || (new_year % 400 == 0))
+                days_in_month = 29;
+            else
+                days_in_month = 28;
+            break;
+        default:
+            days_in_month = 31; break;
+    }
+    if (new_day > days_in_month)
+    {
+        new_day = days_in_month;
+    }
+
+    Date result = { new_month, new_day, new_year };
+    return make_date(result);
+}
+
+/**
+ * Adds a given number of years to a date.
+ */
+Value fn_add_years(Value *args, int arg_count)
+{
+    if (arg_count != 2 || args[0].type != VAL_DATE || args[1].type != VAL_INT)
+    {
+        raise_error("add_years() expects a date and an integer.\n");
+        return make_null();
+    }
+
+    Date old = args[0].date_val;
+    int years_to_add = args[1].int_val;
+    int new_year = old.year + years_to_add;
+    int new_month = old.month;
+    int new_day = old.day;
+
+    // Adjust February 29th if new year is not a leap year.
+    if (new_month == 2 && new_day == 29)
+    {
+        if (!((new_year % 4 == 0 && new_year % 100 != 0) || (new_year % 400 == 0)))
+        {
+            new_day = 28;
+        }
+    }
+
+    Date result = { new_month, new_day, new_year };
+    return make_date(result);
+}
