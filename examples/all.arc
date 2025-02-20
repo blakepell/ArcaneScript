@@ -182,4 +182,30 @@ x = 64.0;
 x = sqrt(64.0);
 println("Square root of 64 is ${x}");
 
+buf = "My name is Blake";
+
+if (contains(buf, "Blake"))
+{
+    println("String contained Blake");
+}
+
+if (!contains(buf, "Hrmph"))
+{
+    println("String didn't contain Hrmph!");
+}
+
+if (ends_with(buf, "Blake"))
+{
+    println("The string ended with Blake");
+}
+
+if (starts_with(buf, "Blake"))
+{
+    println("The string ended with Blake");
+}
+else
+{
+    println("The string did not start with Blake");
+}
+
 return true;

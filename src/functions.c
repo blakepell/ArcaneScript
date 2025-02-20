@@ -809,7 +809,7 @@ Value fn_replace(Value *args, int arg_count)
      // There must be at least one digit.
      if (!isdigit((unsigned char) *s))
      {
-         return make_bool(0);
+         return make_bool(false);
      }
  
      // Check the remainder of the string.
@@ -817,12 +817,12 @@ Value fn_replace(Value *args, int arg_count)
      {
          if (!isdigit((unsigned char) *s))
          {
-             return make_bool(0);
+             return make_bool(false);
          }
          s++;
      }
  
-     return make_bool(1);
+     return make_bool(true);
  }
  
  /**
@@ -943,12 +943,12 @@ Value fn_replace(Value *args, int arg_count)
          if (strcmp(lower, "true") == 0)
          {
              free(lower);
-             return make_bool(1);
+             return make_bool(true);
          }
          else if (strcmp(lower, "false") == 0)
          {
              free(lower);
-             return make_bool(0);
+             return make_bool(false);
          }
          else
          {
@@ -977,11 +977,11 @@ Value fn_replace(Value *args, int arg_count)
  
      if (args[0].type != VAL_INT || args[1].type != VAL_INT)
      {
-         return make_bool(0);
+         return make_bool(false);
      }
  
      if (args[1].int_val == 0) {
-         return make_bool(0);
+         return make_bool(false);
      }
  
      return make_bool((args[0].int_val % args[1].int_val) == 0);
@@ -1347,4 +1347,112 @@ Value fn_sqrt(Value *args, int arg_count)
     }
 
     return make_double(sqrt(d));
+}
+
+/**
+ * If one string is contained within another.
+ */
+Value fn_contains(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        raise_error("Runtime error: contains() expects exactly 2 arguments.\n");
+        return return_value;
+    }
+
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: contains() expects the first argument to be a string.\n");
+        return return_value;
+    }
+
+    if (args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: contains() expects the second argument to be a string.\n");
+        return return_value;
+    }
+
+    // Use strstr to check if the second string is found within the first.
+    if (strstr(args[0].str_val, args[1].str_val))
+    {
+        return make_bool(true);
+    }
+
+    return make_bool(false);
+}
+
+/**
+ * Returns true if the first string starts with the second string.
+ */
+Value fn_starts_with(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        raise_error("Runtime error: starts_with() expects exactly 2 arguments.\n");
+        return return_value;
+    }
+    
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: starts_with() expects the first argument to be a string.\n");
+        return return_value;
+    }
+    
+    if (args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: starts_with() expects the second argument to be a string.\n");
+        return return_value;
+    }
+    
+    const char *str = args[0].str_val;
+    const char *prefix = args[1].str_val;
+    size_t prefix_len = strlen(prefix);
+    
+    if (strncmp(str, prefix, prefix_len) == 0)
+    {
+        return make_bool(true);
+    }
+    
+    return make_bool(false);
+}
+
+/**
+ * Returns true if the first string ends with the second string.
+ */
+Value fn_ends_with(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        raise_error("Runtime error: ends_with() expects exactly 2 arguments.\n");
+        return return_value;
+    }
+    
+    if (args[0].type != VAL_STRING)
+    {
+        raise_error("Runtime error: ends_with() expects the first argument to be a string.\n");
+        return return_value;
+    }
+    
+    if (args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: ends_with() expects the second argument to be a string.\n");
+        return return_value;
+    }
+    
+    const char *str = args[0].str_val;
+    const char *suffix = args[1].str_val;
+    size_t str_len = strlen(str);
+    size_t suffix_len = strlen(suffix);
+    
+    if (suffix_len > str_len)
+    {
+        return make_bool(false);
+    }
+    
+    if (strcmp(str + (str_len - suffix_len), suffix) == 0)
+    {
+        return make_bool(true);
+    }
+    
+    return make_bool(false);
 }

@@ -208,6 +208,9 @@ typedef unsigned char bool;
  Value fn_round_up(Value *args, int arg_count);
  Value fn_round_down(Value *args, int arg_count);
  Value fn_sqrt(Value *args, int arg_count);
+ Value fn_contains(Value *args, int arg_count);
+ Value fn_starts_with(Value *args, int arg_count);
+ Value fn_ends_with(Value *args, int arg_count);
 
  #ifdef __cplusplus
  }
