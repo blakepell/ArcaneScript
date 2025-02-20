@@ -29,7 +29,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 41
+ #define MAX_INTEROP_FUNCTIONS 45
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -72,7 +72,11 @@
      {"starts_with", fn_starts_with},
      {"ends_with", fn_ends_with},
      {"index_of", fn_index_of},
-     {"last_index_of", fn_last_index_of}
+     {"last_index_of", fn_last_index_of},
+     {"month", fn_month},
+     {"day", fn_day},
+     {"year", fn_year},
+     {"cdate", fn_cdate}
     };
  
  /* ============================================================
@@ -160,7 +164,19 @@ Value make_double(double d)
     v.temp = 1;
     return v;
 }
- 
+
+/**
+ * Makes a date value.
+ */
+Value make_date(Date d)
+{
+    Value v;
+    v.type = VAL_DATE;
+    v.date_val = d;
+    v.temp = 1;
+    return v;
+}
+
  /*
   * Raises an error with the given message.
   */
@@ -660,6 +676,11 @@ Value make_double(double d)
                  sprintf(temp, "%f", val.double_val);
                  valStr = temp;
              }
+             else if (val.type == VAL_DATE) {
+                // Format date, you can choose preferred format.
+                sprintf(temp, "%02d/%02d/%04d", val.date_val.month, val.date_val.day, val.date_val.year);
+                valStr = temp;
+            }             
              else {
                  valStr = "null";
              }
@@ -936,6 +957,23 @@ Value make_double(double d)
      return left;
  }
  
+ /**
+  * Compares two date values.
+  */
+ int compare_dates(Value a, Value b) {
+    if (a.date_val.year != b.date_val.year)
+    {
+        return a.date_val.year - b.date_val.year;
+    }
+
+    if (a.date_val.month != b.date_val.month)
+    {
+        return a.date_val.month - b.date_val.month;
+    }
+
+    return a.date_val.day - b.date_val.day;
+}
+
  /*
   * Parse relational: Calls into parse_term and handles relational operators.
   */
@@ -943,7 +981,7 @@ Value make_double(double d)
  {
      Value left = parse_term(p);
      while (current(p)->type == TOKEN_OPERATOR &&
-         (strcmp(current(p)->text, ">") == 0 ||
+            (strcmp(current(p)->text, ">") == 0 ||
              strcmp(current(p)->text, "<") == 0 ||
              strcmp(current(p)->text, ">=") == 0 ||
              strcmp(current(p)->text, "<=") == 0))
@@ -952,28 +990,48 @@ Value make_double(double d)
          strcpy(op, current(p)->text);
          advance(p);
          Value right = parse_term(p);
-         if (left.type != VAL_INT || right.type != VAL_INT)
+ 
+         int result = 0;
+         if (left.type == VAL_INT && right.type == VAL_INT)
          {
-             raise_error("Runtime error: Relational operators only support ints.\n");
+             if (strcmp(op, ">") == 0)
+                 result = (left.int_val > right.int_val);
+             else if (strcmp(op, "<") == 0)
+                 result = (left.int_val < right.int_val);
+             else if (strcmp(op, ">=") == 0)
+                 result = (left.int_val >= right.int_val);
+             else if (strcmp(op, "<=") == 0)
+                 result = (left.int_val <= right.int_val);
+         }
+         else if (left.type == VAL_DOUBLE && right.type == VAL_DOUBLE)         
+         {
+            if (strcmp(op, ">") == 0)
+                result = (left.double_val > right.double_val);
+            else if (strcmp(op, "<") == 0)
+                result = (left.double_val < right.double_val);
+            else if (strcmp(op, ">=") == 0)
+                result = (left.double_val >= right.double_val);
+            else if (strcmp(op, "<=") == 0)
+                result = (left.double_val <= right.double_val);
+         }
+         else if (left.type == VAL_DATE && right.type == VAL_DATE)
+         {
+             int cmp = compare_dates(left, right);
+             if (strcmp(op, ">") == 0)
+                 result = (cmp > 0);
+             else if (strcmp(op, "<") == 0)
+                 result = (cmp < 0);
+             else if (strcmp(op, ">=") == 0)
+                 result = (cmp >= 0);
+             else if (strcmp(op, "<=") == 0)
+                 result = (cmp <= 0);
+         }
+         else
+         {
+             raise_error("Runtime error: Relational operators only support ints or dates.\n");
              return return_value;
          }
-         int result = 0;
-         if (strcmp(op, ">") == 0)
-         {
-             result = (left.int_val > right.int_val);
-         }
-         else if (strcmp(op, "<") == 0)
-         {
-             result = (left.int_val < right.int_val);
-         }
-         else if (strcmp(op, ">=") == 0)
-         {
-             result = (left.int_val >= right.int_val);
-         }
-         else if (strcmp(op, "<=") == 0)
-         {
-             result = (left.int_val <= right.int_val);
-         }
+ 
          left = make_int(result);
          if (right.type == VAL_STRING && right.temp)
          {
@@ -1135,27 +1193,34 @@ Value make_double(double d)
      {
          return 0;
      }
- 
-     if (a.type == VAL_DOUBLE && b.type == VAL_DOUBLE)
-     {
-         return fabs(a.double_val - b.double_val) < 1e-9;
-     }
 
      if (a.type == VAL_INT)
      {
          return a.int_val == b.int_val;
+     }
+
+     if (a.type == VAL_STRING)
+     {
+         return strcmp(a.str_val, b.str_val) == 0;
+     }
+
+     if (a.type == VAL_DOUBLE && b.type == VAL_DOUBLE)
+     {
+         return fabs(a.double_val - b.double_val) < 1e-9;
      }
  
      if (a.type == VAL_BOOL)
      {
          return a.int_val == b.int_val;
      }
- 
-     if (a.type == VAL_STRING)
+  
+     if (a.type == VAL_DATE)
      {
-         return strcmp(a.str_val, b.str_val) == 0;
+         return a.date_val.day == b.date_val.day &&
+                a.date_val.month == b.date_val.month &&
+                a.date_val.year == b.date_val.year;
      }
- 
+
      return 0;
  }
  

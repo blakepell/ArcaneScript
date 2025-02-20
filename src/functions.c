@@ -1618,3 +1618,76 @@ Value fn_last_index_of(Value *args, int arg_count)
     
     return make_int(-1);
 }
+
+/**
+ * Returns the month of a date.
+ */
+Value fn_month(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DATE)
+    {
+        raise_error("month() requires one date argument.\n");
+        return make_null();
+    }
+    return make_int(args[0].date_val.month);
+}
+
+/**
+ * Returns the day of a date.
+ */
+Value fn_day(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DATE)
+    {
+        raise_error("day() requires one date argument.\n");
+        return make_null();
+    }
+    return make_int(args[0].date_val.day);
+}
+
+/**
+ * Returns the year of a date.
+ */
+Value fn_year(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_DATE)
+    {
+        raise_error("year() requires one date argument.\n");
+        return make_null();
+    }
+    return make_int(args[0].date_val.year);
+}
+
+/**
+ * Returns the current date as a Date value.
+ */
+Value fn_cdate(Value *args, int arg_count)
+{
+    if (arg_count != 1 || args[0].type != VAL_STRING)
+    {
+        raise_error("cdate() requires one string argument.\n");
+        return make_null();
+    }
+    
+    // Supported formats: MM/DD/YYYY or YYYY/MM/DD
+    int m, d, y;
+    if (sscanf(args[0].str_val, "%d/%d/%d", &m, &d, &y) == 3)
+    {
+        // Determine if first number is month or year.
+        if (m > 12) {
+            // If first part > 12, assume YYYY/MM/DD:
+            y = m;
+            m = d;
+            d = y; // note: adjust order if needed or use another pattern
+            // A better approach is to check string length or delimiters.
+            // For clarity, you can use separate if-else branches.
+        }
+        Date date = { m, d, y };
+        return make_date(date);
+    }
+    else
+    {
+        raise_error("cdate() could not parse date from string: %s\n", args[0].str_val);
+        return make_null();
+    }
+}

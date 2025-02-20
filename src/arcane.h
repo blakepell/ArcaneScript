@@ -16,7 +16,7 @@
  #endif
 
 /* ============================================================
-    Bool type
+    Base Data Types
    ============================================================ */
 
 typedef unsigned char bool;
@@ -36,6 +36,12 @@ typedef unsigned char bool;
 #if !defined(true)
     #define true 1
 #endif
+
+typedef struct {
+    int month;
+    int day;
+    int year;
+} Date;
 
  /* ============================================================
      Helper Macros and Constants
@@ -60,6 +66,7 @@ typedef unsigned char bool;
      VAL_STRING,
      VAL_BOOL,
      VAL_DOUBLE,
+     VAL_DATE,
      VAL_NULL,
      VAL_ERROR
  } ValueType;
@@ -73,6 +80,7 @@ typedef unsigned char bool;
          int int_val;
          double double_val;
          char *str_val;
+         Date date_val;
      };
  } Value;
  
@@ -168,6 +176,7 @@ typedef unsigned char bool;
  Value make_null();
  Value make_bool(int b);
  Value make_double(double d);
+ Value make_date(Date d);
  Value make_error(const char *s);
  int get_time(struct timeval *tp, void *tzp);
  const char *_list_getarg(const char *argument, char *arg, int length);
@@ -214,7 +223,11 @@ typedef unsigned char bool;
  Value fn_ends_with(Value *args, int arg_count);
  Value fn_index_of(Value *args, int arg_count);
  Value fn_last_index_of(Value *args, int arg_count);
- 
+ Value fn_month(Value *args, int arg_count);
+ Value fn_day(Value *args, int arg_count);
+ Value fn_year(Value *args, int arg_count);
+ Value fn_cdate(Value *args, int arg_count);
+
  #ifdef __cplusplus
  }
  #endif

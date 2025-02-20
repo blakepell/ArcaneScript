@@ -221,4 +221,17 @@ d = round_down(d);
 
 println(d);
 
+bday = cdate("01/27/1977");
+m = month(bday);
+y = year(bday);
+
+println("${m}/${y}");
+
+d = cdate("1/1/1980");
+
+if (bday < d) 
+{
+    println("You're old!");
+}
+
 return true;
