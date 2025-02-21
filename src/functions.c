@@ -2157,9 +2157,22 @@ Value fn_array_set(Value *args, int arg_count)
     }
     /* Free the previous value at that index if necessary */
     free_value(arr->items[idx]);
-    /* Store the new value */
-    arr->items[idx] = args[2];
-    /* Mark the new value as owned by the array (non-temporary) */
-    arr->items[idx].temp = 0;
+
+    Value newVal;
+    if (args[2].type == VAL_STRING)
+    {
+        /* Create a new string so that the array element owns its memory */
+        newVal = make_string(args[2].str_val);
+        newVal.temp = 0;  // Mark it as owned by the array.
+    }
+    else
+    {
+        /* For other types, a shallow copy is sufficient */
+        newVal = args[2];
+        newVal.temp = 0;
+    }
+    
+    arr->items[idx] = newVal;
     return make_null();
 }
+

@@ -273,7 +273,7 @@ for (i = 0; i <= ub; i = i + 1) {
     println(arr[i]);
 }
 
-arr = new_array(10);
+arr = new_array(3);
 
 // Set the element at index 0 using array_set
 array_set(arr, 0, "first element");
@@ -283,5 +283,14 @@ array_set(arr, 1, "second element");
 println(arr[0]);
 println(arr[1]);
 
+array_set(arr, 2, new_array(2));
+array_set(arr[2], 0, "this is a");
+array_set(arr[2], 1, "test");
+
+print(arr[2][0]);
+print(" ");
+print(arr[2][1]);
+
+println(" ");
 println("END");
 return true;
