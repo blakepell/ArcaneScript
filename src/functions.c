@@ -2008,3 +2008,158 @@ Value fn_asc(Value *args, int arg_count)
     char *str = args[0].str_val;
     return make_int((int) str[0]);
 }
+
+Value fn_upperbound(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: upperbound() expects one argument (an array).\n");
+        return return_value;
+    }
+    if (args[0].type != VAL_ARRAY)
+    {
+        raise_error("Runtime error: upperbound() expects an array.\n");
+        return return_value;
+    }
+    Array *arr = args[0].array_val;
+    return make_int(arr->length - 1);
+}
+
+Value fn_split(Value *args, int arg_count)
+{
+    if (arg_count != 2)
+    {
+        raise_error("Runtime error: split() expects two arguments: a string and a delimiter.\n");
+        return return_value;
+    }
+    if (args[0].type != VAL_STRING || args[1].type != VAL_STRING)
+    {
+        raise_error("Runtime error: split() expects both arguments to be strings.\n");
+        return return_value;
+    }
+    char *str = args[0].str_val;
+    char *delim = args[1].str_val;
+    
+    // First, count the number of tokens
+    int count = 0;
+    char *copy = strdup(str);
+    char *token = strtok(copy, delim);
+    while (token != NULL)
+    {
+        count++;
+        token = strtok(NULL, delim);
+    }
+    free(copy);
+    
+    // Allocate an array of Value items
+    Value *items = malloc(sizeof(Value) * count);
+    if (!items)
+    {
+        raise_error("Runtime error: Memory allocation failed in split().\n");
+        return return_value;
+    }
+    int index = 0;
+    copy = strdup(str);
+    token = strtok(copy, delim);
+    while (token != NULL)
+    {
+        items[index++] = make_string(token);
+        token = strtok(NULL, delim);
+    }
+    free(copy);
+    
+    // Create and populate the Array structure
+    Array *arr = malloc(sizeof(Array));
+    if (!arr)
+    {
+        free(items);
+        raise_error("Runtime error: Memory allocation failed in split().\n");
+        return return_value;
+    }
+    arr->items = items;
+    arr->length = count;
+    
+    Value ret;
+    ret.type = VAL_ARRAY;
+    ret.array_val = arr;
+    ret.temp = 1;
+    return ret;
+}
+
+Value fn_new_array(Value *args, int arg_count)
+{
+    if (arg_count != 1)
+    {
+        raise_error("Runtime error: new_array() expects one argument (the size).\n");
+        return return_value;
+    }
+    if (args[0].type != VAL_INT)
+    {
+        raise_error("Runtime error: new_array() expects an integer.\n");
+        return return_value;
+    }
+    int size = args[0].int_val;
+    if (size < 0)
+    {
+        raise_error("Runtime error: new_array() expects a non-negative integer.\n");
+        return return_value;
+    }
+    Value *items = malloc(sizeof(Value) * size);
+    if (!items)
+    {
+        raise_error("Runtime error: Memory allocation failed in new_array().\n");
+        return return_value;
+    }
+    for (int i = 0; i < size; i++)
+    {
+        items[i] = make_null(); // Initialize each element to null
+    }
+    Array *arr = malloc(sizeof(Array));
+    if (!arr)
+    {
+        free(items);
+        raise_error("Runtime error: Memory allocation failed in new_array().\n");
+        return return_value;
+    }
+    arr->items = items;
+    arr->length = size;
+    
+    Value ret;
+    ret.type = VAL_ARRAY;
+    ret.array_val = arr;
+    ret.temp = 1;
+    return ret;
+}
+
+Value fn_array_set(Value *args, int arg_count)
+{
+    if (arg_count != 3)
+    {
+        raise_error("Runtime error: array_set() expects three arguments: an array, an index, and a value.\n");
+        return return_value;
+    }
+    if (args[0].type != VAL_ARRAY)
+    {
+        raise_error("Runtime error: First argument to array_set() must be an array.\n");
+        return return_value;
+    }
+    if (args[1].type != VAL_INT)
+    {
+        raise_error("Runtime error: Second argument to array_set() must be an integer index.\n");
+        return return_value;
+    }
+    Array *arr = args[0].array_val;
+    int idx = args[1].int_val;
+    if (idx < 0 || idx >= arr->length)
+    {
+        raise_error("Runtime error: Array index out of bounds.\n");
+        return return_value;
+    }
+    /* Free the previous value at that index if necessary */
+    free_value(arr->items[idx]);
+    /* Store the new value */
+    arr->items[idx] = args[2];
+    /* Mark the new value as owned by the array (non-temporary) */
+    arr->items[idx].temp = 0;
+    return make_null();
+}

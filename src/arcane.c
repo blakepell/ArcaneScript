@@ -29,7 +29,7 @@
      Interop Functions
     ============================================================ */
  
- #define MAX_INTEROP_FUNCTIONS 54
+ #define MAX_INTEROP_FUNCTIONS 58
  
  static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
      {"print", fn_print},
@@ -85,8 +85,12 @@
      {"terminal_width", fn_terminal_width},
      {"terminal_height", fn_terminal_height},
      {"chr", fn_chr},
-     {"asc", fn_asc}
-    };
+     {"asc", fn_asc},
+     {"upperbound", fn_upperbound},
+     {"split", fn_split},
+     {"new_array", fn_new_array},
+     {"array_set", fn_array_set}
+  };
  
  /* ============================================================
      Global Variables
@@ -220,6 +224,16 @@ Value make_date(Date d)
          free(v.str_val);
          v.str_val = NULL;
      }
+     else if (v.type == VAL_ARRAY && v.array_val)
+     {
+         Array *arr = v.array_val;
+         for (int i = 0; i < arr->length; i++)
+         {
+             free_value(arr->items[i]);
+         }
+         free(arr->items);
+         free(arr);
+     }     
  }
  
  /* ============================================================
@@ -421,6 +435,17 @@ Value make_date(Date d)
              continue;
          }
  
+         if (*p == '[') {
+            add_token(list, TOKEN_LBRACKET, "[");
+            p++;
+            continue;
+        }
+        if (*p == ']') {
+            add_token(list, TOKEN_RBRACKET, "]");
+            p++;
+            continue;
+        }
+
          // Check for identifiers or keywords
          if (isalpha(*p) || *p == '_')
          {
@@ -730,8 +755,8 @@ Value make_date(Date d)
  Value parse_primary(Parser *p)
  {
      Token *tok = current(p);
-
-     // Handle unary minus for negative integers
+ 
+     // Handle unary minus for negative numbers.
      if (tok->type == TOKEN_OPERATOR && strcmp(tok->text, "-") == 0)
      {
          advance(p); // consume '-'
@@ -746,13 +771,15 @@ Value make_date(Date d)
          }
          return v;
      }
-
+ 
+     // Handle integer literals.
      if (tok->type == TOKEN_INT)
      {
          int num = atoi(tok->text);
          advance(p);
          return make_int(num);
      }
+     // Handle double literals.
      else if (tok->type == TOKEN_DOUBLE)
      {
          double num = atof(tok->text);
@@ -760,10 +787,11 @@ Value make_date(Date d)
          return make_double(num);
      }
  
+     // Handle string literals.
      if (tok->type == TOKEN_STRING)
      {
          char *processed;
-         // Check if the string literal contains a template pattern.
+         // Process template patterns if present.
          if (strstr(tok->text, "${") != NULL)
          {
              processed = evaluate_template(tok->text);
@@ -778,22 +806,23 @@ Value make_date(Date d)
          return v;
      }
  
+     // Handle boolean literals.
      if (tok->type == TOKEN_BOOL)
      {
-         // Create a boolean value based on the literal text.
          int b = (strcmp(tok->text, "true") == 0) ? 1 : 0;
          Value v = make_bool(b);
          advance(p);
          return v;
      }
  
+     // Handle identifiers (variables and function calls).
      if (tok->type == TOKEN_IDENTIFIER)
      {
          char *id = _strdup(tok->text);
          advance(p);
          if (current(p)->type == TOKEN_LPAREN)
          {
-             /* Function call */
+             // Function call.
              advance(p); // consume '('
              Value args[16];
              int arg_count = 0;
@@ -813,10 +842,8 @@ Value make_date(Date d)
                      }
                  }
              }
- 
              expect(p, TOKEN_RPAREN, "Expected ')' after function arguments");
              Value ret = call_function(id, args, arg_count);
-             /* Free temporary argument values */
              for (int i = 0; i < arg_count; i++)
              {
                  if (args[i].type == VAL_STRING && args[i].temp)
@@ -828,9 +855,10 @@ Value make_date(Date d)
              return ret;
          }
  
+         // Handle postfix increment/decrement operators.
          if (current(p)->type == TOKEN_OPERATOR &&
              (strcmp(current(p)->text, "++") == 0 ||
-                 strcmp(current(p)->text, "--") == 0))
+              strcmp(current(p)->text, "--") == 0))
          {
              char op[3];
              strcpy(op, current(p)->text);
@@ -839,6 +867,7 @@ Value make_date(Date d)
              if (orig.type != VAL_INT)
              {
                  raise_error("Runtime error: %s operator only valid for ints.\n", op);
+                 free(id);
                  return return_value;
              }
              int oldVal = orig.int_val;
@@ -852,13 +881,50 @@ Value make_date(Date d)
              }
              set_variable(id, orig);
              free(id);
-             return make_int(oldVal); // Postfix returns original value.        
+             return make_int(oldVal); // Postfix returns original value.
          }
-         /* Variable reference */
+ 
+         // Variable reference.
          Value v = get_variable(id);
          free(id);
+ 
+         // --- Array Indexing Support ---
+         // Allow multiple indexers, e.g., arr[0] or arr[0][1]
+         while (current(p)->type == TOKEN_LBRACKET)
+         {
+             advance(p);  // consume '['
+             Value index = parse_assignment(p);
+             if (current(p)->type != TOKEN_RBRACKET)
+             {
+                 raise_error("Parser error: Expected ']' after array index");
+                 return return_value;
+             }
+             advance(p);  // consume ']'
+             if (v.type != VAL_ARRAY)
+             {
+                 raise_error("Runtime error: Attempting to index a non-array value.");
+                 return return_value;
+             }
+             if (index.type != VAL_INT)
+             {
+                 raise_error("Runtime error: Array index must be an integer.");
+                 return return_value;
+             }
+             int idx = index.int_val;
+             Array *arr = v.array_val;
+             if (idx < 0 || idx >= arr->length)
+             {
+                 raise_error("Runtime error: Array index out of bounds.");
+                 return return_value;
+             }
+             v = arr->items[idx];
+         }
+         // --- End Array Indexing Support ---
+ 
          return v;
      }
+ 
+     // Handle parenthesized expressions.
      if (tok->type == TOKEN_LPAREN)
      {
          advance(p); // consume '('
@@ -870,7 +936,7 @@ Value make_date(Date d)
      raise_error("Parser error: Unexpected token '%s'\n", tok->text);
      return return_value;
  }
- 
+   
  /*
   * Parse a unary expression.
   */

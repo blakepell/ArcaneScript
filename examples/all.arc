@@ -261,5 +261,27 @@ print(chr(10));
 
 print(asc(" "));
 
+// Split a string and iterate over its parts
+
+s = "apple,banana,cherry";       // The string to split
+arr = split(s, ",");             // Split the string by comma
+
+ub = upperbound(arr);            // Get the last valid index in the array
+
+// Loop from index 0 up to the upper bound and print each element.
+for (i = 0; i <= ub; i = i + 1) {
+    println(arr[i]);
+}
+
+arr = new_array(10);
+
+// Set the element at index 0 using array_set
+array_set(arr, 0, "first element");
+array_set(arr, 1, "second element");
+
+// Retrieve and print the element to verify
+println(arr[0]);
+println(arr[1]);
+
 println("END");
 return true;

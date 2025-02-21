@@ -67,11 +67,20 @@ typedef struct {
      VAL_BOOL,
      VAL_DOUBLE,
      VAL_DATE,
+     VAL_ARRAY,
      VAL_NULL,
      VAL_ERROR
  } ValueType;
- 
- typedef struct
+
+ // Forward reference for dependency.
+ typedef struct Value Value;
+
+ typedef struct Array {
+    Value *items;
+    int length;
+} Array;
+
+ typedef struct Value
  {
      ValueType type;
      int temp; /* 1 = temporary (caller–owned), 0 = stored in the symbol table */
@@ -81,9 +90,11 @@ typedef struct {
          double double_val;
          char *str_val;
          Date date_val;
+         Array *array_val;
      };
  } Value;
  
+
  typedef struct Variable
  {
      char *name;
@@ -117,6 +128,8 @@ typedef struct {
      TOKEN_PRINT,
      TOKEN_CONTINUE,
      TOKEN_BREAK,
+     TOKEN_LBRACKET,
+     TOKEN_RBRACKET, 
      TOKEN_EOF
  } AstTokenType;
  
@@ -236,7 +249,11 @@ typedef struct {
  Value fn_terminal_height(Value *args, int arg_count);
  Value fn_chr(Value *args, int arg_count);
  Value fn_asc(Value *args, int arg_count);
- 
+ Value fn_upperbound(Value *args, int arg_count);
+ Value fn_split(Value *args, int arg_count);
+ Value fn_new_array(Value *args, int arg_count);
+ Value fn_array_set(Value *args, int arg_count);
+
  #ifdef __cplusplus
  }
  #endif
