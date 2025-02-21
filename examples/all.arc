@@ -266,7 +266,7 @@ print(asc(" "));
 s = "apple,banana,cherry";       // The string to split
 arr = split(s, ",");             // Split the string by comma
 
-ub = upperbound(arr);            // Get the last valid index in the array
+ub = ubound(arr);            // Get the last valid index in the array
 
 // Loop from index 0 up to the upper bound and print each element.
 for (i = 0; i <= ub; i = i + 1) {

@@ -86,10 +86,10 @@
      {"terminal_height", fn_terminal_height},
      {"chr", fn_chr},
      {"asc", fn_asc},
-     {"upperbound", fn_upperbound},
+     {"ubound", fn_upperbound},
      {"split", fn_split},
      {"new_array", fn_new_array},
-     {"array_set", fn_array_set}
+     {"array_set", fn_array_set} 
   };
  
  /* ============================================================
