@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Arcane is an embeddable scripting language designed to be integrated into existing C code bases. It is an interpreted language which provides a minimal set of features with the goal of simplicity and ease of integration.
+Arcane is an embeddable interpreted scripting language designed to be integrated into existing C code bases.
 
 ## Table of Contents
 

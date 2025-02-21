@@ -17,6 +17,9 @@ Arcane supports a limited set of types as defined in the interpreter:
 - **Double (VAL_DATE)**  
   Represents a date only format: `YYYY/MM/DD` or `MM/DD/YYYY`
 
+- **Array (VAL_ARRAY)**  
+  Represents an array of `Value` objects.  This means that an array is not type specific as a `Value` holds other primitive data types (including arrays).
+
 - **Null (VAL_NULL)**  
   Represents an absence of value. Often used as a default or error indicator.
 
