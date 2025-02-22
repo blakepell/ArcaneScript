@@ -52,7 +52,7 @@ typedef struct {
  #define MSL MAX_STRING_LENGTH
  #define MAX_TOKENS 2048
  #define HEADER "+------------------------------------------------------------------------------+\n\r"
- #define DEBUG FALSE
+ #define DEBUG TRUE
 
  /* ============================================================
      Values and Variables

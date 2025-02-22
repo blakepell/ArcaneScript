@@ -96,7 +96,7 @@
      Global Variables
     ============================================================ */
  
- static Variable *local_variables = NULL;
+ Variable *local_variables = NULL;
  int return_flag = 0;
  Value return_value;
  static int continue_flag = 0;
@@ -1849,11 +1849,16 @@ Value make_date(Date d)
   */
 Value interpret(const char *src)  // Add a timeout parameter (ms)
 {
-    TokenList tokens;
-    tokens.count = 0;
-    tokenize(src, &tokens);
+    // Use dynamic allocation for the token list per call.
+    TokenList *tokens = malloc(sizeof(TokenList));
+    if (!tokens) {
+        raise_error("Memory allocation error in interpret: tokens.");
+        return make_error("Memory allocation error");
+    }
+    tokens->count = 0;
+    tokenize(src, tokens);
     Parser parser;
-    parser.tokens = &tokens;
+    parser.tokens = tokens;
     parser.pos = 0;
     return_flag = 0;
     return_value = make_null();
@@ -1879,11 +1884,12 @@ Value interpret(const char *src)  // Add a timeout parameter (ms)
         parse_statement(&parser);
     }
 
-    /* Free all tokens */
-    for (int i = 0; i < tokens.count; i++)
+    /* Free all tokens created during tokenization */
+    for (int i = 0; i < tokens->count; i++)
     {
-         free(tokens.tokens[i].text);
+         free(tokens->tokens[i].text);
     }
+    free(tokens);
 
     current_time = clock();
     elapsed_ms = (double)(current_time - start_time) * 1000.0 / CLOCKS_PER_SEC;
@@ -1892,7 +1898,7 @@ Value interpret(const char *src)  // Add a timeout parameter (ms)
     {
         printf("\n%s", HEADER);
         printf("| Script execution time: %.0fms\n", elapsed_ms);
-        printf("| %d/%d tokens used.\n", tokens.count, MAX_TOKENS);
+        printf("| %d/%d tokens used.\n", tokens->count, MAX_TOKENS);
         printf("%s\n", HEADER);    
     }
 
