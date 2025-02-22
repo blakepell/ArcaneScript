@@ -26,73 +26,6 @@
  #endif
  
  /* ============================================================
-     Interop Functions
-    ============================================================ */
- 
- #define MAX_INTEROP_FUNCTIONS 58
- 
- static Function interop_functions[MAX_INTEROP_FUNCTIONS] = {
-     {"print", fn_print},
-     {"println", fn_println},
-     {"typeof", fn_typeof},
-     {"substring", fn_substring},
-     {"left", fn_left},
-     {"right", fn_right},
-     {"sleep", fn_sleep},
-     {"input",  fn_input},
-     {"is_number", fn_is_number},
-     {"len", fn_strlen},
-     {"cint", fn_cint},
-     {"cdbl", fn_cdbl},
-     {"cstr", fn_cstr},     
-     {"cbool", fn_cbool},
-     {"cepoch", fn_cepoch},
-     {"is_interval", fn_is_interval},
-     {"list_contains", fn_list_contains},
-     {"list_add", fn_list_add},
-     {"list_remove", fn_list_remove},
-     {"rnd", fn_number_range},
-     {"chance", fn_chance},
-     {"replace", fn_replace},
-     {"trim", fn_trim },
-     {"trim_start", fn_trim_start },
-     {"trim_end", fn_trim_end },
-     {"lcase", fn_lcase },
-     {"ucase", fn_ucase }, 
-     {"umin", fn_umin }, 
-     {"umax", fn_umax },
-     {"timestr", fn_timestr },
-     {"abs", fn_abs },
-     {"pos", fn_set_cursor_position},
-     {"cls", fn_clear_screen},
-     {"round", fn_round},
-     {"round_up", fn_round_up},
-     {"round_down", fn_round_down},
-     {"sqrt", fn_sqrt},
-     {"contains", fn_contains},
-     {"starts_with", fn_starts_with},
-     {"ends_with", fn_ends_with},
-     {"index_of", fn_index_of},
-     {"last_index_of", fn_last_index_of},
-     {"month", fn_month},
-     {"day", fn_day},
-     {"year", fn_year},
-     {"cdate", fn_cdate},
-     {"today", fn_today},
-     {"add_days", fn_add_days},
-     {"add_months", fn_add_months},
-     {"add_years", fn_add_years},
-     {"terminal_width", fn_terminal_width},
-     {"terminal_height", fn_terminal_height},
-     {"chr", fn_chr},
-     {"asc", fn_asc},
-     {"ubound", fn_upperbound},
-     {"split", fn_split},
-     {"new_array", fn_new_array},
-     {"array_set", fn_array_set} 
-  };
- 
- /* ============================================================
      Global Variables
     ============================================================ */
  
@@ -101,7 +34,8 @@
  Value return_value;
  static int continue_flag = 0;
  static int break_flag = 0;
- 
+ extern Function interop_functions[];
+
  /* ============================================================
      Utility functions for Value creation and freeing for the
      in language supported types.
@@ -329,7 +263,7 @@ Value make_date(Date d)
   */
  Value call_function(const char *name, Value *args, int arg_count)
  {
-     for (int i = 0; i < MAX_INTEROP_FUNCTIONS; i++)
+     for (int i = 0; interop_functions[i].name != NULL; i++)
      {
          if (strcmp(interop_functions[i].name, name) == 0)
          {
