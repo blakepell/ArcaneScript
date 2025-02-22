@@ -98,7 +98,7 @@
  
  Variable *local_variables = NULL;
  int return_flag = 0;
- Value return_value;
+ Value completed_value;
  static int continue_flag = 0;
  static int break_flag = 0;
  
@@ -190,10 +190,21 @@ Value make_date(Date d)
     return v;
 }
 
+ /**
+  * Makes a value that indicates a successful completion of some code.
+  */
+ Value make_completed()
+ {
+     Value v;
+     v.type = VAL_COMPLETED;
+     v.temp = 1;
+     return v;
+ }
+ 
  /*
   * Raises an error with the given message.
   */
- void raise_error(const char *s, ...)
+ Value raise_error(const char *s, ...)
  {
      va_list arg;
      char str[MAX_STRING_LENGTH];
@@ -206,7 +217,7 @@ Value make_date(Date d)
  
      // Force a return from any code, set the return_value to an error.
      return_flag = 1;
-     return_value = make_error(str);
+     return make_error(str);
  }
  
   /*
@@ -297,8 +308,7 @@ Value make_date(Date d)
          return var->value;
      }
  
-     raise_error("Runtime error: variable \"%s\" not defined.\n", name);
-     return return_value;
+     return raise_error("Runtime error: variable \"%s\" not defined.\n", name);
  }
  
  /*
@@ -337,8 +347,7 @@ Value make_date(Date d)
          }
      }
  
-     raise_error("Runtime error: Unknown function \"%s\".\n", name);
-     return return_value;
+     return raise_error("Runtime error: Unknown function \"%s\".\n", name);
  }
  
  /* ============================================================
@@ -637,26 +646,27 @@ Value make_date(Date d)
  /*
   * Advances the current position in the token list.
   */
- void advance(Parser *p)
+ Value advance(Parser *p)
  {
      if (p->pos < p->tokens->count)
      {
          p->pos++;
      }
+
+     return completed_value;
  }
  
  /*
   * Expects the current token to be of the given type and advances to the next token.
   */
- void expect(Parser *p, AstTokenType type, const char *msg)
+ Value expect(Parser *p, AstTokenType type, const char *msg)
  {
      if (p->pos >= p->tokens->count || current(p)->type != type)
      {
-         raise_error("Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
-         return;
+         return raise_error("Parser error: %s (got '%s')\n", msg, p->pos < p->tokens->count ? current(p)->text : "EOF");
      }
  
-     advance(p);
+     return advance(p);
  }
  
  /*
@@ -767,8 +777,9 @@ Value make_date(Date d)
          }
          else
          {
-             raise_error("Runtime error: Unary '-' operator only supports ints.\n");
+             return raise_error("Runtime error: Unary '-' operator only supports ints.\n");
          }
+         
          return v;
      }
  
@@ -865,11 +876,11 @@ Value make_date(Date d)
              advance(p);
              Value orig = get_variable(id);
              if (orig.type != VAL_INT)
-             {
-                 raise_error("Runtime error: %s operator only valid for ints.\n", op);
+             {                
                  free(id);
-                 return return_value;
+                 return raise_error("Runtime error: %s operator only valid for ints.\n", op);
              }
+
              int oldVal = orig.int_val;
              if (strcmp(op, "++") == 0)
              {
@@ -896,26 +907,22 @@ Value make_date(Date d)
              Value index = parse_assignment(p);
              if (current(p)->type != TOKEN_RBRACKET)
              {
-                 raise_error("Parser error: Expected ']' after array index");
-                 return return_value;
+                 return raise_error("Parser error: Expected ']' after array index");
              }
              advance(p);  // consume ']'
              if (v.type != VAL_ARRAY)
              {
-                 raise_error("Runtime error: Attempting to index a non-array value.");
-                 return return_value;
+                 return raise_error("Runtime error: Attempting to index a non-array value.");
              }
              if (index.type != VAL_INT)
              {
-                 raise_error("Runtime error: Array index must be an integer.");
-                 return return_value;
+                 return raise_error("Runtime error: Array index must be an integer.");
              }
              int idx = index.int_val;
              Array *arr = v.array_val;
              if (idx < 0 || idx >= arr->length)
              {
-                 raise_error("Runtime error: Array index out of bounds.");
-                 return return_value;
+                 return raise_error("Runtime error: Array index out of bounds.");
              }
              v = arr->items[idx];
          }
@@ -933,8 +940,7 @@ Value make_date(Date d)
          return v;
      }
  
-     raise_error("Parser error: Unexpected token '%s'\n", tok->text);
-     return return_value;
+     return raise_error("Parser error: Unexpected token '%s'\n", tok->text);
  }
    
  /*
@@ -949,8 +955,7 @@ Value make_date(Date d)
          Value operand = parse_unary(p);
          if (operand.type != VAL_BOOL && operand.type != VAL_INT)
          {
-             raise_error("Runtime error: ! operator only works on bools or ints.\n");
-             return return_value;
+             return raise_error("Runtime error: ! operator only works on bools or ints.\n");
          }
          int result = !(operand.int_val); // works for both VAL_INT and VAL_BOOL
          return make_bool(result);
@@ -966,8 +971,7 @@ Value make_date(Date d)
          // The next token must be an identifier
          if (current(p)->type != TOKEN_IDENTIFIER)
          {
-             raise_error("Parser error: Expected identifier after unary %s\n", op);
-             return return_value;
+             return raise_error("Parser error: Expected identifier after unary %s\n", op);
          }
 
          char *id = _strdup(current(p)->text);
@@ -976,9 +980,8 @@ Value make_date(Date d)
 
          if (v.type != VAL_INT)
          {
-             raise_error("Runtime error: %s operator only valid for ints.\n", op);
              free(id);
-             return return_value;
+             return raise_error("Runtime error: %s operator only valid for ints.\n", op);
          }
 
          // For prefix, update before returning.
@@ -1103,8 +1106,7 @@ Value make_date(Date d)
          }
          else
          {
-             raise_error("Runtime error: Relational operators only support ints or dates.\n");
-             return return_value;
+             return raise_error("Runtime error: Relational operators only support ints or dates.\n");
          }
  
          left = make_int(result);
@@ -1147,8 +1149,7 @@ Value make_date(Date d)
              double r = (right.type == VAL_DOUBLE) ? right.double_val : right.int_val;
              if (r == 0.0)
              {
-                 raise_error("Runtime error: Division by zero.\n");
-                 return return_value;
+                 return raise_error("Runtime error: Division by zero.\n");
              }
              if (left.type == VAL_DOUBLE || right.type == VAL_DOUBLE)
              {
@@ -1843,6 +1844,15 @@ Value make_date(Date d)
      }
  }
  
+/**
+ * Initialize any global state needed by the interpreter.
+ */
+void init()
+{
+    // We'll use one instance of make_completed.
+    completed_value = make_completed();
+}
+
  /**
   * The main interpreter.  This is the entry point for a script to begin
   * execution.

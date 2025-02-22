@@ -29,7 +29,7 @@
     #include <unistd.h>
  #endif
  
- extern Value return_value;
+ extern Value completed_value;
  
  /* ============================================================
      Private Functions: Support for interop script functions.
@@ -129,14 +129,12 @@ Value fn_number_range(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: number_range() expects two arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: number_range() expects two arguments.\n");
     }
 
     if (args[0].type != VAL_INT || args[1].type != VAL_INT)
     {
-        raise_error("Runtime error: number_range() expects two integer arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: number_range() expects two integer arguments.\n");
     }
 
     int from = args[0].int_val;
@@ -183,14 +181,12 @@ Value fn_chance(Value *args, int arg_count)
 {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: chance() expects one argument between 1 and 100.\n");
-        return return_value;
+        return raise_error("Runtime error: chance() expects one argument between 1 and 100.\n");
     }
 
     if (args[0].type != VAL_INT)
     {
-        raise_error("Runtime error: chance() expects one argument between 1 and 100.\n");
-        return return_value;
+        return raise_error("Runtime error: chance() expects one argument between 1 and 100.\n");
     }
 
     int from = 1;
@@ -237,8 +233,7 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 2)
      {
-         raise_error("Runtime error: list_contains() expects two arguments.\n");
-         return return_value;
+         return raise_error("Runtime error: list_contains() expects two arguments.\n");
      }
  
      Value list = args[0];
@@ -254,8 +249,7 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 2)
      {
-         raise_error("Runtime error: list_add() expects two arguments.\n");
-         return return_value;
+         return raise_error("Runtime error: list_add() expects two arguments.\n");
      }
  
      Value list = args[0];
@@ -270,8 +264,7 @@ Value fn_chance(Value *args, int arg_count)
  
      if (!new_list)
      {
-         raise_error("Runtime error: Memory allocation failed in list_add().\n");
-         return return_value;
+         return raise_error("Runtime error: Memory allocation failed in list_add().\n");
      }
  
      strcpy(new_list, list.str_val);
@@ -291,8 +284,7 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 2)
      {
-         raise_error("Runtime error: list_remove() expects two arguments.\n");
-         return return_value;
+         return raise_error("Runtime error: list_remove() expects two arguments.\n");
      }
  
      Value list = args[0];
@@ -329,8 +321,7 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: print() expects exactly one argument.\n");
-         return return_value;
+         return raise_error("Runtime error: print() expects exactly one argument.\n");
      }
  
      for (int i = 0; i < arg_count; i++)
@@ -361,7 +352,7 @@ Value fn_chance(Value *args, int arg_count)
          }
      }
  
-     return make_null();
+     return completed_value;
  }
  
  /*
@@ -372,8 +363,7 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: println() expects exactly one argument.\n");
-         return return_value;
+         return raise_error("Runtime error: println() expects exactly one argument.\n");
      }
  
      for (int i = 0; i < arg_count; i++)
@@ -404,7 +394,7 @@ Value fn_chance(Value *args, int arg_count)
          }
      }
  
-     return make_null();
+     return completed_value;
  }
  
  /**
@@ -414,8 +404,7 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: typeof() expects exactly one argument.\n");
-         return return_value;
+         return raise_error("Runtime error: typeof() expects exactly one argument.\n");
      }
  
      Value arg = args[0];
@@ -456,26 +445,22 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 3)
      {
-         raise_error("Runtime error: substring() expects 3 arguments: a string, a start index, and a length.\n");
-         return return_value;
+         return raise_error("Runtime error: substring() expects 3 arguments: a string, a start index, and a length.\n");
      }
  
      if (args[0].type != VAL_STRING)
      {
-         raise_error("Runtime error: substring() expects the first argument to be a string.\n");
-         return return_value;
+         return raise_error("Runtime error: substring() expects the first argument to be a string.\n");
      }
  
      if (args[1].type != VAL_INT)
      {
-         raise_error("Runtime error: substring() expects the second argument to be an int.\n");
-         return return_value;
+         return raise_error("Runtime error: substring() expects the second argument to be an int.\n");
      }
  
      if (args[2].type != VAL_INT)
      {
-         raise_error("Runtime error: substring() expects the third argument to be an int.\n");
-         return return_value;
+         return raise_error("Runtime error: substring() expects the third argument to be an int.\n");
      }
  
      char *s = args[0].str_val;
@@ -509,8 +494,7 @@ Value fn_chance(Value *args, int arg_count)
  
      if (!result)
      {
-         raise_error("Runtime error: Memory allocation failed in substring().\n");
-         return return_value;
+         return raise_error("Runtime error: Memory allocation failed in substring().\n");
      }
  
      strncpy(result, s + start, result_len);
@@ -532,20 +516,17 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 2)
      {
-         raise_error("Runtime error: left() expects 2 arguments: a string and an int.\n");
-         return return_value;
+         return raise_error("Runtime error: left() expects 2 arguments: a string and an int.\n");
      }
  
      if (args[0].type != VAL_STRING)
      {
-         raise_error("Runtime error: left() expects the first argument to be a string.\n");
-         return return_value;
+         return raise_error("Runtime error: left() expects the first argument to be a string.\n");
      }
  
      if (args[1].type != VAL_INT)
      {
-         raise_error("Runtime error: left() expects the second argument to be an int.\n");
-         return return_value;
+         return raise_error("Runtime error: left() expects the second argument to be an int.\n");
      }
  
      char *s = args[0].str_val;
@@ -562,8 +543,7 @@ Value fn_chance(Value *args, int arg_count)
  
      if (!result)
      {
-         raise_error("Runtime error: Memory allocation failed in left().\n");
-         return return_value;
+         return raise_error("Runtime error: Memory allocation failed in left().\n");
      }
  
      strncpy(result, s, result_len);
@@ -585,20 +565,17 @@ Value fn_chance(Value *args, int arg_count)
  {
      if (arg_count != 2)
      {
-         raise_error("Runtime error: right() expects 2 arguments: a string and an int.\n");
-         return return_value;
+         return raise_error("Runtime error: right() expects 2 arguments: a string and an int.\n");
      }
  
      if (args[0].type != VAL_STRING)
      {
-         raise_error("Runtime error: right() expects the first argument to be a string.\n");
-         return return_value;
+         return raise_error("Runtime error: right() expects the first argument to be a string.\n");
      }
  
      if (args[1].type != VAL_INT)
      {
-         raise_error("Runtime error: right() expects the second argument to be an int.\n");
-         return return_value;
+         return raise_error("Runtime error: right() expects the second argument to be an int.\n");
      }
  
      char *s = args[0].str_val;
@@ -615,8 +592,7 @@ Value fn_chance(Value *args, int arg_count)
  
      if (!result)
      {
-         raise_error("Runtime error: Memory allocation failed in right().\n");
-         return return_value;
+         return raise_error("Runtime error: Memory allocation failed in right().\n");
      }
  
      /* Copy the last result_len characters from s. */
@@ -635,26 +611,22 @@ Value fn_replace(Value *args, int arg_count)
 {
     if (arg_count != 3)
     {
-        raise_error("Runtime error: replace() expects 3 arguments: a string, a substring to replace, and a substring to replace it with.\n");
-        return return_value;
+        return raise_error("Runtime error: replace() expects 3 arguments: a string, a substring to replace, and a substring to replace it with.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: replace() expects the first argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: replace() expects the first argument to be a string.\n");
     }
 
     if (args[1].type != VAL_STRING)
     {
-        raise_error("Runtime error: replace() expects the second argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: replace() expects the second argument to be a string.\n");
     }
 
     if (args[2].type != VAL_STRING)
     {
-        raise_error("Runtime error: replace() expects the third argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: replace() expects the third argument to be a string.\n");
     }
 
     char *s = args[0].str_val;
@@ -674,8 +646,7 @@ Value fn_replace(Value *args, int arg_count)
 
     if (!result)
     {
-        raise_error("Runtime error: Memory allocation failed in replace().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in replace().\n");
     }
 
     // Loop through the string looking for the substring to replace.
@@ -715,8 +686,7 @@ Value fn_replace(Value *args, int arg_count)
  Value fn_sleep(Value *args, int arg_count)
  {
      if (arg_count != 1 || args[0].type != VAL_INT) {
-         raise_error("Runtime error: sleep() expects 1 integer argument (milliseconds).\n");
-         return return_value;
+         return raise_error("Runtime error: sleep() expects 1 integer argument (milliseconds).\n");
      }
  
      int ms = args[0].int_val;
@@ -741,7 +711,7 @@ Value fn_replace(Value *args, int arg_count)
  #endif
  
      // Return null as sleep does not produce a meaningful value.
-     return make_null();
+     return completed_value;
  }
  
  /**
@@ -753,8 +723,7 @@ Value fn_replace(Value *args, int arg_count)
      // Allow zero or one argument (a prompt message)
      if (arg_count > 1)
      {
-         raise_error("Runtime error: input() expects 0 or 1 argument.\n");
-         return return_value;
+         return raise_error("Runtime error: input() expects 0 or 1 argument.\n");
      }
  
      char prompt[256] = {0};
@@ -762,8 +731,7 @@ Value fn_replace(Value *args, int arg_count)
      {
          if (args[0].type != VAL_STRING)
          {
-             raise_error("Runtime error: input() expects a string as prompt.\n");
-             return return_value;
+             return raise_error("Runtime error: input() expects a string as prompt.\n");
          }
          // Copy the prompt into our buffer (limit its size)
          strncpy(prompt, args[0].str_val, sizeof(prompt) - 1);
@@ -799,13 +767,12 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: is_number() expects exactly one argument.\n");
-         return return_value;
+         return raise_error("Runtime error: is_number() expects exactly one argument.\n");
      }
+
      if (args[0].type != VAL_STRING)
      {
-         raise_error("Runtime error: is_number() expects a string argument.\n");
-         return return_value;
+         return raise_error("Runtime error: is_number() expects a string argument.\n");
      }
  
      const char *s = args[0].str_val;
@@ -852,8 +819,7 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: strlen() expects exactly one argument.\n");
-         return return_value;
+         return raise_error("Runtime error: strlen() expects exactly one argument.\n");
      }
  
      if (args[0].type != VAL_STRING)
@@ -872,8 +838,7 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: cint() expects 1 argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cint() expects 1 argument.\n");
      }
  
      Value input = args[0];
@@ -889,8 +854,7 @@ Value fn_replace(Value *args, int arg_count)
      }
      else
      {
-         raise_error("Runtime error: cint() expects a string or bool argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cint() expects a string or bool argument.\n");
      }
  }
  
@@ -901,8 +865,7 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: cdbl() expects 1 argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cdbl() expects 1 argument.\n");
      }
  
      Value input = args[0];
@@ -926,8 +889,7 @@ Value fn_replace(Value *args, int arg_count)
      }
      else
      {
-         raise_error("Runtime error: cdbl() expects a string, int, bool, or double argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cdbl() expects a string, int, bool, or double argument.\n");
      }
  }
 
@@ -938,8 +900,7 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: cstr() expects 1 argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cstr() expects 1 argument.\n");
      }
  
      Value input = args[0];
@@ -966,8 +927,7 @@ Value fn_replace(Value *args, int arg_count)
      }
      else
      {
-         raise_error("Runtime error: cstr() expects an int, double, bool or date argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cstr() expects an int, double, bool or date argument.\n");
      }
  }
  
@@ -978,8 +938,7 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 1)
      {
-         raise_error("Runtime error: cbool() expects 1 argument.\n");
-         return return_value;
+         return raise_error("Runtime error: cbool() expects 1 argument.\n");
      }
  
      Value input = args[0];
@@ -994,8 +953,7 @@ Value fn_replace(Value *args, int arg_count)
  
          if (!lower)
          {
-             raise_error("fn_cbool error: memory allocation failed.\n");
-             return return_value;
+             return raise_error("fn_cbool error: memory allocation failed.\n");
          }
  
          for (char *p = lower; *p; ++p)
@@ -1016,14 +974,12 @@ Value fn_replace(Value *args, int arg_count)
          else
          {
              free(lower);
-             raise_error("fn_cbool error: unsupported string value '%s'.\n", input.str_val);
-             return return_value;
+             return raise_error("fn_cbool error: unsupported string value '%s'.\n", input.str_val);
          }
      }
      else
      {
-         raise_error("fn_cbool error: unsupported type.\n");
-         return return_value;
+         return raise_error("fn_cbool error: unsupported type.\n");
      }
  }
  
@@ -1034,8 +990,7 @@ Value fn_replace(Value *args, int arg_count)
  {
      if (arg_count != 2)
      {
-         raise_error("Runtime error: is_interval() expects two arguments.\n");
-         return return_value;
+         return raise_error("Runtime error: is_interval() expects two arguments.\n");
      }
  
      if (args[0].type != VAL_INT || args[1].type != VAL_INT)
@@ -1057,14 +1012,12 @@ Value fn_replace(Value *args, int arg_count)
  {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: trim() expects exactly one argument.\n");
-        return return_value;
+        return raise_error("Runtime error: trim() expects exactly one argument.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: trim() expects a string argument.\n");
-        return return_value;
+        return raise_error("Runtime error: trim() expects a string argument.\n");
     }
 
     char *s = args[0].str_val;
@@ -1086,8 +1039,7 @@ Value fn_replace(Value *args, int arg_count)
 
     if (!result)
     {
-        raise_error("Runtime error: Memory allocation failed in trim().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in trim().\n");
     }
 
     strncpy(result, start, len);
@@ -1105,14 +1057,12 @@ Value fn_replace(Value *args, int arg_count)
  {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: trim_start() expects exactly one argument.\n");
-        return return_value;
+        return raise_error("Runtime error: trim_start() expects exactly one argument.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: trim_start() expects a string argument.\n");
-        return return_value;
+        return raise_error("Runtime error: trim_start() expects a string argument.\n");
     }
 
     char *s = args[0].str_val;
@@ -1129,8 +1079,7 @@ Value fn_replace(Value *args, int arg_count)
 
     if (!result)
     {
-        raise_error("Runtime error: Memory allocation failed in trim_start().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in trim_start().\n");
     }
 
     strncpy(result, start, len);
@@ -1148,14 +1097,12 @@ Value fn_replace(Value *args, int arg_count)
  {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: trim_end() expects exactly one argument.\n");
-        return return_value;
+        return raise_error("Runtime error: trim_end() expects exactly one argument.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: trim_end() expects a string argument.\n");
-        return return_value;
+        return raise_error("Runtime error: trim_end() expects a string argument.\n");
     }
 
     char *s = args[0].str_val;
@@ -1172,8 +1119,7 @@ Value fn_replace(Value *args, int arg_count)
 
     if (!result)
     {
-        raise_error("Runtime error: Memory allocation failed in trim_end().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in trim_end().\n");
     }
 
     strncpy(result, start, len);
@@ -1191,14 +1137,12 @@ Value fn_replace(Value *args, int arg_count)
  {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: lcase() expects exactly one argument.\n");
-        return return_value;
+        return raise_error("Runtime error: lcase() expects exactly one argument.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: lcase() expects a string argument.\n");
-        return return_value;
+        return raise_error("Runtime error: lcase() expects a string argument.\n");
     }
 
     char *s = args[0].str_val;
@@ -1219,14 +1163,12 @@ Value fn_replace(Value *args, int arg_count)
  {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: ucase() expects exactly one argument.\n");
-        return return_value;
+        return raise_error("Runtime error: ucase() expects exactly one argument.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: ucase() expects a string argument.\n");
-        return return_value;
+        return raise_error("Runtime error: ucase() expects a string argument.\n");
     }
 
     char *s = args[0].str_val;
@@ -1247,14 +1189,12 @@ Value fn_umin(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: umin() expects exactly two arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: umin() expects exactly two arguments.\n");
     }
 
     if (args[0].type != VAL_INT || args[1].type != VAL_INT)
     {
-        raise_error("Runtime error: umin() expects two integer arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: umin() expects two integer arguments.\n");
     }
 
     return make_int(args[0].int_val < args[1].int_val ? args[0].int_val : args[1].int_val);
@@ -1267,14 +1207,12 @@ Value fn_umax(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: umax() expects exactly two arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: umax() expects exactly two arguments.\n");
     }
 
     if (args[0].type != VAL_INT || args[1].type != VAL_INT)
     {
-        raise_error("Runtime error: umax() expects two integer arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: umax() expects two integer arguments.\n");
     }
 
     return make_int(args[0].int_val > args[1].int_val ? args[0].int_val : args[1].int_val);
@@ -1302,14 +1240,12 @@ Value fn_abs(Value *args, int arg_count)
 {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: abs() expects exactly one argument.\n");
-        return return_value;
+        return raise_error("Runtime error: abs() expects exactly one argument.\n");
     }
 
     if (args[0].type != VAL_INT)
     {
-        raise_error("Runtime error: abs() expects an integer argument.\n");
-        return return_value;
+        return raise_error("Runtime error: abs() expects an integer argument.\n");
     }
 
     int num = args[0].int_val;
@@ -1324,14 +1260,14 @@ Value fn_set_cursor_position(Value *args, int arg_count)
 {
     if (arg_count != 2 || args[0].type != VAL_INT || args[1].type != VAL_INT)
     {
-        raise_error("Runtime error: set_cursor_position expects two integer arguments.\n");
-        return make_null();
+        return raise_error("Runtime error: set_cursor_position expects two integer arguments.\n");
     }
+
     int x = args[0].int_val;
     int y = args[1].int_val;
     printf("\033[%d;%dH", x, y);
 
-    return make_null();
+    return completed_value;
 }
 
 /**
@@ -1341,23 +1277,21 @@ Value fn_clear_screen(Value *args, int arg_count)
 {
     if (arg_count != 0)
     {
-        raise_error("Runtime error: clear() expects no arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: clear() expects no arguments.\n");
     }
 
     // ANSI escape codes to clear the screen and reset the cursor position.
     printf("\033[2J\033[H");
     fflush(stdout);
 
-    return make_null();
+    return completed_value;
 }
 
 Value fn_round(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DOUBLE)
     {
-        raise_error("Runtime error: round() expects one double argument.\n");
-        return return_value;
+        return raise_error("Runtime error: round() expects one double argument.\n");
     }
 
     double d = args[0].double_val;
@@ -1369,8 +1303,7 @@ Value fn_round_up(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DOUBLE)
     {
-        raise_error("Runtime error: roundup() expects one double argument.\n");
-        return return_value;
+        return raise_error("Runtime error: roundup() expects one double argument.\n");
     }
 
     double d = args[0].double_val;
@@ -1382,8 +1315,7 @@ Value fn_round_down(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DOUBLE)
     {
-        raise_error("Runtime error: roundown() expects one double argument.\n");
-        return return_value;
+        return raise_error("Runtime error: roundown() expects one double argument.\n");
     }
 
     double d = args[0].double_val;
@@ -1398,15 +1330,13 @@ Value fn_sqrt(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DOUBLE)
     {
-        raise_error("Runtime error: sqrt() expects one double argument.\n");
-        return return_value;
+        return raise_error("Runtime error: sqrt() expects one double argument.\n");
     }
 
     double d = args[0].double_val;
     if (d < 0)
     {
-        raise_error("Runtime error: sqrt() domain error, negative value.\n");
-        return return_value;
+        return raise_error("Runtime error: sqrt() domain error, negative value.\n");
     }
 
     return make_double(sqrt(d));
@@ -1419,20 +1349,17 @@ Value fn_contains(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: contains() expects exactly 2 arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: contains() expects exactly 2 arguments.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: contains() expects the first argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: contains() expects the first argument to be a string.\n");
     }
 
     if (args[1].type != VAL_STRING)
     {
-        raise_error("Runtime error: contains() expects the second argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: contains() expects the second argument to be a string.\n");
     }
 
     // Use strstr to check if the second string is found within the first.
@@ -1451,20 +1378,17 @@ Value fn_starts_with(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: starts_with() expects exactly 2 arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: starts_with() expects exactly 2 arguments.\n");
     }
     
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: starts_with() expects the first argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: starts_with() expects the first argument to be a string.\n");
     }
     
     if (args[1].type != VAL_STRING)
     {
-        raise_error("Runtime error: starts_with() expects the second argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: starts_with() expects the second argument to be a string.\n");
     }
     
     const char *str = args[0].str_val;
@@ -1486,20 +1410,17 @@ Value fn_ends_with(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: ends_with() expects exactly 2 arguments.\n");
-        return return_value;
+        return raise_error("Runtime error: ends_with() expects exactly 2 arguments.\n");
     }
     
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: ends_with() expects the first argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: ends_with() expects the first argument to be a string.\n");
     }
     
     if (args[1].type != VAL_STRING)
     {
-        raise_error("Runtime error: ends_with() expects the second argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: ends_with() expects the second argument to be a string.\n");
     }
     
     const char *str = args[0].str_val;
@@ -1528,26 +1449,22 @@ Value fn_index_of(Value *args, int arg_count)
 {
     if (arg_count != 3)
     {
-        raise_error("Runtime error: index_of() expects 3 arguments: a string, a substring, and a starting index.\n");
-        return return_value;
+        return raise_error("Runtime error: index_of() expects 3 arguments: a string, a substring, and a starting index.\n");
     }
 
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: index_of() expects the first argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: index_of() expects the first argument to be a string.\n");
     }
 
     if (args[1].type != VAL_STRING)
     {
-        raise_error("Runtime error: index_of() expects the second argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: index_of() expects the second argument to be a string.\n");   
     }
 
     if (args[2].type != VAL_INT)
     {
-        raise_error("Runtime error: index_of() expects the third argument to be an int.\n");
-        return return_value;
+        return raise_error("Runtime error: index_of() expects the third argument to be an int.\n");
     }
 
     const char *str = args[0].str_val;
@@ -1578,20 +1495,18 @@ Value fn_last_index_of(Value *args, int arg_count)
 {
     if (arg_count < 2 || arg_count > 3)
     {
-        raise_error("Runtime error: last_index_of() expects 2 or 3 arguments: a string, a substring, and an optional starting index.\n");
-        return return_value;
+        return raise_error("Runtime error: last_index_of() expects 2 or 3 arguments: a string, a substring, and an optional starting index.\n");
     }
     
     if (args[0].type != VAL_STRING)
     {
-        raise_error("Runtime error: last_index_of() expects the first argument to be a string.\n");
-        return return_value;
+        return raise_error("Runtime error: last_index_of() expects the first argument to be a string.\n");
+
     }
     
     if (args[1].type != VAL_STRING)
-    {
-        raise_error("Runtime error: last_index_of() expects the second argument to be a string.\n");
-        return return_value;
+    
+        return raise_error("Runtime error: last_index_of() expects the second argument to be a string.\n");
     }
     
     const char *str = args[0].str_val;
@@ -1604,8 +1519,7 @@ Value fn_last_index_of(Value *args, int arg_count)
     {
         if (args[2].type != VAL_INT)
         {
-            raise_error("Runtime error: last_index_of() expects the third argument to be an int.\n");
-            return return_value;
+            return raise_error("Runtime error: last_index_of() expects the third argument to be an int.\n");
         }
         start = args[2].int_val;
     }
@@ -1652,9 +1566,9 @@ Value fn_month(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DATE)
     {
-        raise_error("month() requires one date argument.\n");
-        return make_null();
+        return raise_error("month() requires one date argument.\n");
     }
+
     return make_int(args[0].date_val.month);
 }
 
@@ -1665,9 +1579,9 @@ Value fn_day(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DATE)
     {
-        raise_error("day() requires one date argument.\n");
-        return make_null();
+        return raise_error("day() requires one date argument.\n");
     }
+
     return make_int(args[0].date_val.day);
 }
 
@@ -1678,9 +1592,9 @@ Value fn_year(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DATE)
     {
-        raise_error("year() requires one date argument.\n");
-        return make_null();
+        return raise_error("year() requires one date argument.\n");
     }
+
     return make_int(args[0].date_val.year);
 }
 
@@ -1691,8 +1605,7 @@ Value fn_cdate(Value *args, int arg_count)
 {
     if (arg_count != 1)
     {
-        raise_error("cdate() requires one argument.\n");
-        return make_null();
+        return raise_error("cdate() requires one argument.\n");
     }
 
     if (args[0].type == VAL_STRING)
@@ -1714,8 +1627,7 @@ Value fn_cdate(Value *args, int arg_count)
         }
         else
         {
-            raise_error("cdate() could not parse date from string: %s\n", args[0].str_val);
-            return make_null();
+            return raise_error("cdate() could not parse date from string: %s\n", args[0].str_val);
         }
     }
     else if (args[0].type == VAL_INT)
@@ -1724,16 +1636,14 @@ Value fn_cdate(Value *args, int arg_count)
         struct tm *tm_date = localtime(&epoch);
         if (!tm_date)
         {
-            raise_error("cdate() failed to convert epoch %d to date.\n", args[0].int_val);
-            return make_null();
+            return raise_error("cdate() failed to convert epoch %d to date.\n", args[0].int_val);
         }
         Date date = { tm_date->tm_mon + 1, tm_date->tm_mday, tm_date->tm_year + 1900 };
         return make_date(date);
     }
     else
     {
-        raise_error("cdate() expects a string or integer argument.\n");
-        return make_null();
+        return raise_error("cdate() expects a string or integer argument.\n");
     }
 }
 
@@ -1744,16 +1654,14 @@ Value fn_today(Value *args, int arg_count)
 {
     if (arg_count != 0)
     {
-        raise_error("today() expects no arguments.\n");
-        return make_null();
+        return raise_error("today() expects no arguments.\n");
     }
 
     time_t now = time(NULL);
     struct tm *local = localtime(&now);
     if (!local)
     {
-        raise_error("today() failed to retrieve local time.\n");
-        return make_null();
+        return raise_error("today() failed to retrieve local time.\n");
     }
 
     // struct tm: tm_mon is 0-indexed and tm_year is years since 1900.
@@ -1768,8 +1676,7 @@ Value fn_add_days(Value *args, int arg_count)
 {
     if (arg_count != 2 || args[0].type != VAL_DATE || args[1].type != VAL_INT)
     {
-        raise_error("add_days() expects a date and an integer.\n");
-        return make_null();
+        return raise_error("add_days() expects a date and an integer.\n");
     }
 
     Date old = args[0].date_val;
@@ -1784,16 +1691,14 @@ Value fn_add_days(Value *args, int arg_count)
     time_t t = mktime(&tm_date);
     if (t == -1)
     {
-        raise_error("add_days() failed to convert date.\n");
-        return make_null();
+        return raise_error("add_days() failed to convert date.\n");
     }
 
     t += days * 86400; // 86400 seconds in a day
     struct tm *new_tm = localtime(&t);
     if (!new_tm)
     {
-        raise_error("add_days() failed to compute new date.\n");
-        return make_null();
+        return raise_error("add_days() failed to compute new date.\n");
     }
 
     Date result = { new_tm->tm_mon + 1, new_tm->tm_mday, new_tm->tm_year + 1900 };
@@ -1807,8 +1712,7 @@ Value fn_add_months(Value *args, int arg_count)
 {
     if (arg_count != 2 || args[0].type != VAL_DATE || args[1].type != VAL_INT)
     {
-        raise_error("add_months() expects a date and an integer.\n");
-        return make_null();
+        return raise_error("add_months() expects a date and an integer.\n");
     }
 
     Date old = args[0].date_val;
@@ -1862,8 +1766,7 @@ Value fn_add_years(Value *args, int arg_count)
 {
     if (arg_count != 2 || args[0].type != VAL_DATE || args[1].type != VAL_INT)
     {
-        raise_error("add_years() expects a date and an integer.\n");
-        return make_null();
+        return raise_error("add_years() expects a date and an integer.\n");
     }
 
     Date old = args[0].date_val;
@@ -1892,8 +1795,7 @@ Value fn_cepoch(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_DATE)
     {
-        raise_error("cepoch() expects a single date argument.\n");
-        return make_null();
+        return raise_error("cepoch() expects a single date argument.\n");
     }
     
     Date date = args[0].date_val;
@@ -1909,8 +1811,7 @@ Value fn_cepoch(Value *args, int arg_count)
     time_t epoch = mktime(&tm_date);
     if (epoch == -1)
     {
-        raise_error("cepoch() failed to convert date to epoch.\n");
-        return make_null();
+        return raise_error("cepoch() failed to convert date to epoch.\n");
     }
     
     return make_int((int)epoch);
@@ -1982,8 +1883,7 @@ Value fn_chr(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_INT)
     {
-        raise_error("asc() expects a single integer argument.\n");
-        return make_null();
+        return raise_error("asc() expects a single integer argument.\n");
     }
 
     int code = args[0].int_val;
@@ -2001,8 +1901,7 @@ Value fn_asc(Value *args, int arg_count)
 {
     if (arg_count != 1 || args[0].type != VAL_STRING)
     {
-        raise_error("asc() expects a single character argument.\n");
-        return make_null();
+        return raise_error("asc() expects a single character argument.\n");
     }
 
     char *str = args[0].str_val;
@@ -2013,14 +1912,14 @@ Value fn_upperbound(Value *args, int arg_count)
 {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: upperbound() expects one argument (an array).\n");
-        return return_value;
+        return raise_error("Runtime error: upperbound() expects one argument (an array).\n");
     }
+
     if (args[0].type != VAL_ARRAY)
     {
-        raise_error("Runtime error: upperbound() expects an array.\n");
-        return return_value;
+        return raise_error("Runtime error: upperbound() expects an array.\n");
     }
+
     Array *arr = args[0].array_val;
     return make_int(arr->length - 1);
 }
@@ -2029,14 +1928,14 @@ Value fn_split(Value *args, int arg_count)
 {
     if (arg_count != 2)
     {
-        raise_error("Runtime error: split() expects two arguments: a string and a delimiter.\n");
-        return return_value;
+        return raise_error("Runtime error: split() expects two arguments: a string and a delimiter.\n");
     }
+
     if (args[0].type != VAL_STRING || args[1].type != VAL_STRING)
     {
-        raise_error("Runtime error: split() expects both arguments to be strings.\n");
-        return return_value;
+        return raise_error("Runtime error: split() expects both arguments to be strings.\n");
     }
+
     char *str = args[0].str_val;
     char *delim = args[1].str_val;
     
@@ -2053,11 +1952,12 @@ Value fn_split(Value *args, int arg_count)
     
     // Allocate an array of Value items
     Value *items = malloc(sizeof(Value) * count);
+
     if (!items)
     {
-        raise_error("Runtime error: Memory allocation failed in split().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in split().\n");
     }
+
     int index = 0;
     copy = strdup(str);
     token = strtok(copy, delim);
@@ -2073,8 +1973,7 @@ Value fn_split(Value *args, int arg_count)
     if (!arr)
     {
         free(items);
-        raise_error("Runtime error: Memory allocation failed in split().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in split().\n");
     }
     arr->items = items;
     arr->length = count;
@@ -2090,37 +1989,39 @@ Value fn_new_array(Value *args, int arg_count)
 {
     if (arg_count != 1)
     {
-        raise_error("Runtime error: new_array() expects one argument (the size).\n");
-        return return_value;
+        return raise_error("Runtime error: new_array() expects one argument (the size).\n");
     }
+
     if (args[0].type != VAL_INT)
     {
-        raise_error("Runtime error: new_array() expects an integer.\n");
-        return return_value;
+        return raise_error("Runtime error: new_array() expects an integer.\n");
     }
+
     int size = args[0].int_val;
     if (size < 0)
     {
-        raise_error("Runtime error: new_array() expects a non-negative integer.\n");
-        return return_value;
+        return raise_error("Runtime error: new_array() expects a non-negative integer.\n");
     }
+
     Value *items = malloc(sizeof(Value) * size);
     if (!items)
     {
-        raise_error("Runtime error: Memory allocation failed in new_array().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in new_array().\n");
     }
+
     for (int i = 0; i < size; i++)
     {
         items[i] = make_null(); // Initialize each element to null
     }
+
     Array *arr = malloc(sizeof(Array));
+
     if (!arr)
     {
         free(items);
-        raise_error("Runtime error: Memory allocation failed in new_array().\n");
-        return return_value;
+        return raise_error("Runtime error: Memory allocation failed in new_array().\n");
     }
+
     arr->items = items;
     arr->length = size;
     
@@ -2135,25 +2036,22 @@ Value fn_array_set(Value *args, int arg_count)
 {
     if (arg_count != 3)
     {
-        raise_error("Runtime error: array_set() expects three arguments: an array, an index, and a value.\n");
-        return return_value;
+        return raise_error("Runtime error: array_set() expects three arguments: an array, an index, and a value.\n");
     }
     if (args[0].type != VAL_ARRAY)
     {
-        raise_error("Runtime error: First argument to array_set() must be an array.\n");
-        return return_value;
+        return raise_error("Runtime error: First argument to array_set() must be an array.\n");
     }
     if (args[1].type != VAL_INT)
     {
-        raise_error("Runtime error: Second argument to array_set() must be an integer index.\n");
-        return return_value;
+        return raise_error("Runtime error: Second argument to array_set() must be an integer index.\n");
     }
+    
     Array *arr = args[0].array_val;
     int idx = args[1].int_val;
     if (idx < 0 || idx >= arr->length)
     {
-        raise_error("Runtime error: Array index out of bounds.\n");
-        return return_value;
+        return raise_error("Runtime error: Array index out of bounds.\n");
     }
     /* Free the previous value at that index if necessary */
     free_value(arr->items[idx]);
@@ -2173,6 +2071,6 @@ Value fn_array_set(Value *args, int arg_count)
     }
     
     arr->items[idx] = newVal;
-    return make_null();
+    return completed_value;
 }
 

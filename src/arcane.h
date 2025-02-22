@@ -69,7 +69,8 @@ typedef struct {
      VAL_DATE,
      VAL_ARRAY,
      VAL_NULL,
-     VAL_ERROR
+     VAL_ERROR,
+     VAL_COMPLETED
  } ValueType;
 
  // Forward reference for dependency.
@@ -172,9 +173,10 @@ typedef struct {
      Declarations
     ============================================================ */
  Value interpret(const char *src);
+ void init();
  void free_value(Value v);
  void parse_statement(Parser *p);
- void raise_error(const char *s, ...);
+ Value raise_error(const char *s, ...);
  Value parse_primary(Parser *p);
  Value parse_factor(Parser *p);
  Value parse_term(Parser *p); // Add this forward declaration
@@ -191,6 +193,7 @@ typedef struct {
  Value make_double(double d);
  Value make_date(Date d);
  Value make_error(const char *s);
+ Value make_completed();
  int get_time(struct timeval *tp, void *tzp);
  const char *_list_getarg(const char *argument, char *arg, int length);
  int _list_contains(const char *list, const char *value);

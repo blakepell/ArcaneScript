@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     script[bytes_read] = '\0';
     fclose(file);
     
+    init();
     Value ret = interpret(script);
     free(script);
 
