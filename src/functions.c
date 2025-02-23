@@ -399,32 +399,30 @@ Value fn_chance(Value *args, int arg_count)
          return return_value;
      }
  
-     for (int i = 0; i < arg_count; i++)
+     Value arg = args[0];
+
+     switch (arg.type)
      {
-         Value arg = args[i];
-         if (arg.type == VAL_INT)
-         {
-             printf("%d", arg.int_val);
-         }
-         else if (arg.type == VAL_STRING)
-         {
-             if (!IS_NULLSTR(arg.str_val))
-             {
-                 printf("%s", arg.str_val);
-             }
-         }
-         else if (arg.type == VAL_DOUBLE) 
-         {
-            printf("%f", arg.double_val);
-         }
-         else if (arg.type == VAL_BOOL)
-         {
-             printf(arg.int_val ? "true" : "false");
-         }
-         else if (arg.type == VAL_DATE)
-         {
-            printf("%02d/%02d/%04d", arg.date_val.month, arg.date_val.day, arg.date_val.year);
-         }
+         case VAL_INT:
+             printf("%d\n", arg.int_val);
+             break;
+         case VAL_STRING:
+             printf("%s\n", arg.str_val);
+             break;
+         case VAL_BOOL:
+             printf(arg.int_val ? "true\n" : "false\n");
+             break;
+         case VAL_DOUBLE:
+             printf("%f\n", arg.double_val);
+             break;             
+         case VAL_DATE:
+             printf("%02d/%02d/%04d\n", arg.date_val.month, arg.date_val.day, arg.date_val.year);
+             break;            
+         case VAL_NULL:
+             printf("(null)\n");
+             break;
+         default:
+             break;
      }
  
      return make_null();
@@ -442,34 +440,32 @@ Value fn_chance(Value *args, int arg_count)
          return return_value;
      }
  
-     for (int i = 0; i < arg_count; i++)
-     {
-         Value arg = args[i];
-         if (arg.type == VAL_INT)
-         {
-             printf("%d\n", arg.int_val);
-         }
-         else if (arg.type == VAL_STRING)
-         {
-             if (!IS_NULLSTR(arg.str_val))
-             {
-                 printf("%s\n", arg.str_val);
-             }
-         }
-         else if (arg.type == VAL_DOUBLE) 
-         {
+    Value arg = args[0];
+
+    switch (arg.type)
+    {
+        case VAL_INT:
+            printf("%d\n", arg.int_val);
+            break;
+        case VAL_STRING:
+            printf("%s\n", arg.str_val);
+            break;
+        case VAL_BOOL:
+            printf(arg.int_val ? "true\n" : "false\n");
+            break;
+        case VAL_DOUBLE:
             printf("%f\n", arg.double_val);
-         }
-         else if (arg.type == VAL_BOOL)
-         {
-             printf(arg.int_val ? "true\n" : "false\n");
-         }
-         else if (arg.type == VAL_DATE)
-         {
-             printf("%02d/%02d/%04d\n", arg.date_val.month, arg.date_val.day, arg.date_val.year);
-         }
-     }
- 
+            break;             
+        case VAL_DATE:
+            printf("%02d/%02d/%04d\n", arg.date_val.month, arg.date_val.day, arg.date_val.year);
+            break;            
+        case VAL_NULL:
+            printf("(null)\n");
+            break;
+        default:
+            break;
+    }
+
      return make_null();
  }
  
